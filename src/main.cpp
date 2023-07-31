@@ -1,36 +1,44 @@
 #include <Arduino.h>
 #include <parameters.hpp>
 #include <tasks.hpp>
-#include <Motor.hpp>
+#include <RobotWheel.hpp>
 
 float speed = 0;
 
 // printing
 char buffer[40];
 
-// Motors
-Motor* leftMotor;
-Motor* rightMotor;
+// RobotWheels
+RobotWheel* leftRobotWheel;
+RobotWheel* rightRobotWheel;
+
+void IRAM_ATTR encoderInterruptLeft()
+{
+  leftRobotWheel->handleEncoderInterrupt();
+}
 
 void setup()
 {
-  leftMotor = new Motor(EN_A, IN1_A, IN2_A, 0);
-  rightMotor = new Motor(EN_B, IN1_B, IN2_B, 1);
+  leftRobotWheel = new RobotWheel(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1);
+  rightRobotWheel = new RobotWheel(EN_B, IN1_B, IN2_B, ENCODER_A2, ENCODER_B2);
   Serial.begin(115200);
 
-  // run_blink_led();
   run_monitor_battery();
-  run_handle_encoders();
-  vTaskDelay(100.0 / portTICK_PERIOD_MS);
-  run_low_level_loop(leftMotor);
-  // run_low_level_loop(&rightMotor);
+
+  // interupts have to be handled outside low level loop
+  pinMode(leftRobotWheel->pinEncoderA_, INPUT_PULLUP);
+  pinMode(leftRobotWheel->pinEncoderB_, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(leftRobotWheel->pinEncoderA_), encoderInterruptLeft, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(leftRobotWheel->pinEncoderB_), encoderInterruptLeft, CHANGE);
+
+  leftRobotWheel->startLowLevelLoop();
 }
 
 int increment = 10;
 
 void loop()
 {
-  leftMotor->setSpeed(speed);
+  leftRobotWheel->setWheelSpeed(speed);
   speed += increment;
 
   if (speed > 150)
@@ -78,8 +86,8 @@ void loop()
   // // Serial.println(buffer);
 
   // // // backward
-  // // myMotors.setSpeed(speed);
-  // // myMotors.backward();
+  // // myRobotWheels.setSpeed(speed);
+  // // myRobotWheels.backward();
   // // vTaskDelay(100.0 / portTICK_PERIOD_MS);
   // // Serial.print("run bat reading: ");
   // // Serial.println(get_current_battery_reading());
@@ -90,7 +98,7 @@ void loop()
   // // sprintf(buffer, "left: %d - right: %d", values.left_value, values.right_value);
   // // Serial.println(buffer);
 
-  // // myMotors.stop();
+  // // myRobotWheels.stop();
   // // vTaskDelay(100.0 / portTICK_PERIOD_MS);
   // // Serial.print("stop bat reading: ");
   // // Serial.println(get_current_battery_reading());
