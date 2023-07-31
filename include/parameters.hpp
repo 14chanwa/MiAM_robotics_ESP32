@@ -35,9 +35,17 @@
 
 #define MOTOR_REDUCTION_FACTOR 100.0
 #define MOTOR_RATED_RPM 220.0
-#define ENCODER_PULSE_PER_REVOLUTION 28
-#define LEFT_ENCODER_ID 0
-#define RIGHT_ENCODER_ID 1// PID
+
+#define ENCODER_PULSE_PER_REVOLUTION 28.0
+#define ENCODER_SPEED_TICK_PERIOD_MS 10.0
+
+// conversion functions
+#define RPM_TO_RAD_S(VALUE) (VALUE * 2.0 * M_PI / 60.0)
+#define RAD_S_TO_RPM(VALUE) (VALUE * 60.0 / (2.0 * M_PI))
+
+// give 20% overhead
+#define MAX_SPEED_RPM (0.8 * MOTOR_RATED_RPM)
+#define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 // Motor PID
 #define VELOCITY_KP 0.07

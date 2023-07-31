@@ -12,9 +12,11 @@ class RobotWheel
             uint8_t pinEnable, uint8_t pinIN1, uint8_t pinIN2, 
             uint8_t pinEncoderA, uint8_t pinEncoderB);
         
-        void setWheelSpeed(int speed_rpm);
+        // set target speed in rad/s
+        void setWheelSpeed(double speed);
         
-        double getWheelSpeed(); // in rad/s
+         // get current in rad/s
+        double getWheelSpeed();
         double getWheelPosition(); // in rad
 
         void startLowLevelLoop();
@@ -44,8 +46,9 @@ class RobotWheel
         // encoder speed in ticks
         volatile int encoder_speed;
 
-        double targetSpeed_rpm;
-        double currentSpeed_rpm;
+        // wheel speed in rad/s
+        double targetSpeed;
+        double currentSpeed;
 
         // variables for loop
         unsigned long timeLowLevel;

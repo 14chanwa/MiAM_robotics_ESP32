@@ -38,7 +38,7 @@ int increment = 10;
 
 void loop()
 {
-  leftRobotWheel->setWheelSpeed(speed);
+  leftRobotWheel->setWheelSpeed(RPM_TO_RAD_S(speed));
   speed += increment;
 
   if (speed > 150)
