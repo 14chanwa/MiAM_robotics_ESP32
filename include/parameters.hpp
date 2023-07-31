@@ -1,5 +1,5 @@
-#ifndef _PINOUT_HEADER
-#define _PINOUT_HEADER
+#ifndef _PARAMETERS_HEADER
+#define _PARAMETERS_HEADER
 
 /////////////////////////////////////////////
 // Pins
@@ -37,6 +37,11 @@
 #define MOTOR_RATED_RPM 220.0
 #define ENCODER_PULSE_PER_REVOLUTION 28
 #define LEFT_ENCODER_ID 0
-#define RIGHT_ENCODER_ID 1
+#define RIGHT_ENCODER_ID 1// PID
+
+// Motor PID
+#define VELOCITY_KP 0.07
+#define VELOCITY_KD 0.01
+#define VELOCITY_KI 0.02
 
 #endif

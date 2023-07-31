@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <pinout.hpp>
+#include <parameters.hpp>
 #include <tasks.hpp>
 
 volatile int encoder_value[2] = {0, 0};
@@ -14,8 +14,8 @@ void run_handle_encoders()
     pinMode(ENCODER_A1, INPUT_PULLUP);
     attachInterrupt(ENCODER_A1, handleEncoder1, CHANGE);
     attachInterrupt(ENCODER_B1, handleEncoder1, CHANGE);
-    // attachInterrupt(ENCODER_A2, handleEncoder2, CHANGE);
-    // attachInterrupt(ENCODER_B2, handleEncoder2, CHANGE);
+    attachInterrupt(ENCODER_A2, handleEncoder2, CHANGE);
+    attachInterrupt(ENCODER_B2, handleEncoder2, CHANGE);
     xTaskCreate(
         task_print_encoder, 
         "task_print_encoder",

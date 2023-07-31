@@ -1,8 +1,8 @@
 #ifndef _TASKS_HEADER
 #define _TASKS_HEADER
 
-#include <pinout.hpp>
-#include <tuple>
+#include <parameters.hpp>
+#include <Motor.hpp>
 
 /////////////////////////////////////////////
 // Tasks
@@ -21,13 +21,6 @@ float get_current_battery_reading();
 float get_min_battery_reading();
 
 // handle encoders
-
-struct EncoderValues
-{
-    int right_value;
-    int left_value;
-};
-
 void run_handle_encoders();
 int get_encoder_values(unsigned char id);
 int get_encoder_speed(unsigned char id);
@@ -36,9 +29,8 @@ void task_get_encoder_speed(void* parameters);
 
 // low level loop
 
-void run_low_level_loop();
+void run_low_level_loop(Motor* motor);
 void task_low_level_loop(void* parameters);
-void setSpeed(int speed_rpm);
-int getSpeed();
+void task_print_low_level(void* parameters);
 
 #endif

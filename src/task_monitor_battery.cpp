@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <pinout.hpp>
+#include <parameters.hpp>
 #include <tasks.hpp>
 
 // Moving average for battery reading

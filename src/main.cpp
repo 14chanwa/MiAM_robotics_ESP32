@@ -1,28 +1,36 @@
 #include <Arduino.h>
-#include <pinout.hpp>
+#include <parameters.hpp>
 #include <tasks.hpp>
+#include <Motor.hpp>
 
 float speed = 0;
-EncoderValues values;
 
 // printing
 char buffer[40];
 
+// Motors
+Motor* leftMotor;
+Motor* rightMotor;
+
 void setup()
 {
+  leftMotor = new Motor(EN_A, IN1_A, IN2_A, 0);
+  rightMotor = new Motor(EN_B, IN1_B, IN2_B, 1);
   Serial.begin(115200);
 
   // run_blink_led();
   run_monitor_battery();
   run_handle_encoders();
-  run_low_level_loop();
+  vTaskDelay(100.0 / portTICK_PERIOD_MS);
+  run_low_level_loop(leftMotor);
+  // run_low_level_loop(&rightMotor);
 }
 
 int increment = 10;
 
 void loop()
 {
-  setSpeed(speed);
+  leftMotor->setSpeed(speed);
   speed += increment;
 
   if (speed > 150)
@@ -30,9 +38,9 @@ void loop()
     speed = 150;
     increment = -10;
   }
-  if (speed < 0)
+  if (speed < -150)
   {
-    speed = 0;
+    speed = -150;
     increment = 10;
   }
 
