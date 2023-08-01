@@ -48,7 +48,17 @@
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 // Motor PID
-#define VELOCITY_KP 0.07
+
+// Target control will be
+// PWM = targetSpeed (rpm) * 255 / max speed (rpm) * MOTOR_TARGET_CONTROL_A + MOTOR_TARGET_CONTROL_B
+#define MOTOR_TARGET_CONTROL_B 0
+#define MOTOR_TARGET_CONTROL_A 0.55
+// offset will be applied if targetSpeed (rad/s) is above threshold
+#define MOTOR_ST0P_THRESHOLD_RAD_S 0.1
+
+
+// PID parameters
+#define VELOCITY_KP 0.5
 #define VELOCITY_KD 0.01
 #define VELOCITY_KI 0.02
 

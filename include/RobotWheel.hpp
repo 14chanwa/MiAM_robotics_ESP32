@@ -41,24 +41,24 @@ class RobotWheel
         bool oldB;
 
         // encoder value in ticks
-        volatile int encoder_value;
-        int old_encoder_value;
-        // encoder speed in ticks
-        volatile int encoder_speed;
+        volatile int encoderValue_;
+        int oldEncoderValue_;
+        // encoder speed in ticks per ENCODER_SPEED_TICK_PERIOD_MS 
+        volatile int encoderSpeed_;
 
         // wheel speed in rad/s
-        double targetSpeed;
-        double currentSpeed;
+        double targetSpeed_;
+        double currentSpeed_;
 
         // variables for loop
-        unsigned long timeLowLevel;
-        unsigned long currentTime;
-        double dt_ms;
-        double error;
-        double correction;
-        double newTarget;
-        int basePWMTarget;
-        int newPWMTarget;
+        unsigned long timeLowLevel_;
+        unsigned long currentTime_;
+        double dt_ms_;
+        double error_;
+        double PWMcorrection_;
+
+        int basePWMTarget_;
+        int newPWMTarget_;
 };
 
 #endif

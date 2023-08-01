@@ -2,19 +2,22 @@
 #include <parameters.hpp>
 #include <cmath>
 
-int rad_s_to_pwm_value(double speed_rad_s)
+
+int target_rad_s_to_pwm_command(double speed_rad_s)
 {
-    // max pwm speed is supposed to be 255 for MAX_SPEED_RPM
+    int absValue = 
+        std::min(
+            (std::abs(speed_rad_s) > MOTOR_ST0P_THRESHOLD_RAD_S ? MOTOR_TARGET_CONTROL_B : 0) + // feedforward control
+            + (int)(
+                std::abs(RAD_S_TO_RPM(speed_rad_s)) 
+                    * 255.0 / MAX_SPEED_RPM // scale 255 to max RPM
+                    * MOTOR_TARGET_CONTROL_A // comes from experience
+                ), 
+            255 // cap to 255
+        );
     return(
         (speed_rad_s < 0 ? -1.0 : 1.0) // sign
-            * std::min(
-                (int)(
-                    std::abs(RAD_S_TO_RPM(speed_rad_s)) 
-                        * 255.0 / MAX_SPEED_RPM // scale 255 to max RPM
-                        / 1.5 // comes from experience (motor at 255 does not reach MAX_SPEED_RPM)
-                    ), 
-                255 // cap to 255
-            )
+            * absValue
     );
 }
 
@@ -34,7 +37,8 @@ RobotWheel::RobotWheel(
             uint8_t pinEncoderA, uint8_t pinEncoderB) :
             pinEncoderA_(pinEncoderA), pinEncoderB_(pinEncoderB),
             // explicitely initialize volatile values
-            encoder_value(0), encoder_speed(0)
+            encoderValue_(0), encoderSpeed_(0),
+            currentSpeed_(0), targetSpeed_(0)
 {
     motorDriver = new L298N(
         pinEnable, 
@@ -43,7 +47,7 @@ RobotWheel::RobotWheel(
     );
     motorPID = new miam::PID(
         VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 
-        0.5 * MAX_SPEED_RAD_S / VELOCITY_KP // max integral is 50% of the max velocity
+        0.5 * 255.0 / VELOCITY_KP // max integral is 50% of the max control
     );
 }
 
@@ -87,17 +91,24 @@ void RobotWheel::handleEncoderInterrupt()
     bool currentA = digitalRead(pinEncoderA_);
 
     // The direction of the encoder is given by currentA xor oldB
-    encoder_value += (oldB ^ currentA ? 1 : -1);
+    encoderValue_ += (oldB ^ currentA ? 1 : -1);
     oldB = digitalRead(pinEncoderB_);
 }
 
 void RobotWheel::setWheelSpeed(double speed)
 {
-    targetSpeed = speed;
+    targetSpeed_ = speed;
+
+    // reset PID integral if target speed is zero to stop robot
+    if (std::abs(speed) < 1e-6)
+    {
+        motorPID->resetIntegral();
+    }
 }
+
 double RobotWheel::getWheelSpeed()
 {
-    return currentSpeed;
+    return currentSpeed_;
 }
 
 void RobotWheel::tickMotorControl(void* parameters)
@@ -106,24 +117,23 @@ void RobotWheel::tickMotorControl(void* parameters)
 
     for (;;)
     {
-        robotWheel->currentTime = micros();
-        if (robotWheel->timeLowLevel > 0)
+        robotWheel->currentTime_ = micros();
+        if (robotWheel->timeLowLevel_ > 0)
         {
-            robotWheel->dt_ms = (robotWheel->currentTime - robotWheel->timeLowLevel) / 1000.0; // in ms
+            robotWheel->dt_ms_ = (robotWheel->currentTime_ - robotWheel->timeLowLevel_) / 1000.0; // in ms
         
             // speed in rad/s
-            robotWheel->currentSpeed = encoder_ticks_to_rad_s(robotWheel->encoder_speed);
+            robotWheel->currentSpeed_ = encoder_ticks_to_rad_s(robotWheel->encoderSpeed_);
 
-            robotWheel->error = robotWheel->currentSpeed - robotWheel->targetSpeed; // in rad/s
+            robotWheel->error_ = robotWheel->currentSpeed_ - robotWheel->targetSpeed_; // in rad/s
 
-            robotWheel->correction = robotWheel->motorPID->computeValue(robotWheel->error, robotWheel->dt_ms);
-            robotWheel->newTarget = robotWheel->targetSpeed + robotWheel->correction;
+            robotWheel->PWMcorrection_ = robotWheel->motorPID->computeValue(robotWheel->error_, robotWheel->dt_ms_);
 
             // convert from rad/s to 0-255
-            robotWheel->basePWMTarget = rad_s_to_pwm_value(robotWheel->targetSpeed);
-            robotWheel->newPWMTarget = rad_s_to_pwm_value(robotWheel->newTarget);
+            robotWheel->basePWMTarget_ = target_rad_s_to_pwm_command(robotWheel->targetSpeed_);
+            robotWheel->newPWMTarget_ = round(robotWheel->basePWMTarget_ + robotWheel->PWMcorrection_);
 
-            if (robotWheel->newPWMTarget >= 0)
+            if (robotWheel->newPWMTarget_ >= 0)
             {
                 robotWheel->motorDriver->forward();
             }
@@ -131,9 +141,9 @@ void RobotWheel::tickMotorControl(void* parameters)
             {
                 robotWheel->motorDriver->backward();
             }
-            robotWheel->motorDriver->setSpeed(std::abs(robotWheel->newPWMTarget));
+            robotWheel->motorDriver->setSpeed(std::abs(robotWheel->newPWMTarget_));
         }
-        robotWheel->timeLowLevel = robotWheel->currentTime;
+        robotWheel->timeLowLevel_ = robotWheel->currentTime_;
         vTaskDelay(10.0 / portTICK_PERIOD_MS);
     }    
 }
@@ -143,9 +153,9 @@ void RobotWheel::tickEncoderSpeed(void* parameters)
     RobotWheel* robotWheel = static_cast<RobotWheel*>(parameters);
     for (;;)
     {
-        robotWheel->encoder_speed = 
-            robotWheel->encoder_value - robotWheel->old_encoder_value;
-        robotWheel->old_encoder_value = robotWheel->encoder_value;
+        robotWheel->encoderSpeed_ = 
+            robotWheel->encoderValue_ - robotWheel->oldEncoderValue_;
+        robotWheel->oldEncoderValue_ = robotWheel->encoderValue_;
         vTaskDelay(10.0 / portTICK_PERIOD_MS);
     }    
 }
@@ -156,33 +166,23 @@ void RobotWheel::tickPrintToSerial(void* parameters)
     for (;;)
     {
         Serial.print(">encoderValue:");
-        Serial.println(robotWheel->encoder_value);
+        Serial.println(robotWheel->encoderValue_);
         Serial.print(">encoderSpeed:");
-        Serial.println(robotWheel->encoder_speed);
-        Serial.print(">currentSpeed:");
-        Serial.println(robotWheel->currentSpeed);
-        Serial.print(">targetSpeed: ");
-        Serial.println(robotWheel->targetSpeed);  
+        Serial.println(robotWheel->encoderSpeed_);
+        Serial.print(">currentSpeed_:");
+        Serial.println(robotWheel->currentSpeed_);
+        Serial.print(">targetSpeed_: ");
+        Serial.println(robotWheel->targetSpeed_);  
         Serial.print(">error: ");
-        Serial.println(robotWheel->error);       
+        Serial.println(robotWheel->error_);       
         Serial.print(">correction:");
-        Serial.println(robotWheel->correction);        
-        // Serial.print(" - currentSpeed: ");
-        // Serial.print(currentSpeed);             
-        // Serial.print(" - targetSpeed: ");
-        // Serial.print(targetSpeed);           
-        // Serial.print(" - correction: ");
-        // Serial.print(correction);           
-        // Serial.print(" - dt_min: ");
-        // Serial.print(dt_min);
-        // Serial.print(" - error: ");
-        // Serial.print(error);
+        Serial.println(robotWheel->PWMcorrection_);        
         Serial.print(">basePWMTarget:");
-        Serial.println(robotWheel->basePWMTarget);
+        Serial.println(robotWheel->basePWMTarget_);
         Serial.print(">newPWMTarget:");
-        Serial.println(robotWheel->newPWMTarget);
-        // Serial.print(" - newPWMTarget: ");
-        // Serial.println(newPWMTarget);
+        Serial.println(robotWheel->newPWMTarget_);
+        Serial.print(">dt_ms:");
+        Serial.println(robotWheel->dt_ms_);
         vTaskDelay(100.0 / portTICK_PERIOD_MS);
     } 
 }
