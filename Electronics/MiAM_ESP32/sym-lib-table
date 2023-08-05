@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "ESP32_DEVKIT_V1")(type "KiCad")(uri "${KIPRJMOD}/ESP32-DEVKIT-V1.kicad_sym")(options "")(descr ""))
+  (lib (name "MiAM_ESP32")(type "KiCad")(uri "${KIPRJMOD}/MiAM_ESP32.kicad_sym")(options "")(descr ""))
+)
