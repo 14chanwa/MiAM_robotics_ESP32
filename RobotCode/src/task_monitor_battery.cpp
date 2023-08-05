@@ -43,6 +43,15 @@ void task_monitor_battery(void* parameters)
   }    
 }
 
+void print_battery()
+{
+  Serial.print(">batReading:");
+  Serial.println(batReading);
+  Serial.print(">minBatReading:");
+  Serial.println(minBatReading);
+}
+
+
 float get_current_battery_reading()
 {
     return batReading;
@@ -52,6 +61,8 @@ float get_min_battery_reading()
 {
     return minBatReading;
 }
+
+
 
 
 /////////////////////////////////////////////

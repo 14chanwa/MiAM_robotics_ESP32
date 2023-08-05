@@ -7,8 +7,8 @@
 
 // #define LED_BUILTIN 2
 
-#define IN1_A 25
-#define IN2_A 26
+#define IN1_A 16
+#define IN2_A 17
 #define IN1_B 32
 #define IN2_B 33
 #define EN_A 27
@@ -26,8 +26,8 @@
 // Resistor values
 /////////////////////////////////////////////
 
-#define R1 20000.0
-#define R2 4700.0
+#define R1 100000.0
+#define R2 10000.0
 
 /////////////////////////////////////////////
 // Motor & encoder specs
