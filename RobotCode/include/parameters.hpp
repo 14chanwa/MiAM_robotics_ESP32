@@ -14,7 +14,7 @@
 #define EN_A 27
 #define EN_B 14
 
-#define ENCODER_A1 2
+#define ENCODER_A1 13
 #define ENCODER_B1 4
 
 #define ENCODER_A2 34
@@ -26,8 +26,15 @@
 // Resistor values
 /////////////////////////////////////////////
 
-#define R1 100000.0
-#define R2 10000.0
+#define RESISTOR_R1 100000.0
+#define RESISTOR_R2 10000.0
+
+/////////////////////////////////////////////
+// Wheel specs
+/////////////////////////////////////////////
+
+#define WHEEL_RADIUS_MM 30.0
+#define WHEEL_SPACING_MM 73.5
 
 /////////////////////////////////////////////
 // Motor & encoder specs

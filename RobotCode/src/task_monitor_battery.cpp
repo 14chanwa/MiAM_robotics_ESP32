@@ -36,8 +36,8 @@ void task_monitor_battery(void* parameters)
   for(;;)
   {
     AN_Pot1_Raw = analogReadMilliVolts(BAT_READING);
-    // batReading_unfiltered = AN_Pot1_Raw * (R1 + R2) / R2 / 1000.0;
-    batReading = readADC_Avg(AN_Pot1_Raw) * (R1 + R2) / R2 / 1000.0;
+    // batReading_unfiltered = AN_Pot1_Raw * (RESISTOR_R1 + RESISTOR_R2) / R2 / 1000.0;
+    batReading = readADC_Avg(AN_Pot1_Raw) * (RESISTOR_R1 + RESISTOR_R2) / RESISTOR_R2 / 1000.0;
     minBatReading = std::min(minBatReading, batReading);
     vTaskDelay(10.0 / portTICK_PERIOD_MS);
   }    

@@ -20,12 +20,11 @@ int target_rad_s_to_pwm_command(double speed_rad_s)
     );
 }
 
-double encoder_ticks_to_rad_s(int encoder_ticks)
+double encoder_pulse_s_to_rad_s(double encoder_ticks_s)
 {
     return(
-        encoder_ticks 
-            / (0.001 * ENCODER_SPEED_TICK_PERIOD_MS) // convert from 10ms to 1s
-            / ENCODER_PULSE_PER_REVOLUTION // convert from encoder tick to encoder revolution
+        encoder_ticks_s
+            / ENCODER_PULSE_PER_REVOLUTION // convert from encoder pulse to encoder revolution
             / MOTOR_REDUCTION_FACTOR // convert from encoder revolution to motor revolution
             * 2.0 * M_PI // convert from revolution to rad
     );
@@ -38,8 +37,9 @@ RobotWheel::RobotWheel(
             pinEncoderA_(pinEncoderA), pinEncoderB_(pinEncoderB),
             prefix_(prefix),
             // explicitely initialize volatile values
-            encoderValue_(0), encoderSpeed_(0),
-            currentSpeed_(0), targetSpeed_(0)
+            encoderValue_(0),
+            currentSpeed_(0), targetSpeed_(0),
+            oldTimeEncoderSpeed_(0)
 {
     motorDriver = new L298N(
         pinEnable, 
@@ -50,30 +50,6 @@ RobotWheel::RobotWheel(
         VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 
         0.5 * 255.0 / VELOCITY_KP // max integral is 50% of the max control
     );
-}
-
-void RobotWheel::startLowLevelLoop()
-{
-
-    xTaskCreate(
-        RobotWheel::tickEncoderSpeed, 
-        "tickEncoderSpeed",
-        1000,
-        this,
-        1,
-        NULL
-    ); 
-    vTaskDelay(3 / portTICK_PERIOD_MS);
-
-    xTaskCreate(
-        RobotWheel::tickMotorControl, 
-        "tickMotorControl",
-        10000,
-        this,
-        1,
-        NULL
-    ); 
-    vTaskDelay(3 / portTICK_PERIOD_MS);
 }
 
 void RobotWheel::handleEncoderInterrupt()
@@ -102,53 +78,50 @@ double RobotWheel::getWheelSpeed()
     return currentSpeed_;
 }
 
-void RobotWheel::tickMotorControl(void* parameters)
+void RobotWheel::updateMotorControl()
 {
-    RobotWheel* robotWheel = static_cast<RobotWheel*>(parameters);
-
-    for (;;)
+    currentTime_ = micros();
+    if (timeLowLevel_ > 0)
     {
-        robotWheel->currentTime_ = micros();
-        if (robotWheel->timeLowLevel_ > 0)
+        dt_ms_ = (currentTime_ - timeLowLevel_) / 1000.0; // in ms
+        error_ = currentSpeed_ - targetSpeed_; // in rad/s
+
+        PWMcorrection_ = motorPID->computeValue(error_, dt_ms_);
+
+        // convert from rad/s to 0-255
+        basePWMTarget_ = target_rad_s_to_pwm_command(targetSpeed_);
+        newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
+
+        if (newPWMTarget_ >= 0)
         {
-            robotWheel->dt_ms_ = (robotWheel->currentTime_ - robotWheel->timeLowLevel_) / 1000.0; // in ms
-        
-            // speed in rad/s
-            robotWheel->currentSpeed_ = encoder_ticks_to_rad_s(robotWheel->encoderSpeed_);
-
-            robotWheel->error_ = robotWheel->currentSpeed_ - robotWheel->targetSpeed_; // in rad/s
-
-            robotWheel->PWMcorrection_ = robotWheel->motorPID->computeValue(robotWheel->error_, robotWheel->dt_ms_);
-
-            // convert from rad/s to 0-255
-            robotWheel->basePWMTarget_ = target_rad_s_to_pwm_command(robotWheel->targetSpeed_);
-            robotWheel->newPWMTarget_ = round(robotWheel->basePWMTarget_ + robotWheel->PWMcorrection_);
-
-            if (robotWheel->newPWMTarget_ >= 0)
-            {
-                robotWheel->motorDriver->forward();
-            }
-            else
-            {
-                robotWheel->motorDriver->backward();
-            }
-            robotWheel->motorDriver->setSpeed(std::abs(robotWheel->newPWMTarget_));
+            motorDriver->forward();
         }
-        robotWheel->timeLowLevel_ = robotWheel->currentTime_;
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }    
+        else
+        {
+            motorDriver->backward();
+        }
+        motorDriver->setSpeed(std::abs(newPWMTarget_));
+    }
+    timeLowLevel_ = currentTime_;
 }
 
-void RobotWheel::tickEncoderSpeed(void* parameters)
+void RobotWheel::updateEncoderSpeed()
 {
-    RobotWheel* robotWheel = static_cast<RobotWheel*>(parameters);
-    for (;;)
+    unsigned long currentTimeEncoderSpeed_ = micros();
+    if (oldTimeEncoderSpeed_ == 0)
     {
-        robotWheel->encoderSpeed_ = 
-            robotWheel->encoderValue_ - robotWheel->oldEncoderValue_;
-        robotWheel->oldEncoderValue_ = robotWheel->encoderValue_;
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }    
+        currentSpeed_ = 0;
+    }
+    else
+    {
+        currentSpeed_ = encoder_pulse_s_to_rad_s(
+            (encoderValue_ - oldEncoderValue_) 
+                / ((currentTimeEncoderSpeed_ - oldTimeEncoderSpeed_) / 1000000.0) // convert from us to s
+        );
+        
+    }
+    oldTimeEncoderSpeed_ = currentTimeEncoderSpeed_;
+    oldEncoderValue_ = encoderValue_;
 }
 
 void RobotWheel::printPrefix(const char* value_name)
@@ -163,8 +136,6 @@ void RobotWheel::printToSerial()
 {
     printPrefix("encoderValue");
     Serial.println(encoderValue_);
-    printPrefix("encoderSpeed");
-    Serial.println(encoderSpeed_);
     printPrefix("currentSpeed");
     Serial.println(currentSpeed_);
     printPrefix("targetSpeed");

@@ -20,8 +20,6 @@ class RobotWheel
         double getWheelSpeed();
         double getWheelPosition(); // in rad
 
-        void startLowLevelLoop();
-
         // functions used to setup interrupt
         const uint8_t pinEncoderA_;
         const uint8_t pinEncoderB_;
@@ -30,14 +28,14 @@ class RobotWheel
         // print variables to serial
         void printToSerial();
 
+        // low level loop functions
+        void updateMotorControl();
+        void updateEncoderSpeed();
+
     private:
 
         void printPrefix(const char* value_name);
         std::string prefix_;
-
-        // functions that will be run in tasks have to be static
-        static void tickMotorControl(void* parameters);
-        static void tickEncoderSpeed(void* parameters);
 
         miam::PID* motorPID;
         L298N* motorDriver;
@@ -49,12 +47,11 @@ class RobotWheel
         // encoder value in ticks
         volatile int encoderValue_;
         int oldEncoderValue_;
-        // encoder speed in ticks per ENCODER_SPEED_TICK_PERIOD_MS 
-        volatile int encoderSpeed_;
+        unsigned long oldTimeEncoderSpeed_;
 
         // wheel speed in rad/s
         double targetSpeed_;
-        double currentSpeed_;
+        volatile double currentSpeed_;
 
         // variables for loop
         unsigned long timeLowLevel_;
