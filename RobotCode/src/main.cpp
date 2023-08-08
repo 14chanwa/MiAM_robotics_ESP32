@@ -57,18 +57,26 @@ void printToSerial(void* parameters)
       Serial.println(motionController->targetSpeed_.linear);
       Serial.print(">targetSpeed.angular:");
       Serial.println(motionController->targetSpeed_.angular);
-      Serial.print(">currentPosition_:");
-      Serial.print(motionController->currentPosition_.x);
-      Serial.print(":");
-      Serial.print(motionController->currentPosition_.y);
-      Serial.println("|xy");
+      // Serial.print(">currentPosition_:");
+      // Serial.print(motionController->currentPosition_.x);
+      // Serial.print(":");
+      // Serial.print(motionController->currentPosition_.y);
+      // Serial.println("|xy");
+      Serial.print(">currentPosition.x:");
+      Serial.println(motionController->currentPosition_.x);
+      Serial.print(">currentPosition.y:");
+      Serial.println(motionController->currentPosition_.y);
       Serial.print(">currentPosition.theta:");
       Serial.println(motionController->currentPosition_.theta);
-      Serial.print(">targetPoint.position:");
-      Serial.print(motionController->targetPoint.position.x);
-      Serial.print(":");
-      Serial.print(motionController->targetPoint.position.y);
-      Serial.println("|xy");
+      // Serial.print(">targetPoint.position:");
+      // Serial.print(motionController->targetPoint.position.x);
+      // Serial.print(":");
+      // Serial.print(motionController->targetPoint.position.y);
+      // Serial.println("|xy");
+      Serial.print(">targetPoint.position.x:");
+      Serial.println(motionController->targetPoint.position.x);
+      Serial.print(">targetPoint.position.y:");
+      Serial.println(motionController->targetPoint.position.y);
       Serial.print(">targetPoint.position.theta:");
       Serial.println(motionController->targetPoint.position.theta);
       Serial.print(">targetPoint.linearVelocity:");
@@ -188,56 +196,23 @@ void loop()
 {
 
   RobotPosition currentPosition(0.0, 0.0, 0.0);
-  RobotPosition targetPosition(300.0, 0.0, 0.0);
-
-  std::shared_ptr<Trajectory> sl(new StraightLine(
-    tc,
-    currentPosition,
-    targetPosition
-  ));
+  RobotPosition targetPosition(currentPosition);
+  targetPosition.x += 300;
 
   traj.clear();
+  std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition));
   traj.push_back(sl);
-
-  motionController->setTrajectoryToFollow(traj);
-  motionController->waitForTrajectoryFinished();
-
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  std::shared_ptr<Trajectory> sl2(new StraightLine(
-    tc,
-    targetPosition,
-    currentPosition,
-    0.0,
-    0.0,
-    true
-  ));
-
-  traj.clear();
+  std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
+  traj.push_back(pt);
+    std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition));
   traj.push_back(sl2);
+  std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
+  traj.push_back(pt2);
+  std::shared_ptr<Trajectory> pt3(new PointTurn(tc, pt2->getEndPoint().position, 0));
+  traj.push_back(pt3);
 
   motionController->setTrajectoryToFollow(traj);
   motionController->waitForTrajectoryFinished();
-  
+
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  // // Forward
-  // targetSpeed.linear = 100.0;
-  // targetSpeed.angular = 0.0;
-  // vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // // Backwards
-  // targetSpeed.linear = -100.0;
-  // targetSpeed.angular = 0.0;
-  // vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // // Rotation to left
-  // targetSpeed.linear = 0.0;
-  // targetSpeed.angular = M_PI_2;
-  // vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // // Rotation to right
-  // targetSpeed.linear = 0.0;
-  // targetSpeed.angular = -M_PI_2;
-  // vTaskDelay(10000 / portTICK_PERIOD_MS);
-
-  
-
 }
