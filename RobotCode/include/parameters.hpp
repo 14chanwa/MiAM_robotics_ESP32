@@ -58,8 +58,8 @@
 
 // Target control will be
 // PWM = targetSpeed (rpm) * 255 / max speed (rpm) * MOTOR_TARGET_CONTROL_A + MOTOR_TARGET_CONTROL_B
-#define MOTOR_TARGET_CONTROL_B 0
-#define MOTOR_TARGET_CONTROL_A 0.55
+#define MOTOR_TARGET_CONTROL_B 20
+#define MOTOR_TARGET_CONTROL_A 0.52
 // offset will be applied if targetSpeed (rad/s) is above threshold
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.1
 

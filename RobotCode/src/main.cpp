@@ -4,8 +4,11 @@
 #include <RobotWheel.hpp>
 #include <DrivetrainKinematics.h>
 #include <RobotPosition.h>
+#include <Trajectory.h>
+#include <StraightLine.h>
 
 using namespace miam;
+using namespace miam::trajectory;
 
 // RobotWheels
 RobotWheel* leftRobotWheel;
@@ -64,7 +67,7 @@ void performLowLevel(void* parameters)
   }
 }
 
-double speed = 0;
+TrajectoryConfig tc;
 
 void setup()
 {
@@ -110,26 +113,88 @@ void setup()
       1
   ); 
 
+  tc.maxWheelVelocity = 200.0;
+  tc.maxWheelAcceleration = 200.0;
+  tc.robotWheelSpacing = WHEEL_SPACING_MM;
+
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
+
 
 void loop()
 {
 
-  // Forward
-  targetSpeed.linear = 100.0;
-  targetSpeed.angular = 0.0;
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // Backwards
-  targetSpeed.linear = -100.0;
-  targetSpeed.angular = 0.0;
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // Rotation to left
-  targetSpeed.linear = 0.0;
-  targetSpeed.angular = M_PI_2;
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
-  // Rotation to right
-  targetSpeed.linear = 0.0;
-  targetSpeed.angular = -M_PI_2;
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  RobotPosition currentPosition(0.0, 0.0, 0.0);
+  RobotPosition targetPosition(300.0, 0.0, 0.0);
+
+  StraightLine sl(
+    tc,
+    currentPosition,
+    targetPosition
+  );
+
+  double start_time = millis() / 1000.0;
+  double current_time = start_time;
+  TrajectoryPoint tp;
+  while(current_time - start_time < sl.getDuration() + 2)
+  {
+    tp = sl.getCurrentPoint(current_time-start_time);
+    Serial.print(">trajectory.getDuration:");
+    Serial.println(sl.getDuration());
+    Serial.print(">trajectory.linear:");
+    Serial.println(tp.linearVelocity);
+    Serial.print(">trajectory.angular:");
+    Serial.println(tp.angularVelocity);
+    targetSpeed.linear = tp.linearVelocity;
+    targetSpeed.angular = tp.angularVelocity;
+    current_time = millis() / 1000.0;
+    Serial.print("Tick at time ");
+    Serial.println(current_time);
+    vTaskDelay(20 / portTICK_PERIOD_MS);
+  }
+
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  sl = StraightLine(
+    tc,
+    targetPosition,
+    currentPosition,
+    0.0,
+    0.0,
+    true
+  );
+  start_time = millis() / 1000.0;
+  current_time = start_time;
+  while(current_time - start_time < sl.getDuration() + 2)
+  {
+    tp = sl.getCurrentPoint(current_time-start_time);
+    targetSpeed.linear = tp.linearVelocity;
+    targetSpeed.angular = tp.angularVelocity;
+    current_time = millis() / 1000.0;
+    Serial.print("Tick at time ");
+    Serial.println(current_time);
+    vTaskDelay(20 / portTICK_PERIOD_MS);
+  }
+
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  // // Forward
+  // targetSpeed.linear = 100.0;
+  // targetSpeed.angular = 0.0;
+  // vTaskDelay(10000 / portTICK_PERIOD_MS);
+  // // Backwards
+  // targetSpeed.linear = -100.0;
+  // targetSpeed.angular = 0.0;
+  // vTaskDelay(10000 / portTICK_PERIOD_MS);
+  // // Rotation to left
+  // targetSpeed.linear = 0.0;
+  // targetSpeed.angular = M_PI_2;
+  // vTaskDelay(10000 / portTICK_PERIOD_MS);
+  // // Rotation to right
+  // targetSpeed.linear = 0.0;
+  // targetSpeed.angular = -M_PI_2;
+  // vTaskDelay(10000 / portTICK_PERIOD_MS);
+
+  
+
 }
