@@ -6,6 +6,9 @@
 #include <RobotPosition.h>
 #include <Trajectory.h>
 #include <StraightLine.h>
+#include <PointTurn.h>
+#include <Utilities.h>
+#include <MotionController.hpp>
 
 using namespace miam;
 using namespace miam::trajectory;
@@ -14,15 +17,22 @@ using namespace miam::trajectory;
 RobotWheel* leftRobotWheel;
 RobotWheel* rightRobotWheel;
 
+// Motion controller
+MotionController* motionController;
+
 // Kinematics
 DrivetrainKinematics kinematics = DrivetrainKinematics(WHEEL_RADIUS_MM,
                                        WHEEL_SPACING_MM,
                                        WHEEL_RADIUS_MM,
                                        WHEEL_SPACING_MM);
 
-RobotPosition currentPosition(0.0, 0.0, 0.0);
-BaseSpeed targetSpeed(0.0, 0);
-WheelSpeed wheelSpeed;
+bool hasMatchStarted_ = true;
+
+DrivetrainMeasurements measurements;
+DrivetrainTarget target;
+
+// Serial semaphore
+SemaphoreHandle_t xMutex_Serial = NULL;
 
 void IRAM_ATTR encoderInterruptLeft()
 {
@@ -38,14 +48,36 @@ void printToSerial(void* parameters)
 {
   for(;;)
   {
-    print_battery();
-    leftRobotWheel->printToSerial();
-    rightRobotWheel->printToSerial();
-    Serial.print(">targetSpeed.linear:");
-    Serial.println(targetSpeed.linear);
-    Serial.print(">targetSpeed.angular:");
-    Serial.println(targetSpeed.angular);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    if (xSemaphoreTake(xMutex_Serial, portMAX_DELAY))
+    {
+      print_battery();
+      leftRobotWheel->printToSerial();
+      rightRobotWheel->printToSerial();
+      Serial.print(">targetSpeed.linear:");
+      Serial.println(motionController->targetSpeed_.linear);
+      Serial.print(">targetSpeed.angular:");
+      Serial.println(motionController->targetSpeed_.angular);
+      Serial.print(">currentPosition_:");
+      Serial.print(motionController->currentPosition_.x);
+      Serial.print(":");
+      Serial.print(motionController->currentPosition_.y);
+      Serial.println("|xy");
+      Serial.print(">currentPosition.theta:");
+      Serial.println(motionController->currentPosition_.theta);
+      Serial.print(">targetPoint.position:");
+      Serial.print(motionController->targetPoint.position.x);
+      Serial.print(":");
+      Serial.print(motionController->targetPoint.position.y);
+      Serial.println("|xy");
+      Serial.print(">targetPoint.position.theta:");
+      Serial.println(motionController->targetPoint.position.theta);
+      Serial.print(">targetPoint.linearVelocity:");
+      Serial.println(motionController->targetPoint.linearVelocity);
+      Serial.print(">targetPoint.angularVelocity:");
+      Serial.println(motionController->targetPoint.angularVelocity);
+      xSemaphoreGive(xMutex_Serial);  // release the mutex
+      vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
   }
 }
 
@@ -56,14 +88,39 @@ void performLowLevel(void* parameters)
     // update sensors
     leftRobotWheel->updateEncoderSpeed();
     rightRobotWheel->updateEncoderSpeed();
-    // perform motion control
-    wheelSpeed = kinematics.inverseKinematics(targetSpeed);
-    leftRobotWheel->setWheelSpeed(wheelSpeed.left);
-    rightRobotWheel->setWheelSpeed(wheelSpeed.right);
+    measurements.motorSpeed[side::LEFT] = leftRobotWheel->getWheelSpeed();
+    measurements.motorSpeed[side::RIGHT] = rightRobotWheel->getWheelSpeed();
+
+    // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
+    if (motionController->isPlayingRightSide_)
+    {
+        double temp = measurements.motorSpeed[side::RIGHT];
+        measurements.motorSpeed[side::RIGHT] = measurements.motorSpeed[side::LEFT];
+        measurements.motorSpeed[side::LEFT] = temp;
+    }
+
+    target = motionController->computeDrivetrainMotion(
+      measurements, 
+      LOW_LEVEL_LOOP_TIME_MS / 1000.0, 
+      hasMatchStarted_
+    );
+
+    // invert kinematics
+    if (motionController->isPlayingRightSide_)
+    {
+      leftRobotWheel->setWheelSpeed(target.motorSpeed[side::RIGHT]);
+      rightRobotWheel->setWheelSpeed(target.motorSpeed[side::LEFT]);
+    }
+    else
+    {
+      leftRobotWheel->setWheelSpeed(target.motorSpeed[side::LEFT]);
+      rightRobotWheel->setWheelSpeed(target.motorSpeed[side::RIGHT]);
+    }
+
     // update motor control
     leftRobotWheel->updateMotorControl();
     rightRobotWheel->updateMotorControl();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(LOW_LEVEL_LOOP_TIME_MS / portTICK_PERIOD_MS);
   }
 }
 
@@ -80,6 +137,11 @@ void setup()
   leftRobotWheel = new RobotWheel(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "left_");
   rightRobotWheel = new RobotWheel(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "right_");
   
+  xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
+
+  motionController = new MotionController(&xMutex_Serial);
+  motionController->init(RobotPosition(0.0, 0.0, 0.0));
+
   run_monitor_battery();
 
   // interupts have to be handled outside low level loop
@@ -120,6 +182,7 @@ void setup()
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
 
+TrajectoryVector traj;
 
 void loop()
 {
@@ -127,55 +190,35 @@ void loop()
   RobotPosition currentPosition(0.0, 0.0, 0.0);
   RobotPosition targetPosition(300.0, 0.0, 0.0);
 
-  StraightLine sl(
+  std::shared_ptr<Trajectory> sl(new StraightLine(
     tc,
     currentPosition,
     targetPosition
-  );
+  ));
 
-  double start_time = millis() / 1000.0;
-  double current_time = start_time;
-  TrajectoryPoint tp;
-  while(current_time - start_time < sl.getDuration() + 2)
-  {
-    tp = sl.getCurrentPoint(current_time-start_time);
-    Serial.print(">trajectory.getDuration:");
-    Serial.println(sl.getDuration());
-    Serial.print(">trajectory.linear:");
-    Serial.println(tp.linearVelocity);
-    Serial.print(">trajectory.angular:");
-    Serial.println(tp.angularVelocity);
-    targetSpeed.linear = tp.linearVelocity;
-    targetSpeed.angular = tp.angularVelocity;
-    current_time = millis() / 1000.0;
-    Serial.print("Tick at time ");
-    Serial.println(current_time);
-    vTaskDelay(20 / portTICK_PERIOD_MS);
-  }
+  traj.clear();
+  traj.push_back(sl);
+
+  motionController->setTrajectoryToFollow(traj);
+  motionController->waitForTrajectoryFinished();
 
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-  sl = StraightLine(
+  std::shared_ptr<Trajectory> sl2(new StraightLine(
     tc,
     targetPosition,
     currentPosition,
     0.0,
     0.0,
     true
-  );
-  start_time = millis() / 1000.0;
-  current_time = start_time;
-  while(current_time - start_time < sl.getDuration() + 2)
-  {
-    tp = sl.getCurrentPoint(current_time-start_time);
-    targetSpeed.linear = tp.linearVelocity;
-    targetSpeed.angular = tp.angularVelocity;
-    current_time = millis() / 1000.0;
-    Serial.print("Tick at time ");
-    Serial.println(current_time);
-    vTaskDelay(20 / portTICK_PERIOD_MS);
-  }
+  ));
 
+  traj.clear();
+  traj.push_back(sl2);
+
+  motionController->setTrajectoryToFollow(traj);
+  motionController->waitForTrajectoryFinished();
+  
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   // // Forward

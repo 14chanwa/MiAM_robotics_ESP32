@@ -17,8 +17,7 @@ class RobotWheel
         void setWheelSpeed(double speed);
         
          // get current in rad/s
-        double getWheelSpeed();
-        double getWheelPosition(); // in rad
+        double getWheelSpeed(); // in rad/s
 
         // functions used to setup interrupt
         const uint8_t pinEncoderA_;

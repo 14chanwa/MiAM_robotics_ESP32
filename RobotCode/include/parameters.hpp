@@ -54,6 +54,14 @@
 #define MAX_SPEED_RPM (0.8 * MOTOR_RATED_RPM)
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
+#define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
+
+/////////////////////////////////////////////
+// Motion controller specs
+/////////////////////////////////////////////
+
+#define LOW_LEVEL_LOOP_TIME_MS 10
+
 // Motor PID
 
 // Target control will be
@@ -63,10 +71,20 @@
 // offset will be applied if targetSpeed (rad/s) is above threshold
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.1
 
-
-// PID parameters
+// Wheel PID parameters
 #define VELOCITY_KP 0.5
 #define VELOCITY_KD 0.01
 #define VELOCITY_KI 0.02
+
+// Motion controller PID parameters
+#define LINEAR_KP 3.5
+#define LINEAR_KD 0.01
+#define LINEAR_KI 0.00
+
+#define TRANSVERSE_KP 0.005
+
+#define ROTATION_KP 5.0
+#define ROTATION_KD 0.01
+#define ROTATION_KI 0.0
 
 #endif
