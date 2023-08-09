@@ -1,0 +1,5 @@
+.pio
+.vscode
+RobotCode/.pio
+RobotCode/.vscode
+RobotCode/include/secret.hpp

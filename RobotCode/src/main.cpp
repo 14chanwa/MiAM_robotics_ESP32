@@ -10,6 +10,7 @@
 #include <Utilities.h>
 #include <MotionController.hpp>
 #include <WiFi.h>
+#include <secret.hpp>
 
 #define SEND_TELEPLOT_UDP
 
@@ -29,7 +30,7 @@
 
 void initWiFi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin("ssid", "password");
+  WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
   Serial.print("Connecting to WiFi ..");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
