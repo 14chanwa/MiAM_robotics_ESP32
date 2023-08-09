@@ -9,8 +9,6 @@
 /////////////////////////////////////////////
 
 // blink led
-
-void run_blink_led();
 void task_blink_led(void* parameters);
 
 // monitor battery

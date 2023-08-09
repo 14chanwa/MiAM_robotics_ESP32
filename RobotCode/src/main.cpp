@@ -191,11 +191,24 @@ TrajectoryConfig tc;
 
 void setup()
 {
+  // start heartbeat
+  ledcAttachPin(LED_BUILTIN, 0);
+  ledcSetup(0, 1000, 8);
+  xTaskCreatePinnedToCore(
+      task_blink_led, 
+      "task_blink_led",
+      1000,
+      NULL,
+      1,
+      NULL,
+      1 // pin to core 1
+  ); 
+
   // initially motors should be stopped
   digitalWrite(EN_A, LOW);
   digitalWrite(EN_B, LOW);
 
-  vTaskDelay(3000 / portTICK_PERIOD_MS);
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   Serial.begin(115200);
   Serial.println("Attempt connect WiFi");
@@ -269,7 +282,7 @@ void loop()
   traj.push_back(sl);
   std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
   traj.push_back(pt);
-    std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition));
+  std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition));
   traj.push_back(sl2);
   std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
   traj.push_back(pt2);
