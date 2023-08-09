@@ -55,8 +55,8 @@ DrivetrainKinematics kinematics = DrivetrainKinematics(WHEEL_RADIUS_MM,
                                        WHEEL_SPACING_MM);
 
 // low level loop timing
-double dt_lowLevel_ms = 0.0;
-double dt_period_ms = 0.0;
+float dt_lowLevel_ms = 0.0;
+float dt_period_ms = 0.0;
 long timeStartLoop = 0;
 long timeEndLoop = 0;
 
@@ -152,7 +152,7 @@ void performLowLevel(void* parameters)
     // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
     if (motionController->isPlayingRightSide_)
     {
-        double temp = measurements.motorSpeed[side::RIGHT];
+        float temp = measurements.motorSpeed[side::RIGHT];
         measurements.motorSpeed[side::RIGHT] = measurements.motorSpeed[side::LEFT];
         measurements.motorSpeed[side::LEFT] = temp;
     }

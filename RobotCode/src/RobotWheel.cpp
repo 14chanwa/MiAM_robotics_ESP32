@@ -2,7 +2,7 @@
 #include <parameters.hpp>
 #include <cmath>
 
-int target_rad_s_to_pwm_command(double speed_rad_s)
+int target_rad_s_to_pwm_command(float speed_rad_s)
 {
     int absValue = 
         std::min(
@@ -20,7 +20,7 @@ int target_rad_s_to_pwm_command(double speed_rad_s)
     );
 }
 
-double encoder_pulse_s_to_rad_s(double encoder_ticks_s)
+float encoder_pulse_s_to_rad_s(float encoder_ticks_s)
 {
     return(
         encoder_ticks_s
@@ -62,7 +62,7 @@ void RobotWheel::handleEncoderInterrupt()
     oldB = digitalRead(pinEncoderB_);
 }
 
-void RobotWheel::setWheelSpeed(double speed)
+void RobotWheel::setWheelSpeed(float speed)
 {
     targetSpeed_ = speed;
 
@@ -73,7 +73,7 @@ void RobotWheel::setWheelSpeed(double speed)
     }
 }
 
-double RobotWheel::getWheelSpeed()
+float RobotWheel::getWheelSpeed()
 {
     return currentSpeed_;
 }

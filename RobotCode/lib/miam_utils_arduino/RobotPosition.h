@@ -21,7 +21,7 @@
                 /// \param[in] xIn x coordinate.
                 /// \param[in] yIn y coordinate.
                 /// \param[in] thetaIn theta coordinate.
-                RobotPosition(double const& xIn, double const& yIn, double const& thetaIn);
+                RobotPosition(float const& xIn, float const& yIn, float const& thetaIn);
 
                 /// \brief Sum two position.
                 ///
@@ -38,17 +38,17 @@
                 /// \brief Multiply a position by a scalar.
                 ///
                 /// \details This function returns the term by term multiplication of the point coordinates by a scalar.
-                friend RobotPosition operator*(double const& scalar, RobotPosition const& p1);
-                friend RobotPosition operator*(RobotPosition const& p1, double const& scalar);
+                friend RobotPosition operator*(float const& scalar, RobotPosition const& p1);
+                friend RobotPosition operator*(RobotPosition const& p1, float const& scalar);
 
                 /// \brief Division by a scalar.
                 ///
                 /// \details This function returns the term by term division of the point coordinates by a scalar.
                 ///          If scalar is too close to zero, this function return the original point.
-                friend RobotPosition operator/(RobotPosition const& p1, double const& scalar);
+                friend RobotPosition operator/(RobotPosition const& p1, float const& scalar);
 
                 /// \brief Return the norm of the (x,y) vector.
-                double norm() const;
+                float norm() const;
 
                 /// \brief Normalize the (x, y) vector.
                 ///
@@ -72,25 +72,25 @@
                 /// \details Return the dot product between both vectors. Angle is not taken into account.
                 /// \param[in] secondVector Vector with witch to compute the dot product.
                 /// \return The dot product, i.e x * secondVector.x + y * secondVector.y
-                double dot(RobotPosition const& secondVector) const;
+                float dot(RobotPosition const& secondVector) const;
 
                 /// \brief Cross product,
                 ///
                 /// \details Return the cross product between both vectors. Angle is not taken into account.
                 /// \param[in] secondVector Vector with witch to compute the dot product.
                 /// \return The cross product, i.e. x * secondVector.y - y * secondVector.x
-                double cross(RobotPosition const& secondVector) const;
+                float cross(RobotPosition const& secondVector) const;
 
 
                 /// \brief Rotate the position by a given angle.
                 ///
                 /// \param[in] thetaIn Rotation angle.
                 /// \return Position rotated by the given angle.
-                RobotPosition rotate(double const& thetaIn);
+                RobotPosition rotate(float const& thetaIn);
 
-                double x;    ///< X coordinate of the robot, in mm.
-                double y;    ///< Y coordinate of the robot, in mm. Notice that y axis is taken positive when pointing downward.
-                double theta;    ///< Angle of the robot, in rad.
+                float x;    ///< X coordinate of the robot, in mm.
+                float y;    ///< Y coordinate of the robot, in mm. Notice that y axis is taken positive when pointing downward.
+                float theta;    ///< Angle of the robot, in rad.
         };
     }
 #endif

@@ -24,11 +24,11 @@
                     /// \param[in] maxAcceleration Max acceleration. Only absolute value is taken into account.
                     PointTurn(TrajectoryConfig const& config,
                               RobotPosition const& startPoint,
-                              double const& endAngle);
+                              float const& endAngle);
 
-                    TrajectoryPoint getCurrentPoint(double const& currentTime);
+                    TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(double const& replanificationTime);
+                    void replanify(float const& replanificationTime);
                 private:
                     void make(RobotPosition const& startPoint); ///< Build (or rebuild) the trajectory.
 
@@ -36,7 +36,7 @@
                     int motionSign_; ///< 1 or -1, to indicate direction of motion (trapezoid is always positive).
                     Trapezoid trapezoid_; ///< Velocity trapezoid.
 
-                    double endAngle_;     ///< End angle.
+                    float endAngle_;     ///< End angle.
             };
         }
     }

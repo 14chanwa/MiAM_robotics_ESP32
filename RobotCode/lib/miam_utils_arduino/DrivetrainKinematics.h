@@ -16,7 +16,7 @@
     class BaseSpeed
     {
         public:
-            BaseSpeed(double const& linearIn, double const& angularIn):
+            BaseSpeed(float const& linearIn, float const& angularIn):
                 linear(linearIn),
                 angular(angularIn)
             {}
@@ -34,15 +34,15 @@
                 v << linear, angular;
                 return v;
             }
-            double linear; ///< Base linear velocity, by convention in mm.
-            double angular; ///< Base angular velocity, by convention in rad/s.
+            float linear; ///< Base linear velocity, by convention in mm.
+            float angular; ///< Base angular velocity, by convention in rad/s.
     };
 
     /// \brief Class to represent wheel speed.
     class WheelSpeed
     {
         public:
-            WheelSpeed(double const& rightIn, double const& leftIn):
+            WheelSpeed(float const& rightIn, float const& leftIn):
                 right(rightIn),
                 left(leftIn)
             {}
@@ -60,8 +60,8 @@
                 v << right, left;
                 return v;
             }
-            double right; ///< Right wheel speed, by convention in rad/s.
-            double left; ///< Left wheel speed, by convention in rad/s.
+            float right; ///< Right wheel speed, by convention in rad/s.
+            float left; ///< Left wheel speed, by convention in rad/s.
     };
 
     /// \brief Kinematics of a two-wheel drivetrain with optional encoders.
@@ -81,10 +81,10 @@
             /// \param[in] motorWheelSpacing Distance between the center of the robot and the motor wheel, in mm.
             /// \param[in] encoderWheelRadius Radius of the encoder wheel, in mm.
             /// \param[in] encoderWheelSpacing Distance between the center of the robot and the encoder wheel, in mm.
-            DrivetrainKinematics(double const& motorWheelRadiusIn,
-                                 double const& motorWheelSpacingIn,
-                                 double const& encoderWheelRadiusIn,
-                                 double const& encoderWheelSpacingIn);
+            DrivetrainKinematics(float const& motorWheelRadiusIn,
+                                 float const& motorWheelSpacingIn,
+                                 float const& encoderWheelRadiusIn,
+                                 float const& encoderWheelSpacingIn);
 
             /// \brief Forward kinematics, i.e. convert wheel speed to base speed
             /// \details By default, wheelAngularSpeedIn is intepreted as the angular velocity of the motor wheels:
@@ -115,9 +115,9 @@
             void integratePosition(WheelSpeed const& wheelSpeedIn, miam::RobotPosition & positionInOut, bool const& useEncoders = true) const;
 
         private:
-            double motorWheelRadius_; ///< Radius of the motor wheel, in mm.
-            double motorWheelSpacing_; ///< Distance between the center of the robot and the motor wheel, in mm.
-            double encoderWheelRadius_; ///< Radius of the encoder wheel, in mm.
-            double encoderWheelSpacing_; ///< Distance between the center of the robot and the encoder wheel, in mm.
+            float motorWheelRadius_; ///< Radius of the motor wheel, in mm.
+            float motorWheelSpacing_; ///< Distance between the center of the robot and the motor wheel, in mm.
+            float encoderWheelRadius_; ///< Radius of the encoder wheel, in mm.
+            float encoderWheelSpacing_; ///< Distance between the center of the robot and the encoder wheel, in mm.
     };
 #endif

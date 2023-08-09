@@ -9,7 +9,7 @@ namespace miam{
         SampledTrajectory::SampledTrajectory(
             TrajectoryConfig const& config,
             std::vector<TrajectoryPoint > sampledTrajectory,
-            double duration
+            float duration
             ) : Trajectory(config)
         {
             description_ = "SampledTrajectory";
@@ -17,7 +17,7 @@ namespace miam{
             sampledTrajectory_ = sampledTrajectory;
         }
 
-        TrajectoryPoint SampledTrajectory::getCurrentPoint(double const& currentTime)
+        TrajectoryPoint SampledTrajectory::getCurrentPoint(float const& currentTime)
         {
             int N = sampledTrajectory_.size();
 
@@ -41,12 +41,12 @@ namespace miam{
             TrajectoryPoint tpLow = sampledTrajectory_.at(indexLow);
             TrajectoryPoint tpHigh = sampledTrajectory_.at(indexHigh);
 
-            double sampledTimestep = duration_ / (N-1);
+            float sampledTimestep = duration_ / (N-1);
 
-            double residue = (currentTime - indexLow * sampledTimestep) / sampledTimestep;
+            float residue = (currentTime - indexLow * sampledTimestep) / sampledTimestep;
 
-            double ponderationLow = 1.0 - residue;
-            double ponderationHigh = residue;
+            float ponderationLow = 1.0 - residue;
+            float ponderationHigh = residue;
 
             // Linear interpolation
             TrajectoryPoint output;
@@ -60,7 +60,7 @@ namespace miam{
 
         }
 
-        void SampledTrajectory::replanify(double const& replanificationTime)
+        void SampledTrajectory::replanify(float const& replanificationTime)
         {
             int N = sampledTrajectory_.size();
 
@@ -73,10 +73,10 @@ namespace miam{
                 return;
             }
 
-            double sampling_time = getDuration() / (N-1);
-            double currentMaxLinearVelocity = 0.0; // maximum theoretical velocity that could be obtained
-            double currentCurvilinearAbscissa = replanificationTime; // time in the old traj
-            double currentScalingFactor = 0.0; // factor by which to slowdown the traj
+            float sampling_time = getDuration() / (N-1);
+            float currentMaxLinearVelocity = 0.0; // maximum theoretical velocity that could be obtained
+            float currentCurvilinearAbscissa = replanificationTime; // time in the old traj
+            float currentScalingFactor = 0.0; // factor by which to slowdown the traj
 
             TrajectoryPoint tp;
             std::vector<TrajectoryPoint > newSampledTrajectory;
@@ -118,12 +118,12 @@ namespace miam{
                 duration_ = 0.0;
             }
 
-            double dt = duration_ / (sampledTrajectory_.size() - 1);
+            float dt = duration_ / (sampledTrajectory_.size() - 1);
             for (int i = 0; i < n; i++)
             {
                 sampledTrajectory_.pop_back();
             }
-            duration_ = std::max(0.0, duration_ - n * dt);
+            duration_ = std::max(0.0f, duration_ - n * dt);
         }
     }
 }

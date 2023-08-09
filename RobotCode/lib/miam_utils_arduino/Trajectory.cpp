@@ -22,7 +22,7 @@ namespace miam{
         {
         }
 
-        double Trajectory::getDuration()
+        float Trajectory::getDuration()
         {
             return duration_;
         }

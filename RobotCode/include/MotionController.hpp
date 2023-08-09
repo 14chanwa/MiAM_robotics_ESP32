@@ -89,7 +89,7 @@ class MotionController
         /// \param[in] dt Elapsed time since last call.
         /// \return Target motor velocity
         DrivetrainTarget computeDrivetrainMotion(DrivetrainMeasurements const& measurements,
-                                                    double const& dt,
+                                                    float const& dt,
                                                     bool const& hasMatchStarted);
 
         bool isPlayingRightSide_ = false;
@@ -100,13 +100,13 @@ class MotionController
         }
 
         TrajectoryVector getCurrentTrajectories();
-        double getCurvilinearAbscissa();
+        float getCurvilinearAbscissa();
 
         BaseSpeed targetSpeed_;
         RobotPosition currentPosition_; ///< Current robot position,
         TrajectoryPoint targetPoint;
     private:
-        double currentTime_{0.0};
+        float currentTime_{0.0};
 
         // Trajectory definition.
         TrajectoryVector newTrajectories_; ///< Vector of new trajectories to follow.
@@ -116,7 +116,7 @@ class MotionController
         SemaphoreHandle_t* xMutex_Serial_;  // Create a mutex object
         SemaphoreHandle_t xMutex = NULL;  // Create a mutex object
 
-        double curvilinearAbscissa_; ///< Curvilinear abscissa of the current trajectory.
+        float curvilinearAbscissa_; ///< Curvilinear abscissa of the current trajectory.
         DrivetrainKinematics kinematics_;
 
         // Tracking PIDs
@@ -132,16 +132,16 @@ class MotionController
         /// \param[out] target Motor target
         /// \return True if trajectory following should continue, false if trajectory following is completed.
         bool computeMotorTarget(Trajectory *traj,
-                                double const& timeInTrajectory,
-                                double const& dt,
-                                double const& slowDownRatio,
+                                float const& timeInTrajectory,
+                                float const& dt,
+                                float const& slowDownRatio,
                                 DrivetrainMeasurements const &measurements,
                                 DrivetrainTarget &target);
 
         // /// \brief Updates the LiDAR and sets the avoidance strategy
         // /// \param [in] detectedRobots Obstacles detected by the lidar.
         // /// \return coefficient for trajectory time increase
-        // double computeObstacleAvoidanceSlowdown(std::deque<DetectedRobot> const& detectedRobots, bool const& hasMatchStarted);
+        // float computeObstacleAvoidanceSlowdown(std::deque<DetectedRobot> const& detectedRobots, bool const& hasMatchStarted);
 
         // RobotPosition lidarPointToRobotPosition(LidarPoint const &point);
         // bool isLidarPointWithinTable(LidarPoint const& point);
@@ -149,17 +149,17 @@ class MotionController
         bool isStopped_;
         bool trajectoryDone_ = false;
 
-        double slowDownCoeff_ = 1.0;
-        double clampedSlowDownCoeff_ = 1.0;
+        float slowDownCoeff_ = 1.0;
+        float clampedSlowDownCoeff_ = 1.0;
         long timeSinceFirstStopped_;
 
-        double trajectoryTimeout_ = 1.0; // Number of seconds after the end of trajectory after which timeout is raised
+        float trajectoryTimeout_ = 1.0; // Number of seconds after the end of trajectory after which timeout is raised
 
         // Motion controller state
         MotionControllerState motionControllerState_;
         void changeMotionControllerState();
         DrivetrainTarget resolveMotionControllerState(DrivetrainMeasurements const &measurements,
-                                                        double const &dt,
+                                                        float const &dt,
                                                         bool const &hasMatchStarted);
       
 

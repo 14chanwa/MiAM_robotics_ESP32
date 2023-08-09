@@ -14,10 +14,10 @@ class RobotWheel
             std::string prefix);
         
         // set target speed in rad/s
-        void setWheelSpeed(double speed);
+        void setWheelSpeed(float speed);
         
          // get current in rad/s
-        double getWheelSpeed(); // in rad/s
+        float getWheelSpeed(); // in rad/s
 
         // functions used to setup interrupt
         const uint8_t pinEncoderA_;
@@ -49,15 +49,15 @@ class RobotWheel
         unsigned long oldTimeEncoderSpeed_;
 
         // wheel speed in rad/s
-        double targetSpeed_;
-        volatile double currentSpeed_;
+        float targetSpeed_;
+        volatile float currentSpeed_;
 
         // variables for loop
         unsigned long timeLowLevel_;
         unsigned long currentTime_;
-        double dt_ms_;
-        double error_;
-        double PWMcorrection_;
+        float dt_ms_;
+        float error_;
+        float PWMcorrection_;
 
         int basePWMTarget_;
         int newPWMTarget_;

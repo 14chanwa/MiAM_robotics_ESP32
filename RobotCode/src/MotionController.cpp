@@ -44,7 +44,7 @@ miam::trajectory::TrajectoryVector MotionController::getCurrentTrajectories()
     return currentTrajectories_;
 }
 
-double MotionController::getCurvilinearAbscissa()
+float MotionController::getCurvilinearAbscissa()
 {
     return curvilinearAbscissa_;
 }
@@ -84,7 +84,7 @@ bool MotionController::wasTrajectoryFollowingSuccessful()
 }
 
 DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurements const &measurements,
-                                                           double const &dt,
+                                                           float const &dt,
                                                            bool const &hasMatchStarted)
 {
     // Log input
@@ -103,7 +103,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     // Compute slowdown
     // slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.lidarDetection, hasMatchStarted);
     slowDownCoeff_ = 1.0;
-    clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05);
+    clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
 
     changeMotionControllerState();
 
@@ -194,8 +194,8 @@ void MotionController::changeMotionControllerState()
         else if (motionControllerState_ == CONTROLLER_STOP)
         {
             // in seconds
-            double durationSinceFirstStopped = (millis() - timeSinceFirstStopped_) / 1000.0;
-            // double durationSinceLastAvoidance = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - timeSinceLastAvoidance_).count() / 1000.0;
+            float durationSinceFirstStopped = (millis() - timeSinceFirstStopped_) / 1000.0;
+            // float durationSinceLastAvoidance = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - timeSinceLastAvoidance_).count() / 1000.0;
 
             // transition to TRAJECTORY_TRACKING
             if (clampedSlowDownCoeff_ > 0.0 && durationSinceFirstStopped > 0.1)
@@ -329,7 +329,7 @@ void MotionController::changeMotionControllerState()
 
 DrivetrainTarget MotionController::resolveMotionControllerState(
     DrivetrainMeasurements const &measurements,
-    double const &dt,
+    float const &dt,
     bool const &hasMatchStarted
 )
 {
@@ -363,7 +363,7 @@ DrivetrainTarget MotionController::resolveMotionControllerState(
     return target;
 }
 
-// void MotionController::setLowAvoidanceZone(RobotPosition lowAvoidanceCenter, double lowAvoidanceRadius)
+// void MotionController::setLowAvoidanceZone(RobotPosition lowAvoidanceCenter, float lowAvoidanceRadius)
 // {
 //     lowAvoidanceZone_ = std::make_pair(lowAvoidanceCenter, lowAvoidanceRadius);
 //     lowAvoidanceZoneEnabled_ = true;
@@ -376,15 +376,15 @@ DrivetrainTarget MotionController::resolveMotionControllerState(
 // }
 
 
-// double MotionController::minDistancePositionToObstacle(RobotPosition position, bool includePersistentObstacles)
+// float MotionController::minDistancePositionToObstacle(RobotPosition position, bool includePersistentObstacles)
 // {
-//     double minDistanceFromObstacle = 10000;
+//     float minDistanceFromObstacle = 10000;
 
 //     for (auto obstacle : getDetectedObstacles(includePersistentObstacles))
 //     {
 
-//         double tmpMin = (std::get<0>(obstacle) - position).norm() - std::get<1>(obstacle);
-//         double tmpMinEnd = (std::get<0>(obstacle) - position).norm() - std::get<1>(obstacle);
+//         float tmpMin = (std::get<0>(obstacle) - position).norm() - std::get<1>(obstacle);
+//         float tmpMinEnd = (std::get<0>(obstacle) - position).norm() - std::get<1>(obstacle);
 
 //         // distance to center of obstacle minus size of the obstacle
 //         minDistanceFromObstacle = std::min(

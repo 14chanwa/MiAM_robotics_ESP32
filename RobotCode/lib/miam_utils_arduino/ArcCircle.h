@@ -34,29 +34,29 @@
                     /// \param[in] backward If robot should move backward along the trajectory.
                     ArcCircle(TrajectoryConfig const& config,
                               RobotPosition const& startPoint,
-                              double const& radius,
+                              float const& radius,
                               rotationside const& side,
-                              double const& endAngle,
-                              double const& startVelocity=0.0,
-                              double const& endVelocity=0.0,
+                              float const& endAngle,
+                              float const& startVelocity=0.0,
+                              float const& endVelocity=0.0,
                               bool const& backward = false);
 
-                    TrajectoryPoint getCurrentPoint(double const& currentTime);
+                    TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(double const& replanificationTime);
+                    void replanify(float const& replanificationTime);
 
                 private:
-                    void make(RobotPosition const& startPoint, double const& startVelocity); ///< Build (or rebuild) the trajectory.
+                    void make(RobotPosition const& startPoint, float const& startVelocity); ///< Build (or rebuild) the trajectory.
 
                     int movingBackward_; ///< 1 or -1, to indicate if robot is moving forward or backward.
                     int motionSign_; ///< 1 or -1, to indicate if rotation is direct or indirect.
-                    double radius_; ///< Circle radius.
+                    float radius_; ///< Circle radius.
                     RobotPosition circleCenter_; ///< Center of the circle.
                     Trapezoid trapezoid_; ///< Velocity trapezoid.
 
                     rotationside side_; ///< Rotation direction.
-                    double endAngle_; ///< End angle.
-                    double endVelocity_; ///< End velocity.
+                    float endAngle_; ///< End angle.
+                    float endVelocity_; ///< End velocity.
             };
         }
     }

@@ -18,9 +18,9 @@ namespace miam{
             return v;
         }
 
-        double TrajectoryVector::getDuration() const
+        float TrajectoryVector::getDuration() const
         {
-            double duration = 0;
+            float duration = 0;
             for (auto traj : *this)
             {
                 duration += traj->getDuration();
@@ -28,15 +28,15 @@ namespace miam{
             return duration;
         }
 
-        TrajectoryPoint TrajectoryVector::getCurrentPoint(double const& currentTime) const
+        TrajectoryPoint TrajectoryVector::getCurrentPoint(float const& currentTime) const
         {
 
             if (this->empty())
                 return TrajectoryPoint();
 
-            double sum_time = 0;
+            float sum_time = 0;
             for (long unsigned int i = 0; i < this->size(); i++) {
-                double traj_time = this->at(i)->getDuration();
+                float traj_time = this->at(i)->getDuration();
                 if (sum_time + traj_time > currentTime) {
                     return this->at(i)->getCurrentPoint(currentTime - sum_time);
                 }
@@ -54,10 +54,10 @@ namespace miam{
         }
 
 
-        RobotPosition computeCircleCenter(RobotPosition const& startingPosition, double const& radius, rotationside const& side)
+        RobotPosition computeCircleCenter(RobotPosition const& startingPosition, float const& radius, rotationside const& side)
         {
             RobotPosition circleCenter;
-            double centerAngle = startingPosition.theta + M_PI / 2.0;
+            float centerAngle = startingPosition.theta + M_PI / 2.0;
             if(side == rotationside::RIGHT)
                 centerAngle += M_PI;
             circleCenter.x = startingPosition.x + std::abs(radius) * std::cos(centerAngle);
@@ -68,26 +68,26 @@ namespace miam{
         }
 
 
-        double computeShortestAngle(RobotPosition startPoint, RobotPosition endPoint)
+        float computeShortestAngle(RobotPosition startPoint, RobotPosition endPoint)
         {
             // Compute line angle.
-            if (std::abs(endPoint.y - startPoint.y) < std::numeric_limits<double>::epsilon() && std::numeric_limits<double>::epsilon() < 0)
+            if (std::abs(endPoint.y - startPoint.y) < std::numeric_limits<float>::epsilon() && std::numeric_limits<float>::epsilon() < 0)
             {
                 return 0;
             }
 
-            double angle = std::atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+            float angle = std::atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
             // Return value in ]-pi, pi] of the original angle.
             return moduloTwoPi(angle - startPoint.theta);
         }
 
 
-        double distance(RobotPosition const& first, RobotPosition const& second)
+        float distance(RobotPosition const& first, RobotPosition const& second)
         {
             return (first - second).norm();
         }
 
-        double moduloTwoPi(double angle)
+        float moduloTwoPi(float angle)
         {
             angle = std::fmod(angle, 2 * M_PI);
             if (angle <= -M_PI)
@@ -100,7 +100,7 @@ namespace miam{
         TrajectoryVector computeTrajectoryStraightLineToPoint(TrajectoryConfig const& config,
                                                               RobotPosition const& startPosition,
                                                               RobotPosition const& endPosition,
-                                                              double const& endVelocity,
+                                                              float const& endVelocity,
                                                               bool const& backward)
         {
             TrajectoryVector vector;
@@ -114,22 +114,22 @@ namespace miam{
 
         TrajectoryVector computeTrajectoryRoundedCorner(TrajectoryConfig const& config,
                                                         std::vector<RobotPosition> const& positions,
-                                                        double radius,
-                                                        double transitionVelocityFactor,
+                                                        float radius,
+                                                        float transitionVelocityFactor,
                                                         bool backward)
         {
             TrajectoryVector trajectories;
             if(positions.size() < 2)
                 return trajectories;
             // Compute the transition angular velocity.
-            double factor = transitionVelocityFactor;
+            float factor = transitionVelocityFactor;
             if(factor < 0.0)
                 factor = 0.0;
             else if(factor > 1.0)
                 factor = 1.0;
 
-            double transitionLinearVelocity = factor * config.maxWheelVelocity;
-            double transitionAngularVelocity = transitionLinearVelocity / (std::abs(radius) + config.robotWheelSpacing);
+            float transitionLinearVelocity = factor * config.maxWheelVelocity;
+            float transitionAngularVelocity = transitionLinearVelocity / (std::abs(radius) + config.robotWheelSpacing);
 
             // Compute first rotation to be aligned with second point.
             TrajectoryVector straightLine = computeTrajectoryStraightLineToPoint(config, positions.at(0),
@@ -148,19 +148,19 @@ namespace miam{
                 // Find position of the center of the circle.
                 // Get vectors going from the corner to both points.
                 RobotPosition firstVector = startPoint - roundedCornerPoint;
-                double firstNorm = firstVector.norm();
+                float firstNorm = firstVector.norm();
                 firstVector.normalize();
                 RobotPosition secondVector = endPoint - roundedCornerPoint;
-                double secondNorm = secondVector.norm();
+                float secondNorm = secondVector.norm();
                 secondVector.normalize();
 
                 // Find angle between both vectors.
-                double angle = std::acos(firstVector.dot(secondVector));
+                float angle = std::acos(firstVector.dot(secondVector));
 
                 // Get distance from roundedCornerPoint to center along each vector, reducing the radius if it is too large.
-                double coefficient = 1 / std::tan(angle / 2.0);
+                float coefficient = 1 / std::tan(angle / 2.0);
 
-                double circleRadius = std::min(radius, std::min(firstNorm, secondNorm) / coefficient * 0.99);
+                float circleRadius = std::min(radius, std::min(firstNorm, secondNorm) / coefficient * 0.99f);
 
                 // Compute point where the circle intersects both trajectories: get the first point and the
                 // angle.
@@ -181,7 +181,7 @@ namespace miam{
                 }
 
                 // Compute end angle: minus the angle of secondVector.
-                double endAngle = std::atan2(secondVector.y, secondVector.x);
+                float endAngle = std::atan2(secondVector.y, secondVector.x);
                 if(side == rotationside::LEFT)
                     endAngle -= M_PI_2;
                 else
@@ -205,7 +205,7 @@ namespace miam{
             return trajectories;
         }
 
-        TrajectoryVector computeTrajectoryStraightLine(TrajectoryConfig const& config, RobotPosition & position, double const& distance)
+        TrajectoryVector computeTrajectoryStraightLine(TrajectoryConfig const& config, RobotPosition & position, float const& distance)
         {
             RobotPosition endPosition = position + RobotPosition(distance, 0.0, 0.0).rotate(position.theta);
             endPosition.theta = position.theta;

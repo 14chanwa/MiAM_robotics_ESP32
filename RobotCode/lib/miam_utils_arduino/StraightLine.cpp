@@ -10,8 +10,8 @@ namespace miam{
         StraightLine::StraightLine(TrajectoryConfig const& config,
                                    RobotPosition const& startPoint,
                                    RobotPosition const& endPoint,
-                                   double const& startVelocity,
-                                   double const& endVelocity,
+                                   float const& startVelocity,
+                                   float const& endVelocity,
                                    bool const& backward):
             Trajectory(config),
             endPoint_(endPoint),
@@ -23,7 +23,7 @@ namespace miam{
         }
 
 
-        void StraightLine::make(RobotPosition const& startPoint, double const& startVelocity)
+        void StraightLine::make(RobotPosition const& startPoint, float const& startVelocity)
         {
             startPoint_ = startPoint;
             motionSign_ = 1.0;
@@ -31,7 +31,7 @@ namespace miam{
             if(backward_)
                 motionSign_ = -1.0;
             // Create trapezoid.
-            double length = distance(startPoint, endPoint_);
+            float length = distance(startPoint, endPoint_);
             trapezoid_ = Trapezoid(length, startVelocity, endVelocity_, config_.maxWheelVelocity, config_.maxWheelAcceleration);
 
             duration_ = trapezoid_.getDuration();
@@ -49,7 +49,7 @@ namespace miam{
             }
         }
 
-        TrajectoryPoint StraightLine::getCurrentPoint(double const& currentTime)
+        TrajectoryPoint StraightLine::getCurrentPoint(float const& currentTime)
         {
             TrajectoryPoint output;
             output.position = startPoint_;
@@ -65,14 +65,14 @@ namespace miam{
         }
 
 
-        void StraightLine::replanify(double const& replanificationTime)
+        void StraightLine::replanify(float const& replanificationTime)
         {
             RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
             make(startPoint, 0.0);
         }
 
 
-        double StraightLine::getAngle()
+        float StraightLine::getAngle()
         {
             return startPoint_.theta;
         }

@@ -24,13 +24,13 @@
 
                     /// \brief Get trajectory duration, in seconds.
                     /// \return Trajectory duration.
-                    double getDuration() const;
+                    float getDuration() const;
 
                     /// \brief Get trajectory point at current time.
                     ///
                     /// \param[in] currentTime Time relative to trajectory start, in seconds.
                     /// \return The current trajectory point.
-                    TrajectoryPoint getCurrentPoint(double const& currentTime) const;
+                    TrajectoryPoint getCurrentPoint(float const& currentTime) const;
 
                     /// \brief Get the last point of the last trajectory.
                     /// \return The last point of the last trajectory.
@@ -51,7 +51,7 @@
             /// \return Center position, with angle set to match startingPosition angle when computing the coordinates
             ///         of a point along the circle.
             RobotPosition computeCircleCenter(RobotPosition const& startingPosition,
-                                              double const& radius,
+                                              float const& radius,
                                               rotationside const& side);
 
 
@@ -62,18 +62,18 @@
             /// \param[in] startPoint Starting point.
             /// \param[in] startPoint End point.
             /// \return An angle value.
-            double computeShortestAngle(RobotPosition startPoint, RobotPosition endPoint);
+            float computeShortestAngle(RobotPosition startPoint, RobotPosition endPoint);
 
             /// \brief Return the distance between two point.
             ///
             /// \param[in] first First point.
             /// \param[in] second Second point.
             /// \return Euclidean distance between these two points.
-            double distance(RobotPosition const& first, RobotPosition const& second);
+            float distance(RobotPosition const& first, RobotPosition const& second);
 
             /// \brief Return equivalent angle, modulo two pi.
             /// \return angle in ]-pi, pi]
-            double moduloTwoPi(double angle);
+            float moduloTwoPi(float angle);
 
             /// \brief Compute a rotation followed by a straight line to go from the start to end position.
             ///
@@ -88,7 +88,7 @@
             TrajectoryVector computeTrajectoryStraightLineToPoint(TrajectoryConfig const& config,
                                                                   RobotPosition const& startPosition,
                                                                   RobotPosition const& endPosition,
-                                                                  double const& endVelocity = 0.0,
+                                                                  float const& endVelocity = 0.0,
                                                                   bool const& backward = false);
 
             /// \brief Given a list of points, compute a polyline going from the first point to the last, with rounded
@@ -104,8 +104,8 @@
             /// \return Vector of pointer toward the full trajectory.
             TrajectoryVector computeTrajectoryRoundedCorner(TrajectoryConfig const& config,
                                                             std::vector<RobotPosition> const& positions,
-                                                            double radius,
-                                                            double transitionVelocityFactor = 0.5,
+                                                            float radius,
+                                                            float transitionVelocityFactor = 0.5,
                                                             bool backward = false);
 
             /// \brief Compute a simple trajectory: going forward for a given distance.
@@ -117,7 +117,7 @@
             /// \return The trajectory.
             TrajectoryVector computeTrajectoryStraightLine(TrajectoryConfig const& config,
                                                            RobotPosition & position,
-                                                           double const& distance);
+                                                           float const& distance);
         }
     }
 #endif

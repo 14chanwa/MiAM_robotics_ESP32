@@ -18,16 +18,16 @@
             // Config variables, used for trajectory generation.
             struct TrajectoryConfig{
 
-                double maxWheelVelocity = 300.0;    // Wheel max velocity, in mm/s
-                double maxWheelAcceleration = 300.0;  // Wheel max velocity, in mm/s2
-                double robotWheelSpacing = 100.0;  // Wheel spacing, in mm
+                float maxWheelVelocity = 300.0;    // Wheel max velocity, in mm/s
+                float maxWheelAcceleration = 300.0;  // Wheel max velocity, in mm/s2
+                float robotWheelSpacing = 100.0;  // Wheel spacing, in mm
             };
 
             /// \brief A trajectory point, containing everything for servoing along this trajectory.
             struct TrajectoryPoint{
                 RobotPosition position; ///< Trajectory point in the table.
-                double linearVelocity; ///< Linear velocity along the trajectory, at the current point.
-                double angularVelocity; ///< Angular velocity along the trajectory, at the current point.
+                float linearVelocity; ///< Linear velocity along the trajectory, at the current point.
+                float angularVelocity; ///< Angular velocity along the trajectory, at the current point.
 
                 /// \brief Default constructor.
                 TrajectoryPoint();
@@ -42,11 +42,11 @@
                     ///
                     /// \param[in] currentTime Time relative to trajectory start, in seconds.
                     /// \return The current trajectory point.
-                    virtual TrajectoryPoint getCurrentPoint(double const& currentTime) = 0;
+                    virtual TrajectoryPoint getCurrentPoint(float const& currentTime) = 0;
 
                     /// \brief Get trajectory duration, in seconds.
                     /// \return Trajectory duration.
-                    double getDuration();
+                    float getDuration();
 
                     /// \brief Get final point of the trajectory.
                     /// \return Position at duration_
@@ -57,7 +57,7 @@
                     /// \details Given a time t, replanify the trajectory to have a new trajectory
                     ///          starting at getCurrentPoint(t) with zero velocity at time t=0.
                     /// \param[in] replanificationTime Time at which we replanify, in seconds.
-                    virtual void replanify(double const& replanificationTime) = 0;
+                    virtual void replanify(float const& replanificationTime) = 0;
 
                     /// \brief Set trajectory avoidance flag
                     void setAvoidanceEnabled(bool avoidanceEnabled) {
@@ -72,7 +72,7 @@
                     bool isAvoidanceTrajectory_;
                     bool needReplanning_;
                 protected:
-                    double duration_; ///< Trajectory duration.
+                    float duration_; ///< Trajectory duration.
                     TrajectoryConfig config_;
                     bool avoidanceEnabled_;
             };

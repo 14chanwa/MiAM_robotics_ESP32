@@ -2,9 +2,9 @@
 #include <parameters.hpp>
 
 bool MotionController::computeMotorTarget(Trajectory *traj,
-                                          double const &timeInTrajectory,
-                                          double const &dt,
-                                          double const &slowDownRatio,
+                                          float const &timeInTrajectory,
+                                          float const &dt,
+                                          float const &slowDownRatio,
                                           DrivetrainMeasurements const &measurements,
                                           DrivetrainTarget &target)
 {
@@ -29,8 +29,8 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     // Rotate by -theta to express the error in the tangent frame.
     RobotPosition rotatedError = error.rotate(-targetPoint.position.theta);
 
-    double trackingLongitudinalError = rotatedError.x;
-    double trackingTransverseError = rotatedError.y;
+    float trackingLongitudinalError = rotatedError.x;
+    float trackingTransverseError = rotatedError.y;
 
     // Change sign if going backward.
     if (targetPoint.linearVelocity < 0)
@@ -39,7 +39,7 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     // std::cout << "start trackingAngleError" << std::endl;
     // std::cout << "currentPosition " << currentPosition << std::endl;
     // std::cout << "targetPoint " << targetPoint << std::endl;
-    double trackingAngleError = miam::trajectory::moduloTwoPi(currentPosition.theta - targetPoint.position.theta);
+    float trackingAngleError = miam::trajectory::moduloTwoPi(currentPosition.theta - targetPoint.position.theta);
     // std::cout << "end trackingAngleError" << std::endl;
 
     // If we are beyond trajectory end, look to see if we are close enough to the target point to stop.
@@ -62,8 +62,8 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
         targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError, dt);
 
     // Modify angular PID target based on transverse error, if we are going fast enough.
-    double angularPIDError = trackingAngleError;
-    double transverseCorrection = 0.0;
+    float angularPIDError = trackingAngleError;
+    float transverseCorrection = 0.0;
     if (std::abs(targetPoint.linearVelocity) > 0.1 * MAX_WHEEL_SPEED_MM_S)
         transverseCorrection = TRANSVERSE_KP * targetPoint.linearVelocity / MAX_WHEEL_SPEED_MM_S * trackingTransverseError;
     if (targetPoint.linearVelocity < 0)
@@ -86,7 +86,7 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     target.motorSpeed[side::LEFT] = wheelSpeed.left;
 
     // Clamp to maximum speed
-    double const maxAngularVelocity = MAX_WHEEL_SPEED_MM_S / WHEEL_RADIUS_MM;
+    float const maxAngularVelocity = MAX_WHEEL_SPEED_MM_S / WHEEL_RADIUS_MM;
     for (int i = 0; i < 2; i++)
     {
         if (target.motorSpeed[i] > maxAngularVelocity)

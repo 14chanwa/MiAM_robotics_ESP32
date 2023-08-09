@@ -11,10 +11,10 @@ DrivetrainKinematics::DrivetrainKinematics():
 {
 }
 
-DrivetrainKinematics::DrivetrainKinematics(double const& motorWheelRadiusIn,
-                                           double const& motorWheelSpacingIn,
-                                           double const& encoderWheelRadiusIn,
-                                           double const& encoderWheelSpacingIn):
+DrivetrainKinematics::DrivetrainKinematics(float const& motorWheelRadiusIn,
+                                           float const& motorWheelSpacingIn,
+                                           float const& encoderWheelRadiusIn,
+                                           float const& encoderWheelSpacingIn):
         motorWheelRadius_(motorWheelRadiusIn),
         motorWheelSpacing_(motorWheelSpacingIn),
         encoderWheelRadius_(encoderWheelRadiusIn),
@@ -25,8 +25,8 @@ DrivetrainKinematics::DrivetrainKinematics(double const& motorWheelRadiusIn,
 BaseSpeed DrivetrainKinematics::forwardKinematics(WheelSpeed const& wheelSpeedIn, bool const& useEncoders) const
 {
     BaseSpeed speed;
-    double wheelRadius = (useEncoders ? encoderWheelRadius_ : motorWheelRadius_);
-    double wheelSpacing = (useEncoders ? encoderWheelSpacing_ : motorWheelSpacing_);
+    float wheelRadius = (useEncoders ? encoderWheelRadius_ : motorWheelRadius_);
+    float wheelSpacing = (useEncoders ? encoderWheelSpacing_ : motorWheelSpacing_);
 
     // Linear velocity: average of both velocities.
     speed.linear = (wheelSpeedIn.right + wheelSpeedIn.left) / 2.0 * wheelRadius;
@@ -38,8 +38,8 @@ BaseSpeed DrivetrainKinematics::forwardKinematics(WheelSpeed const& wheelSpeedIn
 WheelSpeed DrivetrainKinematics::inverseKinematics(BaseSpeed const& baseSpeedIn, bool const& useEncoders) const
 {
     WheelSpeed speed;
-    double wheelRadius = (useEncoders ? encoderWheelRadius_ : motorWheelRadius_);
-    double wheelSpacing = (useEncoders ? encoderWheelSpacing_ : motorWheelSpacing_);
+    float wheelRadius = (useEncoders ? encoderWheelRadius_ : motorWheelRadius_);
+    float wheelSpacing = (useEncoders ? encoderWheelSpacing_ : motorWheelSpacing_);
 
     speed.right = (baseSpeedIn.linear + wheelSpacing * baseSpeedIn.angular) / wheelRadius;
     speed.left = (baseSpeedIn.linear - wheelSpacing * baseSpeedIn.angular) / wheelRadius;

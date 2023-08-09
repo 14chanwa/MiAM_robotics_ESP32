@@ -10,8 +10,8 @@
         namespace trajectory{
             /// \brief State along the trapezoid (position and velocity).
             struct TrapezoidState{
-                double position; ///< Current position in trapezoid.
-                double velocity; ///< Current velocity in trapezoid.
+                float position; ///< Current position in trapezoid.
+                float velocity; ///< Current velocity in trapezoid.
 
                 /// \brief Default constructor.
                 TrapezoidState():
@@ -39,31 +39,31 @@
                     /// \param[in] endVelocity End velocity, cropped to [0, maxVelocity].
                     /// \param[in] maxVelocity Max velocity along the trapezoid. Only absolute value is taken into account.
                     /// \param[in] maxAcceleration Max acceleration along the trapezoid. Only absolute value is taken into account.
-                    Trapezoid(double const& distance,
-                              double const& startVelocity,
-                              double const& endVelocity,
-                              double maxVelocity,
-                              double maxAcceleration);
+                    Trapezoid(float const& distance,
+                              float const& startVelocity,
+                              float const& endVelocity,
+                              float maxVelocity,
+                              float maxAcceleration);
 
                     /// \brief Get point along the trapezoid curve, at a given time.
                     ///
                     /// \param[in] currentTime Time, in s, since trapezoid following started.
                     /// \return State along the trapezoid.
-                    TrapezoidState getState(double const& currentTime);
+                    TrapezoidState getState(float const& currentTime);
 
                     /// \brief Get trapezoid duration, in seconds.
                     /// \return Trapezoid duration.
-                    double getDuration();
+                    float getDuration();
 
                 private:
-                    double duration_;     ///< Trapezoid duration.
-                    double maxVelocity_;     ///< Maximum velocity.
-                    double maxAcceleration_; ///< Maximum acceleration.
-                    double startVelocity_; ///< Velocity at which the trajectory starts.
-                    double length_; ///< Trapezoid length.
-                    double timeToStopAccelerating_; ///< When to stop accelerating.
-                    double timeToStartDecelerating_; ///< When to start decelerating.
-                    double accelerationDistance_;    ///< Distance traveled during acceleration phase.
+                    float duration_;     ///< Trapezoid duration.
+                    float maxVelocity_;     ///< Maximum velocity.
+                    float maxAcceleration_; ///< Maximum acceleration.
+                    float startVelocity_; ///< Velocity at which the trajectory starts.
+                    float length_; ///< Trapezoid length.
+                    float timeToStopAccelerating_; ///< When to stop accelerating.
+                    float timeToStartDecelerating_; ///< When to start decelerating.
+                    float accelerationDistance_;    ///< Distance traveled during acceleration phase.
             };
         }
     }

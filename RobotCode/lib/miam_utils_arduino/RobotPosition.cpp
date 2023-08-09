@@ -16,7 +16,7 @@ namespace miam{
     }
 
 
-    RobotPosition::RobotPosition(double const& xIn, double const& yIn, double const& thetaIn):
+    RobotPosition::RobotPosition(float const& xIn, float const& yIn, float const& thetaIn):
         x(xIn),
         y(yIn),
         theta(thetaIn)
@@ -37,19 +37,19 @@ namespace miam{
     }
 
 
-    RobotPosition operator*(double const& scalar, RobotPosition const& p1)
+    RobotPosition operator*(float const& scalar, RobotPosition const& p1)
     {
         return RobotPosition(scalar * p1.x, scalar * p1.y, scalar * p1.theta);
     }
 
 
-    RobotPosition operator*(RobotPosition const& p1, double const& scalar)
+    RobotPosition operator*(RobotPosition const& p1, float const& scalar)
     {
         return RobotPosition(scalar * p1.x, scalar * p1.y, scalar * p1.theta);
     }
 
 
-    RobotPosition operator/(RobotPosition const& p1, double const& scalar)
+    RobotPosition operator/(RobotPosition const& p1, float const& scalar)
     {
         if(std::abs(scalar) < 1e-6)
             return p1;
@@ -57,7 +57,7 @@ namespace miam{
     }
 
 
-    double RobotPosition::norm() const
+    float RobotPosition::norm() const
     {
         return std::sqrt(x *x + y * y);
     }
@@ -65,7 +65,7 @@ namespace miam{
 
     void RobotPosition::normalize()
     {
-        double n = norm();
+        float n = norm();
         if(std::abs(n) > 1e-6)
         {
             x /= n;
@@ -74,13 +74,13 @@ namespace miam{
     }
 
 
-    double RobotPosition::dot(RobotPosition const& secondVector) const
+    float RobotPosition::dot(RobotPosition const& secondVector) const
     {
         return x * secondVector.x + y * secondVector.y;
     }
 
 
-    double RobotPosition::cross(RobotPosition const& secondVector) const
+    float RobotPosition::cross(RobotPosition const& secondVector) const
     {
         return  x * secondVector.y - y * secondVector.x;
     }
@@ -95,7 +95,7 @@ namespace miam{
     }
 
 
-    RobotPosition RobotPosition::rotate(double const& thetaIn)
+    RobotPosition RobotPosition::rotate(float const& thetaIn)
     {
         RobotPosition p;
         p.theta = this-> theta + thetaIn;

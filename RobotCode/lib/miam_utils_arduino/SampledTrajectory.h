@@ -21,12 +21,12 @@
                     SampledTrajectory(
                         TrajectoryConfig const& config,
                         std::vector<TrajectoryPoint > sampledTrajectory,
-                        double duration
+                        float duration
                         );
 
-                    TrajectoryPoint getCurrentPoint(double const& currentTime);
+                    TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(double const& replanificationTime);
+                    void replanify(float const& replanificationTime);
 
                     void removePoints(int n);
 

@@ -9,11 +9,11 @@ namespace miam{
     namespace trajectory{
         ArcCircle::ArcCircle(TrajectoryConfig const& config,
                              RobotPosition const& startPoint,
-                             double const& radius,
+                             float const& radius,
                              rotationside const& side,
-                             double const& endAngle,
-                             double const& startVelocity,
-                             double const& endVelocity,
+                             float const& endAngle,
+                             float const& startVelocity,
+                             float const& endVelocity,
                              bool const& backward):
             Trajectory(config),
             movingBackward_(1.0),
@@ -28,7 +28,7 @@ namespace miam{
             make(startPoint, startVelocity);
         }
 
-        TrajectoryPoint ArcCircle::getCurrentPoint(double const& currentTime)
+        TrajectoryPoint ArcCircle::getCurrentPoint(float const& currentTime)
         {
             TrajectoryPoint output;
             output.position = circleCenter_;
@@ -47,7 +47,7 @@ namespace miam{
             return output;
         }
 
-        void ArcCircle::make(RobotPosition const& startPoint, double const& startVelocity)
+        void ArcCircle::make(RobotPosition const& startPoint, float const& startVelocity)
         {
              motionSign_ = 1.0;
 
@@ -56,7 +56,7 @@ namespace miam{
             circleCenter_ = computeCircleCenter(startPoint, radius_, side_);
 
             // Compute angle of travel along the circle.
-            double travelAngle = moduloTwoPi(endAngle_ - circleCenter_.theta);
+            float travelAngle = moduloTwoPi(endAngle_ - circleCenter_.theta);
             // Give it the correct sign, based on desired direction and rotation side.
             if(side_ == rotationside::RIGHT)
                 motionSign_ = -1.0;
@@ -75,15 +75,15 @@ namespace miam{
             }
 
             // Compute trapezoid.
-            double maxAngularVelocity = config_.maxWheelVelocity / (radius_ + config_.robotWheelSpacing);
-            double maxAngularAcceleration = config_.maxWheelAcceleration / (radius_ + config_.robotWheelSpacing);
+            float maxAngularVelocity = config_.maxWheelVelocity / (radius_ + config_.robotWheelSpacing);
+            float maxAngularAcceleration = config_.maxWheelAcceleration / (radius_ + config_.robotWheelSpacing);
             trapezoid_ = Trapezoid(travelAngle, startVelocity, endVelocity_, maxAngularVelocity, maxAngularAcceleration);
 
             duration_ = trapezoid_.getDuration();
         }
 
 
-        void ArcCircle::replanify(double const& replanificationTime)
+        void ArcCircle::replanify(float const& replanificationTime)
         {
             RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
             make(startPoint, 0.0);

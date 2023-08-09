@@ -15,7 +15,7 @@ namespace miam{
     }
 
 
-    PID::PID(double const& Kp, double const& Kd, double const& Ki, double const& maxIntegral):
+    PID::PID(float const& Kp, float const& Kd, float const& Ki, float const& maxIntegral):
         Kp_(Kp),
         Kd_(Kd),
         Ki_(Ki),
@@ -28,10 +28,10 @@ namespace miam{
     }
 
 
-    double PID::computeValue(double const& error, double const& dt)
+    float PID::computeValue(float const& error, float const& dt)
     {
         // Compute derivative.
-        double derivative = 0.0;
+        float derivative = 0.0;
         if(dt > 1e-6)
             derivative = (error - previousError_) / dt;
 
@@ -39,7 +39,7 @@ namespace miam{
     }
 
 
-    double PID::computeValue(double const& error, double const& errorDerivative, double const& dt)
+    float PID::computeValue(float const& error, float const& errorDerivative, float const& dt)
     {
         previousError_ = error;
 
@@ -58,19 +58,19 @@ namespace miam{
     }
 
 
-    void PID::resetIntegral(double const& value)
+    void PID::resetIntegral(float const& value)
     {
         integral_ = value;
     }
 
 
-    double PID::getCorrection()
+    float PID::getCorrection()
     {
         return lastCorrection_;
     }
 
 
-    double PID::getIntegral()
+    float PID::getIntegral()
     {
         return integral_;
     }
