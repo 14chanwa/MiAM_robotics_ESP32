@@ -15,8 +15,7 @@ void task_blink_led(void* parameters);
 
 // monitor battery
 
-void run_monitor_battery();
-void task_monitor_battery(void* parameters);
+void monitor_battery();
 void print_battery();
 float get_current_battery_reading();
 float get_min_battery_reading();

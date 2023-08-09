@@ -55,6 +55,7 @@
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
+#define MAX_WHEEL_ACCELERATION_MM_S 250.0
 
 /////////////////////////////////////////////
 // Motion controller specs

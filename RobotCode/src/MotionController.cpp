@@ -1,6 +1,8 @@
 #include <MotionController.hpp>
 #include <parameters.hpp>
 
+// #define DEBUG_MOTIONCONTROLLER_CPP
+
 MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial) : currentPosition_(),
                                         newTrajectories_(),
                                         currentTrajectories_(),
@@ -88,8 +90,8 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     // Log input
     currentTime_ += dt;
     WheelSpeed wheelIncrementRad(measurements.motorSpeed);
-    wheelIncrementRad.left *= LOW_LEVEL_LOOP_TIME_MS / 1000.0;
-    wheelIncrementRad.right *= LOW_LEVEL_LOOP_TIME_MS / 1000.0;
+    wheelIncrementRad.left *= dt;
+    wheelIncrementRad.right *= dt;
 
     // Odometry
     kinematics_.integratePosition(wheelIncrementRad, currentPosition_);
@@ -308,6 +310,7 @@ void MotionController::changeMotionControllerState()
                 next = "WAIT_FOR_TRAJECTORY";
             }
 
+#ifdef DEBUG_MOTIONCONTROLLER_CPP
             // textlog << "[MotionController] State changed: from " << current << " to " << next << std::endl;
             if (xSemaphoreTake(*xMutex_Serial_, portMAX_DELAY))
             {
@@ -317,6 +320,7 @@ void MotionController::changeMotionControllerState()
                 Serial.println(next.c_str());
                 xSemaphoreGive(*xMutex_Serial_);  // release the mutex
             }
+#endif
         }
 
         motionControllerState_ = nextMotionControllerState;

@@ -15,32 +15,12 @@ bool MA_inited = false;
 float batReading = 0;
 float minBatReading = 100;
 
-
-void run_monitor_battery()
+void monitor_battery()
 {
-    analogReadResolution(12);
-    analogSetAttenuation(ADC_6db);
-
-    xTaskCreate(
-        task_monitor_battery, 
-        "task_monitor_battery",
-        1000,
-        NULL,
-        1,
-        NULL
-    ); 
-}
-
-void task_monitor_battery(void* parameters)
-{
-  for(;;)
-  {
-    AN_Pot1_Raw = analogReadMilliVolts(BAT_READING);
-    // batReading_unfiltered = AN_Pot1_Raw * (RESISTOR_R1 + RESISTOR_R2) / R2 / 1000.0;
-    batReading = readADC_Avg(AN_Pot1_Raw) * (RESISTOR_R1 + RESISTOR_R2) / RESISTOR_R2 / 1000.0;
-    minBatReading = std::min(minBatReading, batReading);
-    vTaskDelay(10.0 / portTICK_PERIOD_MS);
-  }    
+  AN_Pot1_Raw = analogReadMilliVolts(BAT_READING);
+  // batReading_unfiltered = AN_Pot1_Raw * (RESISTOR_R1 + RESISTOR_R2) / R2 / 1000.0;
+  batReading = readADC_Avg(AN_Pot1_Raw) * (RESISTOR_R1 + RESISTOR_R2) / RESISTOR_R2 / 1000.0;
+  minBatReading = std::min(minBatReading, batReading);
 }
 
 void print_battery()

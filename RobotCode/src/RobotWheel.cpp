@@ -91,6 +91,7 @@ void RobotWheel::updateMotorControl()
         // convert from rad/s to 0-255
         basePWMTarget_ = target_rad_s_to_pwm_command(targetSpeed_);
         newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
+        newPWMTarget_ = (newPWMTarget_ > 0 ? 1 : -1) * std::min(std::abs(newPWMTarget_), 255);
 
         if (newPWMTarget_ >= 0)
         {
