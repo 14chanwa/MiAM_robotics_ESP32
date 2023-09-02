@@ -11,7 +11,7 @@ class RobotWheel
         RobotWheel(
             uint8_t pinEnable, uint8_t pinIN1, uint8_t pinIN2, 
             uint8_t pinEncoderA, uint8_t pinEncoderB,
-            std::string prefix);
+            std::string prefix, uint8_t pwmChannel);
         
         // set target speed in rad/s
         void setWheelSpeed(float speed);
@@ -30,8 +30,6 @@ class RobotWheel
         // low level loop functions
         void updateMotorControl();
         void updateEncoderSpeed();
-
-    private:
 
         void printPrefix(const char* value_name);
         std::string prefix_;

@@ -51,7 +51,7 @@
 #define RAD_S_TO_RPM(VALUE) (VALUE * 60.0f / (2.0f * M_PI))
 
 // give 20% overhead
-#define MAX_SPEED_RPM (0.8 * MOTOR_RATED_RPM)
+#define MAX_SPEED_RPM (MOTOR_RATED_RPM)
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
@@ -70,7 +70,7 @@
 #define MOTOR_TARGET_CONTROL_B 20
 #define MOTOR_TARGET_CONTROL_A 0.52f
 // offset will be applied if targetSpeed (rad/s) is above threshold
-#define MOTOR_ST0P_THRESHOLD_RAD_S 0.1f
+#define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
 #define VELOCITY_KP 0.5f

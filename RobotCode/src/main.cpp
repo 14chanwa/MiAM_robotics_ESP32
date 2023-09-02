@@ -12,6 +12,7 @@
 #include <WiFi.h>
 #include <secret.hpp>
 
+#define ENABLE_OTA_UPDATE
 #define SEND_TELEPLOT_UDP
 
 #ifdef SEND_TELEPLOT_UDP
@@ -28,6 +29,18 @@
   }
 #endif
 
+#ifdef ENABLE_OTA_UPDATE
+  #include <ESPAsyncWebServer.h>
+  #include <AsyncElegantOTA.h>
+
+  AsyncWebServer server(80);
+  const char* PARAM_MESSAGE = "message";
+
+  void notFound(AsyncWebServerRequest *request) {
+      request->send(404, "text/plain", "Not found");
+  }
+#endif
+
 void initWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
@@ -37,6 +50,42 @@ void initWiFi() {
     delay(1000);
   }
   Serial.println(WiFi.localIP());
+  delay(1000);
+
+  #ifdef ENABLE_OTA_UPDATE
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "Hello, world");
+    });
+
+    // Send a GET request to <IP>/get?message=<message>
+    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        String message;
+        if (request->hasParam(PARAM_MESSAGE)) {
+            message = request->getParam(PARAM_MESSAGE)->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, GET: " + message);
+    });
+
+    // Send a POST request to <IP>/post with a form field message set to <message>
+    server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
+        String message;
+        if (request->hasParam(PARAM_MESSAGE, true)) {
+            message = request->getParam(PARAM_MESSAGE, true)->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, POST: " + message);
+    });
+
+    server.onNotFound(notFound);
+
+    AsyncElegantOTA.begin(&server);
+    server.begin();
+
+    delay(1000);
+    #endif
 }
 
 using namespace miam;
@@ -91,6 +140,15 @@ void printToSerial(void* parameters)
       sendTelemetry("dt_period_ms", dt_period_ms);
       sendTelemetry("dt_lowLevel_ms", dt_lowLevel_ms);
       sendTelemetry("battery_reading", get_current_battery_reading());
+      sendTelemetry("rightWheelCurrentSpeed", rightRobotWheel->currentSpeed_);
+      sendTelemetry("rightWheelTargetSpeed", rightRobotWheel->targetSpeed_);
+      sendTelemetry("leftWheelCurrentSpeed", leftRobotWheel->currentSpeed_);
+      sendTelemetry("leftWheelTargetSpeed", leftRobotWheel->targetSpeed_);
+      sendTelemetry("leftBasePWMTarget", leftRobotWheel->basePWMTarget_);
+      sendTelemetry("leftNewPWMTarget", leftRobotWheel->newPWMTarget_);
+      sendTelemetry("rightBasePWMTarget", rightRobotWheel->basePWMTarget_);
+      sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
+
     #else
 
     if (xSemaphoreTake(xMutex_Serial, portMAX_DELAY))
@@ -192,9 +250,24 @@ TrajectoryConfig tc;
 
 void setup()
 {
-  // start heartbeat
+  // initially motors should be stopped
+  digitalWrite(EN_A, LOW);
+  digitalWrite(EN_B, LOW);
+
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  Serial.begin(115200);
+  Serial.println("Attempt connect WiFi");
+
+  // blue LED constant ON until wifi is enabled
   ledcAttachPin(LED_BUILTIN, 0);
   ledcSetup(0, 1000, 8);
+  ledcWrite(0, 32);
+  
+  // connect wifi
+  initWiFi();
+
+  // start heartbeat
   xTaskCreatePinnedToCore(
       task_blink_led, 
       "task_blink_led",
@@ -205,20 +278,8 @@ void setup()
       1 // pin to core 1
   ); 
 
-  // initially motors should be stopped
-  digitalWrite(EN_A, LOW);
-  digitalWrite(EN_B, LOW);
-
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  Serial.begin(115200);
-  Serial.println("Attempt connect WiFi");
-  
-  // connect wifi
-  initWiFi();
-
-  leftRobotWheel = new RobotWheel(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "left_");
-  rightRobotWheel = new RobotWheel(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "right_");
+  leftRobotWheel = new RobotWheel(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "left_", 2);
+  rightRobotWheel = new RobotWheel(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "right_", 4);
   
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
 
@@ -262,8 +323,8 @@ void setup()
       0 // pin to core 0
   ); 
 
-  tc.maxWheelVelocity = MAX_WHEEL_SPEED_MM_S * 0.7;
-  tc.maxWheelAcceleration = MAX_WHEEL_ACCELERATION_MM_S * 0.7;
+  tc.maxWheelVelocity = MAX_WHEEL_SPEED_MM_S * 0.9;
+  tc.maxWheelAcceleration = MAX_WHEEL_ACCELERATION_MM_S * 0.9;
   tc.robotWheelSpacing = WHEEL_SPACING_MM;
 
   vTaskDelay(1000 / portTICK_PERIOD_MS);

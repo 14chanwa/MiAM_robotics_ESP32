@@ -33,7 +33,8 @@ float encoder_pulse_s_to_rad_s(float encoder_ticks_s)
 RobotWheel::RobotWheel(
     uint8_t pinEnable, uint8_t pinIN1, uint8_t pinIN2, 
             uint8_t pinEncoderA, uint8_t pinEncoderB,
-            std::string prefix) :
+            std::string prefix,
+            uint8_t pwmChannel) :
             pinEncoderA_(pinEncoderA), pinEncoderB_(pinEncoderB),
             prefix_(prefix),
             // explicitely initialize volatile values
@@ -44,7 +45,8 @@ RobotWheel::RobotWheel(
     motorDriver = new L298N(
         pinEnable, 
         pinIN1, 
-        pinIN2
+        pinIN2,
+        pwmChannel
     );
     motorPID = new miam::PID(
         VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 
