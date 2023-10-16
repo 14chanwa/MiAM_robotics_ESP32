@@ -135,8 +135,14 @@ void printToSerial(void* parameters)
 
     #ifdef SEND_TELEPLOT_UDP
 
-      sendTelemetry("targetSpeed.linear", motionController->targetSpeed_.linear);
-      sendTelemetry("targetSpeed.angular", motionController->targetSpeed_.angular);
+      sendTelemetry("targetPoint.linear", motionController->targetPoint.linearVelocity);
+      sendTelemetry("targetPoint.angular", motionController->targetPoint.angularVelocity);
+      sendTelemetry("currentPosition.x", motionController->currentPosition_.x);
+      sendTelemetry("currentPosition.y", motionController->currentPosition_.y);
+      sendTelemetry("currentPosition.theta", motionController->currentPosition_.theta);
+      sendTelemetry("targetPosition.x", motionController->targetPoint.position.x);
+      sendTelemetry("targetPosition.y", motionController->targetPoint.position.y);
+      sendTelemetry("targetPosition.theta", motionController->targetPoint.position.theta);
       sendTelemetry("dt_period_ms", dt_period_ms);
       sendTelemetry("dt_lowLevel_ms", dt_lowLevel_ms);
       sendTelemetry("battery_reading", get_current_battery_reading());
@@ -340,11 +346,11 @@ void loop()
   targetPosition.x += 500;
 
   traj.clear();
-  std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition));
+  std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
   traj.push_back(sl);
   std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
   traj.push_back(pt);
-  std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition));
+  std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition, 0.0, 0.0, false));
   traj.push_back(sl2);
   std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
   traj.push_back(pt2);

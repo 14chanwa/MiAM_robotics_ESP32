@@ -7,9 +7,10 @@ int target_rad_s_to_pwm_command(float speed_rad_s)
     int absValue = 
         std::min(
             (std::abs(speed_rad_s) > MOTOR_ST0P_THRESHOLD_RAD_S ? MOTOR_TARGET_CONTROL_B : 0) + // feedforward control
-            + (int)(
+            + 
+            (int)(
                 std::abs(RAD_S_TO_RPM(speed_rad_s)) 
-                    * 255.0 / MAX_SPEED_RPM // scale 255 to max RPM
+                    * 255.0f / MAX_SPEED_RPM // scale 255 to max RPM
                     * MOTOR_TARGET_CONTROL_A // comes from experience
                 ), 
             255 // cap to 255
@@ -69,7 +70,7 @@ void RobotWheel::setWheelSpeed(float speed)
     targetSpeed_ = speed;
 
     // reset PID integral if target speed is zero to stop robot
-    if (std::abs(speed) < 1e-6)
+    if (std::abs(speed) < 1e-3)
     {
         motorPID->resetIntegral();
     }
