@@ -13,23 +13,11 @@
 #include <Trajectory.h>
 #include <Utilities.h>
 #include <PID.h>
+#include "RobotParameters.hpp"
+#include "AbstractRobotBase.hpp"
 
 using namespace miam;
 using namespace miam::trajectory;
-
-namespace side{
-    int const RIGHT = 0;
-    int const LEFT = 1;
-}
-
-typedef struct {
-    Vector2 motorSpeed = Vector2::Zero(); ///<< Target motor speed, in rad/s
-} DrivetrainTarget;
-
-typedef struct {
-    Vector2 motorSpeed; ///<< Measured motor speed, in rad/s
-    // std::deque<DetectedRobot> lidarDetection; ///< Robots detected by the lidar.
-} DrivetrainMeasurements;
 
 
 enum MotionControllerState {
@@ -44,7 +32,7 @@ class MotionController
 {
 
     public:
-        MotionController(SemaphoreHandle_t* xMutex_Serial);
+        MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters);
 
         /// \brief Initialize the system - this also starts the logger.
         /// \param[in] RobotPosition Starting position
@@ -118,6 +106,7 @@ class MotionController
 
         float curvilinearAbscissa_; ///< Curvilinear abscissa of the current trajectory.
         DrivetrainKinematics kinematics_;
+        RobotParameters parameters_;
 
         // Tracking PIDs
         miam::PID PIDLinear_; ///< Longitudinal PID.

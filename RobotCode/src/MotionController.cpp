@@ -3,17 +3,19 @@
 
 // #define DEBUG_MOTIONCONTROLLER_CPP
 
-MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial) : currentPosition_(),
+MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters) : 
+                                        currentPosition_(),
                                         newTrajectories_(),
                                         currentTrajectories_(),
                                         wasTrajectoryFollowingSuccessful_(true),
                                         curvilinearAbscissa_(0.0),
-                                        xMutex_Serial_(xMutex_Serial)
+                                        xMutex_Serial_(xMutex_Serial),
+                                        parameters_(parameters)
 {
-    kinematics_ = DrivetrainKinematics(WHEEL_RADIUS_MM,
-                                       WHEEL_SPACING_MM,
-                                       WHEEL_RADIUS_MM,
-                                       WHEEL_SPACING_MM);
+    kinematics_ = DrivetrainKinematics(parameters_.wheelRadius,
+                                       parameters_.wheelSpacing,
+                                       parameters_.wheelRadius,
+                                       parameters_.wheelSpacing);
 
     // Set initial positon.
     RobotPosition initialPosition;

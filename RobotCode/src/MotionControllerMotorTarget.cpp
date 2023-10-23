@@ -64,8 +64,8 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     // Modify angular PID target based on transverse error, if we are going fast enough.
     float angularPIDError = trackingAngleError;
     float transverseCorrection = 0.0;
-    if (std::abs(targetPoint.linearVelocity) > 0.1 * MAX_WHEEL_SPEED_MM_S)
-        transverseCorrection = TRANSVERSE_KP * targetPoint.linearVelocity / MAX_WHEEL_SPEED_MM_S * trackingTransverseError;
+    if (std::abs(targetPoint.linearVelocity) > 0.1 * parameters_.maxWheelSpeed)
+        transverseCorrection = TRANSVERSE_KP * targetPoint.linearVelocity / parameters_.maxWheelSpeed * trackingTransverseError;
     if (targetPoint.linearVelocity < 0)
         transverseCorrection = -transverseCorrection;
     angularPIDError += transverseCorrection;
@@ -86,7 +86,7 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     target.motorSpeed[side::LEFT] = wheelSpeed.left;
 
     // Clamp to maximum speed
-    float const maxAngularVelocity = MAX_WHEEL_SPEED_MM_S / WHEEL_RADIUS_MM;
+    float const maxAngularVelocity = parameters_.maxWheelSpeed / parameters_.wheelRadius;
     for (int i = 0; i < 2; i++)
     {
         if (target.motorSpeed[i] > maxAngularVelocity)

@@ -2,7 +2,6 @@
 #define _TASKS_HEADER
 
 #include <parameters.hpp>
-#include <RobotWheel.hpp>
 
 /////////////////////////////////////////////
 // Tasks
@@ -27,7 +26,7 @@ float get_min_battery_reading();
 
 // // low level loop
 
-// void run_low_level_loop(RobotWheel* motor);
+// void run_low_level_loop(RobotWheelDC* motor);
 // void task_low_level_loop(void* parameters);
 // void task_print_low_level(void* parameters);
 

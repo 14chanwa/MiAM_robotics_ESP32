@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <parameters.hpp>
 #include <tasks.hpp>
-#include <RobotWheel.hpp>
 #include <DrivetrainKinematics.h>
 #include <RobotPosition.h>
 #include <Trajectory.h>
@@ -11,6 +10,8 @@
 #include <MotionController.hpp>
 #include <WiFi.h>
 #include <secret.hpp>
+
+#include <RobotBaseDC.hpp>
 
 #define ENABLE_OTA_UPDATE
 #define SEND_TELEPLOT_UDP
@@ -92,17 +93,10 @@ using namespace miam;
 using namespace miam::trajectory;
 
 // RobotWheels
-RobotWheel* leftRobotWheel;
-RobotWheel* rightRobotWheel;
+AbstractRobotBase* robotBase;
 
 // Motion controller
 MotionController* motionController;
-
-// Kinematics
-DrivetrainKinematics kinematics = DrivetrainKinematics(WHEEL_RADIUS_MM,
-                                       WHEEL_SPACING_MM,
-                                       WHEEL_RADIUS_MM,
-                                       WHEEL_SPACING_MM);
 
 // low level loop timing
 float dt_lowLevel_ms = 0.0;
@@ -117,16 +111,6 @@ DrivetrainTarget target;
 
 // Serial semaphore
 SemaphoreHandle_t xMutex_Serial = NULL;
-
-void IRAM_ATTR encoderInterruptLeft()
-{
-  leftRobotWheel->handleEncoderInterrupt();
-}
-
-void IRAM_ATTR encoderInterruptRight()
-{
-  rightRobotWheel->handleEncoderInterrupt();
-}
 
 void printToSerial(void* parameters)
 {
@@ -146,14 +130,14 @@ void printToSerial(void* parameters)
       sendTelemetry("dt_period_ms", dt_period_ms);
       sendTelemetry("dt_lowLevel_ms", dt_lowLevel_ms);
       sendTelemetry("battery_reading", get_current_battery_reading());
-      sendTelemetry("rightWheelCurrentSpeed", rightRobotWheel->currentSpeed_);
-      sendTelemetry("rightWheelTargetSpeed", rightRobotWheel->targetSpeed_);
-      sendTelemetry("leftWheelCurrentSpeed", leftRobotWheel->currentSpeed_);
-      sendTelemetry("leftWheelTargetSpeed", leftRobotWheel->targetSpeed_);
-      sendTelemetry("leftBasePWMTarget", leftRobotWheel->basePWMTarget_);
-      sendTelemetry("leftNewPWMTarget", leftRobotWheel->newPWMTarget_);
-      sendTelemetry("rightBasePWMTarget", rightRobotWheel->basePWMTarget_);
-      sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
+      sendTelemetry("rightWheelCurrentSpeed", robotBase->getRightWheel()->currentSpeed_);
+      sendTelemetry("rightWheelTargetSpeed", robotBase->getRightWheel()->targetSpeed_);
+      sendTelemetry("leftWheelCurrentSpeed", robotBase->getLeftWheel()->currentSpeed_);
+      sendTelemetry("leftWheelTargetSpeed", robotBase->getLeftWheel()->targetSpeed_);
+      // sendTelemetry("leftBasePWMTarget", leftRobotWheel->basePWMTarget_);
+      // sendTelemetry("leftNewPWMTarget", leftRobotWheel->newPWMTarget_);
+      // sendTelemetry("rightBasePWMTarget", rightRobotWheel->basePWMTarget_);
+      // sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
 
     #else
 
@@ -209,10 +193,8 @@ void performLowLevel(void* parameters)
     
     // update sensors
     monitor_battery();
-    leftRobotWheel->updateEncoderSpeed();
-    rightRobotWheel->updateEncoderSpeed();
-    measurements.motorSpeed[side::LEFT] = leftRobotWheel->getWheelSpeed();
-    measurements.motorSpeed[side::RIGHT] = rightRobotWheel->getWheelSpeed();
+    robotBase->updateSensors();
+    measurements = robotBase->getMeasurements();
 
     // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
     if (motionController->isPlayingRightSide_)
@@ -231,18 +213,14 @@ void performLowLevel(void* parameters)
     // invert kinematics
     if (motionController->isPlayingRightSide_)
     {
-      leftRobotWheel->setWheelSpeed(target.motorSpeed[side::RIGHT]);
-      rightRobotWheel->setWheelSpeed(target.motorSpeed[side::LEFT]);
+      float leftSpeed = target.motorSpeed[side::LEFT];
+      target.motorSpeed[side::LEFT] = target.motorSpeed[side::RIGHT];
+      target.motorSpeed[side::RIGHT] = leftSpeed;
     }
-    else
-    {
-      leftRobotWheel->setWheelSpeed(target.motorSpeed[side::LEFT]);
-      rightRobotWheel->setWheelSpeed(target.motorSpeed[side::RIGHT]);
-    }
+    robotBase->setBaseSpeed(target);
 
     // update motor control
-    leftRobotWheel->updateMotorControl();
-    rightRobotWheel->updateMotorControl();
+    robotBase->updateControl();
 
     timeEndLoop = micros();
     dt_lowLevel_ms = (timeEndLoop - timeStartLoop) / 1000.0;
@@ -284,12 +262,11 @@ void setup()
       1 // pin to core 1
   ); 
 
-  leftRobotWheel = new RobotWheel(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "left_", 2);
-  rightRobotWheel = new RobotWheel(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "right_", 4);
+  robotBase = RobotBaseDC::getInstance();
   
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
 
-  motionController = new MotionController(&xMutex_Serial);
+  motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
 
   // monitor battery
@@ -299,15 +276,7 @@ void setup()
 
   // interupts have to be handled outside low level loop
   // since they are declared in setup, they are attached to core1
-  pinMode(leftRobotWheel->pinEncoderA_, INPUT_PULLUP);
-  pinMode(leftRobotWheel->pinEncoderB_, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(leftRobotWheel->pinEncoderA_), encoderInterruptLeft, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(leftRobotWheel->pinEncoderB_), encoderInterruptLeft, CHANGE);
-
-  pinMode(rightRobotWheel->pinEncoderA_, INPUT_PULLUP);
-  pinMode(rightRobotWheel->pinEncoderB_, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(rightRobotWheel->pinEncoderA_), encoderInterruptRight, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(rightRobotWheel->pinEncoderB_), encoderInterruptRight, CHANGE);
+  robotBase->setup();
 
   xTaskCreatePinnedToCore(
       performLowLevel, 
