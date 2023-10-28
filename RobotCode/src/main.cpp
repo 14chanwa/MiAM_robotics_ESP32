@@ -12,9 +12,13 @@
 #include <secret.hpp>
 
 #include <RobotBaseDC.hpp>
+#include <RobotBaseStepper.hpp>
 
 #define ENABLE_OTA_UPDATE
 #define SEND_TELEPLOT_UDP
+
+#define USE_DC_MOTORS
+// #define USE_STEPPER_MOTORS
 
 #ifdef SEND_TELEPLOT_UDP
   #include <WiFiUdp.h>
@@ -139,6 +143,15 @@ void printToSerial(void* parameters)
       // sendTelemetry("rightBasePWMTarget", rightRobotWheel->basePWMTarget_);
       // sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
 
+      #ifdef USE_STEPPER_MOTORS
+      sendTelemetry("leftEncoderValue", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->encoderValue_);
+      sendTelemetry("rightEncoderValue", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->encoderValue_);
+      sendTelemetry("leftBaseTarget", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->baseTarget_);
+      sendTelemetry("leftNewTarget", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->newTarget_);
+      sendTelemetry("rightBaseTarget", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->baseTarget_);
+      sendTelemetry("rightNewTarget", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->newTarget_);
+      #endif
+
     #else
 
     if (xSemaphoreTake(xMutex_Serial, portMAX_DELAY))
@@ -193,7 +206,9 @@ void performLowLevel(void* parameters)
     
     // update sensors
     monitor_battery();
+    // Serial.println("Update sensors");
     robotBase->updateSensors();
+    // Serial.println("Get measurements");
     measurements = robotBase->getMeasurements();
 
     // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
@@ -204,6 +219,7 @@ void performLowLevel(void* parameters)
         measurements.motorSpeed[side::LEFT] = temp;
     }
 
+    // Serial.println("Compute drivetrain motion");
     target = motionController->computeDrivetrainMotion(
       measurements, 
       dt_period_ms / 1000.0, 
@@ -217,11 +233,15 @@ void performLowLevel(void* parameters)
       target.motorSpeed[side::LEFT] = target.motorSpeed[side::RIGHT];
       target.motorSpeed[side::RIGHT] = leftSpeed;
     }
+
+    // Serial.println("Set base speed");
     robotBase->setBaseSpeed(target);
 
     // update motor control
+    // Serial.println("Update motor control");
     robotBase->updateControl();
 
+    // Serial.println("Register time");
     timeEndLoop = micros();
     dt_lowLevel_ms = (timeEndLoop - timeStartLoop) / 1000.0;
 
@@ -234,10 +254,6 @@ TrajectoryConfig tc;
 
 void setup()
 {
-  // initially motors should be stopped
-  digitalWrite(EN_A, LOW);
-  digitalWrite(EN_B, LOW);
-
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   Serial.begin(115200);
@@ -252,6 +268,7 @@ void setup()
   initWiFi();
 
   // start heartbeat
+  Serial.println("Launch heartbeat");
   xTaskCreatePinnedToCore(
       task_blink_led, 
       "task_blink_led",
@@ -262,22 +279,31 @@ void setup()
       1 // pin to core 1
   ); 
 
+  #ifdef USE_DC_MOTORS
   robotBase = RobotBaseDC::getInstance();
-  
+  #else 
+  #ifdef USE_STEPPER_MOTORS
+  robotBase = RobotBaseStepper::getInstance();
+  #endif
+  #endif
+
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
 
   motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
 
   // monitor battery
+  Serial.println("Init monitor battery");
   pinMode(BAT_READING, INPUT_PULLDOWN);
   analogReadResolution(12);
   analogSetAttenuation(ADC_6db);
 
   // interupts have to be handled outside low level loop
   // since they are declared in setup, they are attached to core1
+  Serial.println("Create robot base");
   robotBase->setup();
 
+  Serial.println("Launch low level loop");
   xTaskCreatePinnedToCore(
       performLowLevel, 
       "performLowLevel",
@@ -288,6 +314,7 @@ void setup()
       1 // pin to core 1
   ); 
 
+  Serial.println("Launch print to serial");
   xTaskCreatePinnedToCore(
       printToSerial, 
       "printToSerial",
@@ -298,9 +325,9 @@ void setup()
       0 // pin to core 0
   ); 
 
-  tc.maxWheelVelocity = MAX_WHEEL_SPEED_MM_S * 0.9;
-  tc.maxWheelAcceleration = MAX_WHEEL_ACCELERATION_MM_S * 0.9;
-  tc.robotWheelSpacing = WHEEL_SPACING_MM;
+  tc.maxWheelVelocity = motionController->getParameters().maxWheelSpeed * 0.9;
+  tc.maxWheelAcceleration = motionController->getParameters().maxWheelAcceleration * 0.9;
+  tc.robotWheelSpacing = motionController->getParameters().wheelSpacing;
 
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }

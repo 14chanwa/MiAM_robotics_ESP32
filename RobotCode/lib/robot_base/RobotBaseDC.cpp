@@ -1,6 +1,64 @@
 #include <RobotBaseDC.hpp>
 #include <cmath>
 
+/////////////////////////////////////////////
+// Pinout
+/////////////////////////////////////////////
+
+#define IN1_A 16
+#define IN2_A 17
+#define IN1_B 32
+#define IN2_B 33
+#define EN_A 27
+#define EN_B 14
+
+#define ENCODER_A1 13
+#define ENCODER_B1 4
+
+#define ENCODER_A2 34
+#define ENCODER_B2 35
+
+/////////////////////////////////////////////
+// Motor & encoder specs
+/////////////////////////////////////////////
+
+#define MOTOR_REDUCTION_FACTOR 100.0f
+#define MOTOR_RATED_RPM 220.0f
+#define MOTOR_CONTROL_FREQUENCY_HZ 10000
+
+#define ENCODER_PULSE_PER_REVOLUTION 28.0f
+#define ENCODER_SPEED_TICK_PERIOD_MS 10.0f
+
+/////////////////////////////////////////////
+// Wheel specs
+/////////////////////////////////////////////
+
+#define WHEEL_RADIUS_MM 30.0f
+#define WHEEL_SPACING_MM 40.0f
+
+// give 20% overhead
+#define MAX_SPEED_RPM (MOTOR_RATED_RPM)
+#define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
+
+#define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
+#define MAX_WHEEL_ACCELERATION_MM_S 250.0f
+
+/////////////////////////////////////////////
+// Wheel PID
+/////////////////////////////////////////////
+
+// Target control will be
+// PWM = targetSpeed (rpm) * 255 / max speed (rpm) * MOTOR_TARGET_CONTROL_A + MOTOR_TARGET_CONTROL_B
+#define MOTOR_TARGET_CONTROL_B 20
+#define MOTOR_TARGET_CONTROL_A 1.0f
+// offset will be applied if targetSpeed (rad/s) is above threshold
+#define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
+
+// Wheel PID parameters
+#define VELOCITY_KP 0.2f
+#define VELOCITY_KD 0.0f
+#define VELOCITY_KI 0.05f
+
 int target_rad_s_to_pwm_command(float speed_rad_s)
 {
     int absValue = 
@@ -60,22 +118,6 @@ void RobotWheelDC::handleEncoderInterrupt()
     // The direction of the encoder is given by currentA xor oldB
     encoderValue_ += (oldB ^ currentA ? 1 : -1);
     oldB = digitalRead(pinEncoderB_);
-}
-
-void RobotWheelDC::setWheelSpeed(float speed)
-{
-    targetSpeed_ = speed;
-
-    // reset PID integral if target speed is zero to stop robot
-    if (std::abs(speed) < 1e-3)
-    {
-        motorPID->resetIntegral();
-    }
-}
-
-float RobotWheelDC::getWheelSpeed()
-{
-    return currentSpeed_;
 }
 
 void RobotWheelDC::updateMotorControl()
@@ -160,8 +202,8 @@ void IRAM_ATTR encoderInterruptRight()
 
 RobotBaseDC::RobotBaseDC()
 {
-    rightWheel_ = new RobotWheelDC(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "left_", 2);
-    leftWheel_ = new RobotWheelDC(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "right_", 4);
+    rightWheel_ = new RobotWheelDC(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "right_", 2);
+    leftWheel_ = new RobotWheelDC(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "left_", 4);
 }
 
 void RobotBaseDC::setup()
@@ -175,24 +217,6 @@ void RobotBaseDC::setup()
     pinMode(rightWheel_->pinEncoderB_, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(rightWheel_->pinEncoderA_), encoderInterruptRight, CHANGE);
     attachInterrupt(digitalPinToInterrupt(rightWheel_->pinEncoderB_), encoderInterruptRight, CHANGE);
-}
-
-void RobotBaseDC::setBaseSpeed(DrivetrainTarget target)
-{
-    leftWheel_->setWheelSpeed(target.motorSpeed[side::LEFT]);
-    rightWheel_->setWheelSpeed(target.motorSpeed[side::RIGHT]);
-}
-
-void RobotBaseDC::updateControl() 
-{
-    leftWheel_->updateMotorControl();
-    rightWheel_->updateMotorControl();
-}
-
-void RobotBaseDC::updateSensors() 
-{
-    leftWheel_->updateEncoderSpeed();
-    rightWheel_->updateEncoderSpeed();
 }
 
 DrivetrainMeasurements RobotBaseDC::getMeasurements()

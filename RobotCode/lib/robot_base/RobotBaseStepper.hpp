@@ -1,22 +1,16 @@
-#ifndef _ROBOTBASEDC_HPP
-#define _ROBOTBASEDC_HPP
+#ifndef _ROBOTBASESTEPPER_HPP
+#define _ROBOTBASESTEPPER_HPP
 
 #include <Arduino.h>
-#include <L298N.h>
 #include "AbstractRobotBase.hpp"
+#include <AccelStepper.h>
 
-class RobotWheelDC : public AbstractRobotWheel
+class RobotWheelStepper : public AbstractRobotWheel
 {
     public:
-        RobotWheelDC(
-            uint8_t pinEnable, uint8_t pinIN1, uint8_t pinIN2, 
-            uint8_t pinEncoderA, uint8_t pinEncoderB,
-            std::string prefix, uint8_t pwmChannel);
-
-        // functions used to setup interrupt
-        const uint8_t pinEncoderA_;
-        const uint8_t pinEncoderB_;
-        void handleEncoderInterrupt();
+        RobotWheelStepper(
+            uint8_t pinStep, uint8_t pinDir,
+            std::string prefix);
 
         // print variables to serial
         void printToSerial();
@@ -25,11 +19,8 @@ class RobotWheelDC : public AbstractRobotWheel
         void updateMotorControl();
         void updateEncoderSpeed();
 
-        L298N* motorDriver;
+        AccelStepper* motorDriver;
 
-        // variables for interrupt
-        bool currentA;
-        bool oldB;
 
         // encoder value in ticks
         volatile int encoderValue_;
@@ -41,16 +32,16 @@ class RobotWheelDC : public AbstractRobotWheel
         unsigned long currentTime_;
         float dt_ms_;
         float error_;
-        float PWMcorrection_;
+        float correction_;
 
-        int basePWMTarget_;
-        int newPWMTarget_;
+        int baseTarget_;
+        int newTarget_;
 };
 
-class RobotBaseDC : public AbstractRobotBase
+class RobotBaseStepper : public AbstractRobotBase
 {
     protected:
-        RobotBaseDC();
+        RobotBaseStepper();
     
     public:
         void setup();
@@ -59,8 +50,8 @@ class RobotBaseDC : public AbstractRobotBase
     
         static AbstractRobotBase* getInstance();
 
-        RobotWheelDC* leftWheel_;
-        RobotWheelDC* rightWheel_;
+        RobotWheelStepper* leftWheel_;
+        RobotWheelStepper* rightWheel_;
 
         virtual AbstractRobotWheel* getLeftWheel()
         {
@@ -70,6 +61,9 @@ class RobotBaseDC : public AbstractRobotBase
         {
             return static_cast<AbstractRobotWheel* >(rightWheel_);
         };
+
+        // Reimplements base speed to avoid powering motors when still
+        void setBaseSpeed(DrivetrainTarget target);
 };
 
 

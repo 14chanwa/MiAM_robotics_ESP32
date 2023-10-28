@@ -87,6 +87,11 @@ class MotionController
             return kinematics_;
         }
 
+        RobotParameters getParameters()
+        {
+            return parameters_;
+        }
+
         TrajectoryVector getCurrentTrajectories();
         float getCurvilinearAbscissa();
 

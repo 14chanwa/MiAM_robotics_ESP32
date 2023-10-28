@@ -4,6 +4,7 @@
 #include <string>
 #include <DrivetrainKinematics.h>
 #include <RobotParameters.hpp>
+#include <PID.h>
 
 
 namespace side{
@@ -27,10 +28,10 @@ class AbstractRobotWheel
         AbstractRobotWheel(std::string prefix);
         
         // set target speed in rad/s
-        virtual void setWheelSpeed(float speed) = 0;
+        void setWheelSpeed(float speed);
         
          // get current in rad/s
-        virtual float getWheelSpeed() = 0; // in rad/s
+        float getWheelSpeed(); // in rad/s
 
         // print variables to serial
         virtual void printToSerial() = 0;
@@ -43,8 +44,10 @@ class AbstractRobotWheel
         std::string prefix_;
 
         // wheel speed in rad/s
-        float targetSpeed_;
-        volatile float currentSpeed_;
+        float targetSpeed_ = 0.0;
+        volatile float currentSpeed_ = 0.0;
+
+        miam::PID* motorPID;
     
 };
 
@@ -55,9 +58,9 @@ class AbstractRobotBase
 
         };
         virtual void setup() = 0;
-        virtual void setBaseSpeed(DrivetrainTarget target) = 0;
-        virtual void updateControl() = 0;
-        virtual void updateSensors() = 0;
+        void setBaseSpeed(DrivetrainTarget target);
+        void updateControl();
+        void updateSensors();
         virtual DrivetrainMeasurements getMeasurements() = 0;
         virtual RobotParameters getParameters() = 0;
     
