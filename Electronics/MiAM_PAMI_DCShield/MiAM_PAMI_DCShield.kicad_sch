@@ -1431,6 +1431,10 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 22776537-881b-4220-83a3-1d4d3e90c6a4)
   )
+  (label "2Y" (at 229.87 138.43 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 24292e10-776e-49f4-a869-8f6d06d50684)
+  )
   (label "STBY" (at 205.105 107.95 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 25f11d2c-2c0d-46cb-b289-3f60c2759bfb)
@@ -1458,10 +1462,6 @@
   (label "EMERGENCY_BUTTON" (at 200.025 104.775 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 3e65f592-daec-4c0e-b184-a8cc99bed5cb)
-  )
-  (label "2Y" (at 229.87 125.73 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 3e7413a0-53b2-4e82-9509-06f603d24a51)
   )
   (label "EN12" (at 184.785 128.27 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -1514,6 +1514,10 @@
   (label "5V_POWER" (at 220.345 77.47 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 715f2bba-a9db-44c4-ba77-d89d3112a94a)
+  )
+  (label "1Y" (at 229.87 125.73 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 7633e3e0-a232-45db-a945-e0c9ed952f49)
   )
   (label "GPIO23" (at 259.08 45.085 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1606,10 +1610,6 @@
   (label "SCL" (at 199.39 40.64 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid da263843-6a3c-4cb5-aa55-1bd49e0ed318)
-  )
-  (label "1Y" (at 229.87 138.43 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid da6b2dd2-9807-4de1-bad9-3ba48b2b9bd3)
   )
   (label "RX2" (at 85.09 97.155 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1826,7 +1826,7 @@
   (symbol (lib_id "Connector:Conn_01x02_Male") (at 102.235 55.245 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 4f3afbc8-8d4f-4027-8fd9-1099463f1a0e)
-    (property "Reference" "J10" (at 102.87 50.165 0)
+    (property "Reference" "EMGBUT1" (at 102.87 50.165 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_01x02_Male" (at 102.87 52.705 0)
@@ -1843,7 +1843,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J10") (unit 1)
+          (reference "EMGBUT1") (unit 1)
         )
       )
     )
@@ -1902,7 +1902,7 @@
   (symbol (lib_id "Connector:Conn_01x06_Male") (at 253.365 130.81 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 60d44cd1-8875-4e32-bc9f-374225f5b25b)
-    (property "Reference" "J5" (at 254 120.65 0)
+    (property "Reference" "MOT2" (at 254 120.65 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_01x06_Male" (at 254 123.19 0)
@@ -1923,7 +1923,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J5") (unit 1)
+          (reference "MOT2") (unit 1)
         )
       )
     )
@@ -1932,7 +1932,7 @@
   (symbol (lib_id "Connector_Generic:Conn_02x03_Odd_Even") (at 225.425 77.47 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 645abca1-c9da-4943-82d2-3db4923d99ef)
-    (property "Reference" "J11" (at 226.695 69.215 0)
+    (property "Reference" "SRV1" (at 226.695 69.215 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_02x03_Odd_Even" (at 226.695 71.755 0)
@@ -1953,7 +1953,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J11") (unit 1)
+          (reference "SRV1") (unit 1)
         )
       )
     )
@@ -2012,7 +2012,7 @@
   (symbol (lib_id "MiAM_ESP32:Conn_03x04_Male") (at 242.57 34.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 6b38e411-f2dd-4d80-bf8f-142c839b9bd6)
-    (property "Reference" "J9" (at 241.935 34.925 0)
+    (property "Reference" "GPIO1" (at 241.935 34.925 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "~" (at 242.57 34.925 0)
@@ -2039,7 +2039,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J9") (unit 1)
+          (reference "GPIO1") (unit 1)
         )
       )
     )
@@ -2123,7 +2123,7 @@
   (symbol (lib_id "Connector:Conn_01x02_Female") (at 55.88 41.91 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 8253c023-d9f8-4cd4-aaf2-7ad4ed14db4a)
-    (property "Reference" "J6" (at 57.15 41.91 0)
+    (property "Reference" "BAT1" (at 57.15 41.91 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Screw_Terminal_01x02" (at 57.15 44.45 0)
@@ -2140,7 +2140,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J6") (unit 1)
+          (reference "BAT1") (unit 1)
         )
       )
     )
@@ -2149,7 +2149,7 @@
   (symbol (lib_id "Connector:Conn_01x02_Male") (at 170.815 41.91 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 8faf4238-b476-4061-bf48-5fb98429b1d6)
-    (property "Reference" "J8" (at 171.45 36.83 0)
+    (property "Reference" "UART2" (at 171.45 36.83 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_01x02_Male" (at 171.45 39.37 0)
@@ -2166,7 +2166,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J8") (unit 1)
+          (reference "UART2") (unit 1)
         )
       )
     )
@@ -2175,7 +2175,7 @@
   (symbol (lib_id "Connector:Conn_01x06_Male") (at 224.79 130.81 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 946f12f8-e0c1-444c-95c7-6ddee7380df5)
-    (property "Reference" "J4" (at 225.425 120.65 0)
+    (property "Reference" "MOT1" (at 225.425 120.65 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_01x06_Male" (at 225.425 123.19 0)
@@ -2196,7 +2196,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J4") (unit 1)
+          (reference "MOT1") (unit 1)
         )
       )
     )
@@ -2300,7 +2300,7 @@
   (symbol (lib_id "Connector_Generic:Conn_02x04_Odd_Even") (at 204.47 40.64 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid b929d0b1-10b2-4714-b930-1a1c2310603e)
-    (property "Reference" "J1" (at 205.74 31.75 0)
+    (property "Reference" "I2C1" (at 205.74 31.75 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_02x04_Odd_Even" (at 205.74 34.29 0)
@@ -2323,7 +2323,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J1") (unit 1)
+          (reference "I2C1") (unit 1)
         )
       )
     )
@@ -2332,7 +2332,7 @@
   (symbol (lib_id "Connector:Conn_01x02_Male") (at 101.6 43.18 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid bdbb093d-3403-42f7-8813-ceb3dd498371)
-    (property "Reference" "J7" (at 100.33 43.1799 0)
+    (property "Reference" "PSW1" (at 100.33 43.1799 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "Conn_01x02_Male" (at 100.33 45.7199 0)
@@ -2349,7 +2349,7 @@
     (instances
       (project "MiAM_PAMI_DCShield"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J7") (unit 1)
+          (reference "PSW1") (unit 1)
         )
       )
     )

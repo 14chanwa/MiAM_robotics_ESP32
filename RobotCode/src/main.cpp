@@ -339,7 +339,7 @@ void loop()
 
   RobotPosition currentPosition(0.0, 0.0, 0.0);
   RobotPosition targetPosition(currentPosition);
-  targetPosition.x += 500;
+  targetPosition.x += 2000;
 
   traj.clear();
   std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
