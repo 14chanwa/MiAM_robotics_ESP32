@@ -3,3 +3,8 @@
 RobotCode/.pio
 RobotCode/.vscode
 RobotCode/include/secret.hpp
+*.lck
+*-bak
+*.bak
+*-backups/
+*-cache

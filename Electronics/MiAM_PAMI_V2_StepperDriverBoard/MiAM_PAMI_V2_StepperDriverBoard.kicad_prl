@@ -12,7 +12,7 @@
       "pads": 1.0,
       "tracks": 1.0,
       "vias": 1.0,
-      "zones": 0.550000011920929
+      "zones": 1.0
     },
     "ratsnest_display_mode": 0,
     "selection_filter": {
@@ -65,10 +65,10 @@
       36
     ],
     "visible_layers": "fffffff_ffffffff",
-    "zone_display_mode": 0
+    "zone_display_mode": 1
   },
   "meta": {
-    "filename": "MiAM_PAMI_V2_StepperMainBoard.kicad_prl",
+    "filename": "MiAM_PAMI_V2_StepperDriverBoard.kicad_prl",
     "version": 3
   },
   "project": {
