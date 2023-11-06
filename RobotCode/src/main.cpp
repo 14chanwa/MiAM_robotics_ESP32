@@ -155,6 +155,8 @@ void printToSerial(void* parameters)
       sendTelemetry("leftNewTarget", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_left_);
       sendTelemetry("rightBaseTarget", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_right_);
       sendTelemetry("rightNewTarget", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_right_);
+      sendTelemetry("leftStepInterval", (static_cast<RobotBaseStepper* >(robotBase))->getStepIntervalLeft());
+      sendTelemetry("rightStepInterval", (static_cast<RobotBaseStepper* >(robotBase))->getStepIntervalRight());
       #endif
 
     #else
@@ -344,7 +346,7 @@ void loop()
 
   RobotPosition currentPosition(0.0, 0.0, 0.0);
   RobotPosition targetPosition(currentPosition);
-  targetPosition.x += 2000;
+  targetPosition.x += 1000;
 
   traj.clear();
   std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));

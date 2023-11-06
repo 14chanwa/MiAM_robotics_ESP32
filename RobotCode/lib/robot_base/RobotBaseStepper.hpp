@@ -67,6 +67,9 @@ class RobotBaseStepper : public AbstractRobotBase
         void updateControl();
         void updateSensors();
 
+        unsigned long getStepIntervalRight();
+        unsigned long getStepIntervalLeft();
+
         // wheel high level 
         float targetSpeed_left_ = 0.0;
         volatile float currentSpeed_left_ = 0.0;

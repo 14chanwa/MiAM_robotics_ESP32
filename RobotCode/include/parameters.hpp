@@ -20,7 +20,7 @@
 // Motion controller specs
 /////////////////////////////////////////////
 
-#define LOW_LEVEL_LOOP_TIME_MS 10
+#define LOW_LEVEL_LOOP_TIME_MS 5
 
 // Motion controller PID parameters
 #define LINEAR_KP 3.5f

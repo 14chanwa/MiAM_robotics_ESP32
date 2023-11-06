@@ -18,14 +18,14 @@
 /////////////////////////////////////////////
 
 #define MOTOR_STEPS_PER_REVOLUTION 2048
-#define MOTOR_RATED_RPM 55.0f
+#define MOTOR_RATED_RPM 30.0f
 
 /////////////////////////////////////////////
 // Wheel specs
 /////////////////////////////////////////////
 
-#define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM 40.0f
+#define WHEEL_RADIUS_MM 31.0f
+#define WHEEL_SPACING_MM 31.6f
 
 // give 20% overhead
 #define MAX_SPEED_RPM (MOTOR_RATED_RPM)
@@ -42,14 +42,18 @@
 // Wheel PID parameters
 #define VELOCITY_KP 0.2f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.05f
+#define VELOCITY_KI 0.0f
 
-int target_rad_s_to_stepper_speed(float speed_rad_s)
-{
-    return(
-        (speed_rad_s / 2.0f * M_PI) * MOTOR_STEPS_PER_REVOLUTION
-    );
-}
+#define target_rad_s_to_stepper_speed(speed_rad_s ) (speed_rad_s / 2.0f * M_PI) * MOTOR_STEPS_PER_REVOLUTION
+
+#define _maxSpeed (int)std::round(MOTOR_RATED_RPM * MOTOR_STEPS_PER_REVOLUTION / 60.0f)
+
+// int target_rad_s_to_stepper_speed(float speed_rad_s)
+// {
+//     return(
+//         (speed_rad_s / 2.0f * M_PI) * MOTOR_STEPS_PER_REVOLUTION
+//     );
+// }
 
 float step_s_to_rad_s(float encoder_ticks_s)
 {
@@ -138,7 +142,7 @@ float step_s_to_rad_s(float encoder_ticks_s)
 
 // RobotBaseStepper
 
-volatile uint32_t Timer0Count = 0;
+// volatile uint32_t Timer0Count = 0;
 
 volatile long timeFaster = 0;
 volatile unsigned long _lastStepTime_left = 0;
@@ -156,8 +160,8 @@ volatile bool _direction_right = true;
 bool IRAM_ATTR TimerHandler0(void * timerNo)
 {
 
-	// Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
-	Timer0Count++;
+	// // Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
+	// Timer0Count++;
 
 	// Make a step
     // static_cast<RobotWheelStepper* >(RobotBaseStepper::getInstance()->getLeftWheel())->motorDriver->runSpeedFaster();
@@ -171,29 +175,30 @@ bool IRAM_ATTR TimerHandler0(void * timerNo)
     bool mustStep_right = (_stepInterval_right > 0) && (timeFaster - _lastStepTime_right >= _stepInterval_right);
 
     // set pins
-    // GPIO.out_w1ts = (mustStep_right << STEP_1) | (mustStep_left << STEP_2);
-    if (mustStep_right)
-        digitalWrite(STEP_1, HIGH);
-    if (mustStep_left)
-        digitalWrite(STEP_2, HIGH);
+    GPIO.out_w1ts = (mustStep_right << STEP_1) | (mustStep_left << STEP_2);
+    // if (mustStep_right)
+    //     digitalWrite(STEP_1, HIGH);
+    // if (mustStep_left)
+    //     digitalWrite(STEP_2, HIGH);
 
     // during which increments currentpos
     _currentPos_left += mustStep_left ? (_direction_left ? 1 : -1) : 0;
     _currentPos_right += mustStep_right ? (_direction_right ? 1 : -1) : 0;
-    delayMicroseconds(1);
-
-    // set pins
-    // GPIO.out_w1tc = (mustStep_right << STEP_1) | (mustStep_left << STEP_2);
-    if (mustStep_right)
-        digitalWrite(STEP_1, LOW);
-    if (mustStep_left)
-        digitalWrite(STEP_2, LOW);
-
     if (mustStep_left)
 	    _lastStepTime_left = timeFaster; // Caution: does not account for costs in step()
     if (mustStep_right)
 	    _lastStepTime_right = timeFaster; // Caution: does not account for costs in step()
 
+    // delayMicroseconds(1);
+
+    // set pins
+    GPIO.out_w1tc = (mustStep_right << STEP_1) | (mustStep_left << STEP_2);
+    // if (mustStep_right)
+    //     digitalWrite(STEP_1, LOW);
+    // if (mustStep_left)
+    //     digitalWrite(STEP_2, LOW);
+
+   
     return true;
 }
 
@@ -201,7 +206,7 @@ ESP32Timer ITimer0(0);
 
 // Trigger motor driver enabled
 // bool isEnabled = true;
-void setEnabled(bool enable)
+void setMotorEnabled(bool enable)
 {
 //   if (isEnabled != enable)
 //   {
@@ -234,9 +239,9 @@ void RobotBaseStepper::setup()
     pinMode(DIR_2, OUTPUT);
 
     pinMode(NOT_ENABLE, OUTPUT);
-    // digitalWrite(NOT_ENABLE, !false);
-    // setEnabled(false);
-    digitalWrite(NOT_ENABLE, !true);
+    // digitalWrite(NOT_ENABLE, false);
+    setMotorEnabled(true);
+    // digitalWrite(NOT_ENABLE, !true);
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
 
@@ -246,8 +251,11 @@ void RobotBaseStepper::setup()
     // static_cast<RobotWheelStepper* >(getRightWheel())->motorDriver->setMaxSpeed(1000.0);
     // static_cast<RobotWheelStepper* >(getRightWheel())->motorDriver->setAcceleration(100.0);
 
+    Serial.print("max control to stepper=");
+    Serial.println(target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S));
+
     // attach timer interrupt on core 1
-    if (ITimer0.attachInterruptInterval(100, TimerHandler0))
+    if (ITimer0.attachInterruptInterval(20, TimerHandler0))
         {
             Serial.print(F("Starting  ITimer0 OK, millis() = "));
             Serial.println(millis());
@@ -286,13 +294,15 @@ void RobotBaseStepper::setBaseSpeed(DrivetrainTarget target)
     // Serial.println(Timer0Count);
     // Serial.printf("_stepInterval_right/left: %i/%i\n", _stepInterval_right, _stepInterval_left);
     // Serial.printf("_currentPos_right/left: %i/%i\n", _currentPos_right, _currentPos_left);
-    if (target.motorSpeed.norm() > 10) {
-        digitalWrite(NOT_ENABLE, !true);
-    }
-    else
-    {
-        digitalWrite(NOT_ENABLE, !false);
-    }
+
+    setMotorEnabled(target.motorSpeed.norm() > 1e-6);
+    // if (target.motorSpeed.norm() > 10) {
+    //     digitalWrite(NOT_ENABLE, !true);
+    // }
+    // else
+    // {
+    //     digitalWrite(NOT_ENABLE, !false);
+    // }
     // getLeftWheel()->setWheelSpeed(target.motorSpeed[side::LEFT]);
     // getRightWheel()->setWheelSpeed(target.motorSpeed[side::RIGHT]);
 
@@ -314,16 +324,18 @@ void RobotBaseStepper::updateControl()
 
         // convert from rad/s to 0-255
         baseTarget_left_ = target_rad_s_to_stepper_speed(targetSpeed_left_);
+        baseTarget_left_ = constrain(baseTarget_left_, -_maxSpeed, _maxSpeed);
         newTarget_left_ = round(baseTarget_left_ + correction_left_);
-        newTarget_left_ = (newTarget_left_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_left_), (int)std::round(MOTOR_RATED_RPM * MOTOR_STEPS_PER_REVOLUTION / 60.0f));
+        newTarget_left_ = (newTarget_left_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_left_), _maxSpeed);
 
         baseTarget_right_ = target_rad_s_to_stepper_speed(targetSpeed_right_);
+        baseTarget_right_ = constrain(baseTarget_right_, -_maxSpeed, _maxSpeed);
         newTarget_right_ = round(baseTarget_right_ + correction_right_);
-        newTarget_right_ = (newTarget_right_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_right_), (int)std::round(MOTOR_RATED_RPM * MOTOR_STEPS_PER_REVOLUTION / 60.0f));
+        newTarget_right_ = (newTarget_right_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_right_),_maxSpeed);
 
         // set speed
-        newTarget_left_ = constrain(newTarget_left_, -target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S), target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S));
-        newTarget_right_ = constrain(newTarget_right_, -target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S), target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S));
+        // newTarget_left_ = constrain(newTarget_left_, -target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S), target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S));
+        // newTarget_right_ = constrain(newTarget_right_, -target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S), target_rad_s_to_stepper_speed(MAX_SPEED_RAD_S));
         if (newTarget_left_ == 0.0)
             _stepInterval_left = 0;
         else
@@ -371,4 +383,16 @@ void RobotBaseStepper::updateSensors()
     oldTimeEncoderSpeed_ = currentTimeEncoderSpeed_;
     oldEncoderValue_left_ = encoderValue_left_;
     oldEncoderValue_right_ = encoderValue_right_;
+}
+
+
+unsigned long RobotBaseStepper::getStepIntervalRight()
+{
+    return _stepInterval_right;
+}
+
+
+unsigned long RobotBaseStepper::getStepIntervalLeft()
+{
+    return _stepInterval_left;
 }
