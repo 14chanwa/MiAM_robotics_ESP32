@@ -58,9 +58,9 @@ class AbstractRobotBase
 
         };
         virtual void setup() = 0;
-        void setBaseSpeed(DrivetrainTarget target);
-        void updateControl();
-        void updateSensors();
+        virtual void setBaseSpeed(DrivetrainTarget target);
+        virtual void updateControl();
+        virtual void updateSensors();
         virtual DrivetrainMeasurements getMeasurements() = 0;
         virtual RobotParameters getParameters() = 0;
     

@@ -17,8 +17,8 @@
 #define ENABLE_OTA_UPDATE
 #define SEND_TELEPLOT_UDP
 
-#define USE_DC_MOTORS
-// #define USE_STEPPER_MOTORS
+// #define USE_DC_MOTORS
+#define USE_STEPPER_MOTORS
 
 #ifdef SEND_TELEPLOT_UDP
   #include <WiFiUdp.h>
@@ -134,22 +134,27 @@ void printToSerial(void* parameters)
       sendTelemetry("dt_period_ms", dt_period_ms);
       sendTelemetry("dt_lowLevel_ms", dt_lowLevel_ms);
       sendTelemetry("battery_reading", get_current_battery_reading());
+
+      #ifdef USE_DC_MOTORS
       sendTelemetry("rightWheelCurrentSpeed", robotBase->getRightWheel()->currentSpeed_);
       sendTelemetry("rightWheelTargetSpeed", robotBase->getRightWheel()->targetSpeed_);
       sendTelemetry("leftWheelCurrentSpeed", robotBase->getLeftWheel()->currentSpeed_);
       sendTelemetry("leftWheelTargetSpeed", robotBase->getLeftWheel()->targetSpeed_);
+      #endif
+
+
       // sendTelemetry("leftBasePWMTarget", leftRobotWheel->basePWMTarget_);
       // sendTelemetry("leftNewPWMTarget", leftRobotWheel->newPWMTarget_);
       // sendTelemetry("rightBasePWMTarget", rightRobotWheel->basePWMTarget_);
       // sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
 
       #ifdef USE_STEPPER_MOTORS
-      sendTelemetry("leftEncoderValue", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->encoderValue_);
-      sendTelemetry("rightEncoderValue", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->encoderValue_);
-      sendTelemetry("leftBaseTarget", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->baseTarget_);
-      sendTelemetry("leftNewTarget", static_cast<RobotWheelStepper* >(robotBase->getLeftWheel())->newTarget_);
-      sendTelemetry("rightBaseTarget", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->baseTarget_);
-      sendTelemetry("rightNewTarget", static_cast<RobotWheelStepper* >(robotBase->getRightWheel())->newTarget_);
+      sendTelemetry("leftEncoderValue", (static_cast<RobotBaseStepper* >(robotBase))->encoderValue_left_);
+      sendTelemetry("rightEncoderValue", (static_cast<RobotBaseStepper* >(robotBase))->encoderValue_right_);
+      sendTelemetry("leftBaseTarget", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_left_);
+      sendTelemetry("leftNewTarget", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_left_);
+      sendTelemetry("rightBaseTarget", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_right_);
+      sendTelemetry("rightNewTarget", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_right_);
       #endif
 
     #else
