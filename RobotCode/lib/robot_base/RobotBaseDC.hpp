@@ -70,6 +70,8 @@ class RobotBaseDC : public AbstractRobotBase
         {
             return static_cast<AbstractRobotWheel* >(rightWheel_);
         };
+
+        void forceStop() {};
 };
 
 

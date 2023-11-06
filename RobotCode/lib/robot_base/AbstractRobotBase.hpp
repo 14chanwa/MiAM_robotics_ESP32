@@ -68,6 +68,8 @@ class AbstractRobotBase
 
         virtual AbstractRobotWheel* getLeftWheel() = 0;
         virtual AbstractRobotWheel* getRightWheel() = 0;
+
+        virtual void forceStop() = 0;
 };
 
 #endif

@@ -20,6 +20,9 @@
 // #define USE_DC_MOTORS
 #define USE_STEPPER_MOTORS
 
+// RobotBase
+AbstractRobotBase* robotBase;
+
 #ifdef SEND_TELEPLOT_UDP
   #include <WiFiUdp.h>
   WiFiUDP udp;
@@ -35,15 +38,21 @@
 #endif
 
 #ifdef ENABLE_OTA_UPDATE
-  #include <ESPAsyncWebServer.h>
-  #include <AsyncElegantOTA.h>
+#include <ArduinoOTA.h>
+char mdnsName[] = "miam-pami";
+char otaPassword[] = "";
+String critERR = "";
 
-  AsyncWebServer server(80);
-  const char* PARAM_MESSAGE = "message";
 
-  void notFound(AsyncWebServerRequest *request) {
-      request->send(404, "text/plain", "Not found");
+void handleOTATask(void* parameters)
+{
+  for (;;)
+  {
+    ArduinoOTA.handle();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
+}
+
 #endif
 
 void initWiFi() {
@@ -58,46 +67,54 @@ void initWiFi() {
   delay(1000);
 
   #ifdef ENABLE_OTA_UPDATE
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "text/plain", "Hello, world");
-    });
-
-    // Send a GET request to <IP>/get?message=<message>
-    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
-        if (request->hasParam(PARAM_MESSAGE)) {
-            message = request->getParam(PARAM_MESSAGE)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
-    });
-
-    // Send a POST request to <IP>/post with a form field message set to <message>
-    server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
-        String message;
-        if (request->hasParam(PARAM_MESSAGE, true)) {
-            message = request->getParam(PARAM_MESSAGE, true)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, POST: " + message);
-    });
-
-    server.onNotFound(notFound);
-
-    AsyncElegantOTA.begin(&server);
-    server.begin();
-
-    delay(1000);
-    #endif
+  // Start OTA once connected
+  Serial.println("Setting up OTA");
+  // Port defaults to 3232
+  // ArduinoOTA.setPort(3232);
+  // Hostname defaults to esp3232-[MAC]
+  // ArduinoOTA.setHostname(mdnsName);
+  Serial.print("Hostname: ");
+  Serial.println(ArduinoOTA.getHostname());
+  // No authentication by default
+  if (strlen(otaPassword) != 0) {
+      ArduinoOTA.setPassword(otaPassword);
+      Serial.printf("OTA Password: %s\n\r", otaPassword);
+  } else {
+      Serial.printf("\r\nNo OTA password has been set! (insecure)\r\n\r\n");
+  }
+  ArduinoOTA
+      .onStart([]() {
+          String type;
+          if (ArduinoOTA.getCommand() == U_FLASH)
+              type = "sketch";
+          else // U_SPIFFS
+              // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+              type = "filesystem";
+          Serial.println("Start updating " + type);
+          robotBase->forceStop();
+          critERR = "<h1>OTA Has been started</h1>";
+          critERR += "<p>Wait for OTA to finish and reboot, or <a href=\"control?var=reboot&val=0\" title=\"Reboot Now (may interrupt OTA)\">reboot manually</a> to recover</p>";
+      })
+      .onEnd([]() {
+          Serial.println("\r\nEnd");
+      })
+      .onProgress([](unsigned int progress, unsigned int total) {
+          Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+      })
+      .onError([](ota_error_t error) {
+          Serial.printf("Error[%u]: ", error);
+          if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+          else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+          else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+          else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+          else if (error == OTA_END_ERROR) Serial.println("End Failed");
+      });
+  ArduinoOTA.begin();
+  #endif
 }
 
 using namespace miam;
 using namespace miam::trajectory;
-
-// RobotWheels
-AbstractRobotBase* robotBase;
 
 // Motion controller
 MotionController* motionController;
@@ -325,6 +342,17 @@ void setup()
   xTaskCreatePinnedToCore(
       printToSerial, 
       "printToSerial",
+      10000,
+      NULL,
+      1,
+      NULL,
+      0 // pin to core 0
+  ); 
+
+  Serial.println("Launch OTA");
+  xTaskCreatePinnedToCore(
+      handleOTATask, 
+      "handleOTATask",
       10000,
       NULL,
       1,
