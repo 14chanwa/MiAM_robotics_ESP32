@@ -32,17 +32,23 @@ class RobotBaseStepper : public AbstractRobotBase
         void updateControl();
         void updateSensors();
 
-        unsigned long getStepIntervalRight();
-        unsigned long getStepIntervalLeft();
+        // unsigned long getStepIntervalRight();
+        // unsigned long getStepIntervalLeft();
 
         // wheel high level 
         float targetSpeed_left_ = 0.0;
         volatile float currentSpeed_left_ = 0.0;
+        float targetSpeedDriver_left_ = 0.0;
+
         float targetSpeed_right_ = 0.0;
         volatile float currentSpeed_right_ = 0.0;
+        float targetSpeedDriver_right_ = 0.0;
 
-        miam::PID* motorPID_left;
-        miam::PID* motorPID_right;
+        // miam::PID* motorPID_left;
+        // miam::PID* motorPID_right;
+
+        int8_t leftStepperResult_ = 0;
+        int8_t rightStepperResult_ = 0;
 
         // encoder value in ticks
         volatile int encoderValue_left_ = 0;
@@ -64,6 +70,18 @@ class RobotBaseStepper : public AbstractRobotBase
         int newTarget_left_ = 0;
         int baseTarget_right_ = 0;
         int newTarget_right_ = 0;
+
+        bool isRunningLeft = false;
+        bool isRunningRight = false;
+        bool isEmptyLeft = false;
+        bool isEmptyRight = false;
+        bool isGenActiveLeft = false;
+        bool isGenActiveRight = false;
+        bool isFullLeft = false;
+        bool isFullRight = false;
+
+        bool desyncDetectedLeft = false;
+        bool desyncDetectedRight = false;
 };
 
 
