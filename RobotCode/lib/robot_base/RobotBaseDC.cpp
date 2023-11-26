@@ -1,3 +1,5 @@
+#include "../../include/parameters.hpp"
+#ifdef USE_DC_MOTORS
 #include <RobotBaseDC.hpp>
 #include <cmath>
 
@@ -242,3 +244,4 @@ AbstractRobotBase* RobotBaseDC::getInstance()
     static RobotBaseDC instance;
     return &instance;
 }
+#endif

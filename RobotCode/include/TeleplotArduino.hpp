@@ -27,6 +27,8 @@
 #define TELEPLOT_FLAG_2D "xy"
 #define TELEPLOT_FLAG_TEXT "text"
 
+#define TELEPLOT_DISABLE_3D
+
 class ShapeTeleplot {
 public:
     class ShapeValue
@@ -83,6 +85,7 @@ public:
         return _name;
     }
 
+#ifndef TELEPLOT_DISABLE_3D
     ShapeTeleplot& setPos(ShapeValue const posX, ShapeValue const posY = {}, ShapeValue const posZ = {})
     {
         _posX = posX;
@@ -118,6 +121,7 @@ public:
 
         return *this;
     }
+#endif
 
     std::string toString() const
     {
@@ -157,6 +161,7 @@ public:
             if (_rotW.isSet) { result << ":" <<_rotW.valueRounded(); }
         }
 
+#ifndef TELEPLOT_DISABLE_3D
         if (_type == "sphere")
         {
             if (_radius.isSet)    { result << ":RA:" << _radius.valueRounded(); }
@@ -169,6 +174,7 @@ public:
             if (_width.isSet)  { result << ":W:" << _width.valueRounded();  }
             if (_depth.isSet)  { result << ":D:" << _depth.valueRounded();  }
         }
+#endif
 
         return result.str();
     }
@@ -234,6 +240,7 @@ public:
         updateData(key, valueX, valueY, nowMs, flags, maxFrequencyHz);
     }
 
+#ifndef TELEPLOT_DISABLE_3D
     void update3D(ShapeTeleplot const& mshape, unsigned int maxFrequencyHz = 0, std::string flags = TELEPLOT_FLAG_DEFAULT) {
         #ifdef TELEPLOT_DISABLE
             return ;
@@ -242,6 +249,7 @@ public:
         float nowMs = static_cast<float>(nowUs)/1000.0;
         updateData(mshape.getName(), nowMs, NULL, NULL, flags, maxFrequencyHz, "", mshape);
     }
+#endif
 
     void log(std::string const& log){
         int64_t nowMs = micros();
@@ -372,7 +380,6 @@ private:
         std::map<std::string, int64_t> updateTimestampsUs_;
     #endif
 
-    int sockfd_;
     std::string address_;
     unsigned int port_;
     unsigned int bufferingFrequencyHz_;

@@ -1,3 +1,4 @@
+#ifdef USE_DC_MOTORS
 #ifndef _ROBOTBASEDC_HPP
 #define _ROBOTBASEDC_HPP
 
@@ -75,4 +76,5 @@ class RobotBaseDC : public AbstractRobotBase
 };
 
 
+#endif
 #endif

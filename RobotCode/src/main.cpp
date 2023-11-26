@@ -14,18 +14,6 @@
 #include <RobotBaseDC.hpp>
 #include <RobotBaseStepper.hpp>
 
-#define USE_WIFI
-#define USE_MONITOR_BATTERY
-
-#ifdef USE_WIFI
-  #define ENABLE_OTA_UPDATE
-  #define SEND_TELEPLOT_UDP
-#endif
-// #define SEND_SERIAL
-
-// #define USE_DC_MOTORS
-#define USE_STEPPER_MOTORS
-
 // RobotBase
 AbstractRobotBase* robotBase;
 
@@ -62,51 +50,60 @@ AbstractRobotBase* robotBase;
 #endif
 
 #ifdef ENABLE_OTA_UPDATE
-// #include <ArduinoOTA.h>
-// char mdnsName[] = "miam-pami";
-// char otaPassword[] = "";
-// String critERR = "";
+// // #include <ArduinoOTA.h>
+// // char mdnsName[] = "miam-pami";
+// // char otaPassword[] = "";
+// // String critERR = "";
 
-// #include <AsyncTCP.h>
-// #include <ESPAsyncWebServer.h>
-#include <ElegantOTA.h>
-AsyncWebServer server(80);
+// // #include <AsyncTCP.h>
+// // #include <ESPAsyncWebServer.h>
+// #include <ElegantOTA.h>
+// AsyncWebServer server(80);
 
 
-unsigned long ota_progress_millis = 0;
+// unsigned long ota_progress_millis = 0;
 
-void onOTAStart() {
-  // Log when OTA has started
-  Serial.println("OTA update started!");
-  // <Add your own code here>
-}
+// void onOTAStart() {
+//   // Log when OTA has started
+//   Serial.println("OTA update started!");
+//   // <Add your own code here>
+// }
 
-void onOTAProgress(size_t current, size_t final) {
-  // Log every 1 second
-  if (millis() - ota_progress_millis > 1000) {
-    ota_progress_millis = millis();
-    Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
+// void onOTAProgress(size_t current, size_t final) {
+//   // Log every 1 second
+//   if (millis() - ota_progress_millis > 1000) {
+//     ota_progress_millis = millis();
+//     Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
+//   }
+// }
+
+// void onOTAEnd(bool success) {
+//   // Log when OTA has finished
+//   if (success) {
+//     Serial.println("OTA update finished successfully!");
+//   } else {
+//     Serial.println("There was an error during OTA update!");
+//   }
+//   // <Add your own code here>
+// }
+  #include <ESPAsyncWebServer.h>
+  #include <AsyncElegantOTA.h>
+
+  AsyncWebServer server(80);
+  const char* PARAM_MESSAGE = "message";
+
+  void notFound(AsyncWebServerRequest *request) {
+      request->send(404, "text/plain", "Not found");
   }
-}
 
-void onOTAEnd(bool success) {
-  // Log when OTA has finished
-  if (success) {
-    Serial.println("OTA update finished successfully!");
-  } else {
-    Serial.println("There was an error during OTA update!");
-  }
-  // <Add your own code here>
-}
-
-void handleOTATask(void* parameters)
-{
-  for (;;)
-  {
-    ElegantOTA.loop();
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-  }
-}
+// void handleOTATask(void* parameters)
+// {
+//   for (;;)
+//   {
+//     ElegantOTA.loop();
+//     vTaskDelay(100 / portTICK_PERIOD_MS);
+//   }
+// }
 
 #endif
 
@@ -124,68 +121,101 @@ void initWiFi() {
 #endif
 
 #ifdef ENABLE_OTA_UPDATE
-  // byte mac[6];
-  // WiFi.macAddress(mac);
-  // // Start OTA once connected
-  // Serial.println("Setting up OTA");
-  // // Port defaults to 3232
-  // ArduinoOTA.setPort(3232);
-  // // Hostname defaults to esp3232-[MAC]
-  // char value[80];
-  // sprintf(value, "%s-%02x%02x%02x", mdnsName, mac[2], mac[1], mac[0]);
-  // ArduinoOTA.setHostname(value);
-  // Serial.print("Hostname: ");
-  // Serial.println(ArduinoOTA.getHostname());
-  // // Partition label
-  // Serial.print("Partition label: ");
-  // Serial.println(ArduinoOTA.getPartitionLabel());
-  // // No authentication by default
-  // if (strlen(otaPassword) != 0) {
-  //     ArduinoOTA.setPassword(otaPassword);
-  //     Serial.printf("OTA Password: %s\n\r", otaPassword);
-  // } else {
-  //     Serial.printf("\r\nNo OTA password has been set! (insecure)\r\n\r\n");
-  // }
-  // ArduinoOTA
-  //     .onStart([]() {
-  //         String type;
-  //         if (ArduinoOTA.getCommand() == U_FLASH)
-  //             type = "sketch";
-  //         else // U_SPIFFS
-  //             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-  //             type = "filesystem";
-  //         Serial.println("Start updating " + type);
-  //         robotBase->forceStop();
-  //         critERR = "<h1>OTA Has been started</h1>";
-  //         critERR += "<p>Wait for OTA to finish and reboot, or <a href=\"control?var=reboot&val=0\" title=\"Reboot Now (may interrupt OTA)\">reboot manually</a> to recover</p>";
-  //     })
-  //     .onEnd([]() {
-  //         Serial.println("\r\nEnd");
-  //     })
-  //     .onProgress([](unsigned int progress, unsigned int total) {
-  //         Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  //     })
-  //     .onError([](ota_error_t error) {
-  //         Serial.printf("Error[%u]: ", error);
-  //         if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-  //         else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-  //         else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-  //         else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-  //         else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  //     });
-  // ArduinoOTA.begin();
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", "Hi! This is ElegantOTA AsyncDemo.");
+  // // byte mac[6];
+  // // WiFi.macAddress(mac);
+  // // // Start OTA once connected
+  // // Serial.println("Setting up OTA");
+  // // // Port defaults to 3232
+  // // ArduinoOTA.setPort(3232);
+  // // // Hostname defaults to esp3232-[MAC]
+  // // char value[80];
+  // // sprintf(value, "%s-%02x%02x%02x", mdnsName, mac[2], mac[1], mac[0]);
+  // // ArduinoOTA.setHostname(value);
+  // // Serial.print("Hostname: ");
+  // // Serial.println(ArduinoOTA.getHostname());
+  // // // Partition label
+  // // Serial.print("Partition label: ");
+  // // Serial.println(ArduinoOTA.getPartitionLabel());
+  // // // No authentication by default
+  // // if (strlen(otaPassword) != 0) {
+  // //     ArduinoOTA.setPassword(otaPassword);
+  // //     Serial.printf("OTA Password: %s\n\r", otaPassword);
+  // // } else {
+  // //     Serial.printf("\r\nNo OTA password has been set! (insecure)\r\n\r\n");
+  // // }
+  // // ArduinoOTA
+  // //     .onStart([]() {
+  // //         String type;
+  // //         if (ArduinoOTA.getCommand() == U_FLASH)
+  // //             type = "sketch";
+  // //         else // U_SPIFFS
+  // //             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+  // //             type = "filesystem";
+  // //         Serial.println("Start updating " + type);
+  // //         robotBase->forceStop();
+  // //         critERR = "<h1>OTA Has been started</h1>";
+  // //         critERR += "<p>Wait for OTA to finish and reboot, or <a href=\"control?var=reboot&val=0\" title=\"Reboot Now (may interrupt OTA)\">reboot manually</a> to recover</p>";
+  // //     })
+  // //     .onEnd([]() {
+  // //         Serial.println("\r\nEnd");
+  // //     })
+  // //     .onProgress([](unsigned int progress, unsigned int total) {
+  // //         Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  // //     })
+  // //     .onError([](ota_error_t error) {
+  // //         Serial.printf("Error[%u]: ", error);
+  // //         if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+  // //         else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+  // //         else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+  // //         else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+  // //         else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  // //     });
+  // // ArduinoOTA.begin();
+  //   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+  //     request->send(200, "text/plain", "Hi! This is ElegantOTA AsyncDemo.");
+  //   });
+
+  //   ElegantOTA.begin(&server);    // Start ElegantOTA
+  //   // ElegantOTA callbacks
+  //   ElegantOTA.onStart(onOTAStart);
+  //   ElegantOTA.onProgress(onOTAProgress);
+  //   ElegantOTA.onEnd(onOTAEnd);
+
+  //   server.begin();
+  //   Serial.println("HTTP server started");
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "Hello, world");
     });
 
-    ElegantOTA.begin(&server);    // Start ElegantOTA
-    // ElegantOTA callbacks
-    ElegantOTA.onStart(onOTAStart);
-    ElegantOTA.onProgress(onOTAProgress);
-    ElegantOTA.onEnd(onOTAEnd);
+    // Send a GET request to <IP>/get?message=<message>
+    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        String message;
+        if (request->hasParam(PARAM_MESSAGE)) {
+            message = request->getParam(PARAM_MESSAGE)->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, GET: " + message);
+    });
 
+    // Send a POST request to <IP>/post with a form field message set to <message>
+    server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
+        String message;
+        if (request->hasParam(PARAM_MESSAGE, true)) {
+            message = request->getParam(PARAM_MESSAGE, true)->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, POST: " + message);
+    });
+
+    server.onNotFound(notFound);
+
+    AsyncElegantOTA.begin(&server);
     server.begin();
-    Serial.println("HTTP server started");
+
+    delay(1000);
 #endif
 }
 
@@ -229,6 +259,11 @@ void logTelemetry(void* parameters)
       teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("battery_reading", get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
+      teleplot.update("tcrt0", get_current_tcrt0_reading(), "", 0);
+      teleplot.update("tcrt1", get_current_tcrt1_reading(), "", 0);
+      teleplot.update("tcrt2", get_current_tcrt2_reading(), "", 0);
+      teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
+
 
       #ifdef USE_DC_MOTORS
       teleplot.update("rightWheelCurrentSpeed", robotBase->getRightWheel()->currentSpeed_);
@@ -271,6 +306,8 @@ void logTelemetry(void* parameters)
       teleplot.update("desyncDetectedLeft_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("desyncDetectedRight_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedRight, "", 0, TELEPLOT_FLAG_NOPLOT);
       #endif
+
+      teleplot.update("vlx_ranging_data_mm", get_current_vl53l0x());
 
     #else
     #ifdef SEND_SERIAL
@@ -326,10 +363,6 @@ void performLowLevel(void* parameters)
     dt_period_ms = (timeEndLoop - timeStartLoop) / 1000.0;
     timeStartLoop = timeEndLoop;
     
-#ifdef USE_MONITOR_BATTERY
-    // update sensors
-    monitor_battery();
-#endif
     // Serial.println("Update sensors");
     robotBase->updateSensors();
     // Serial.println("Get measurements");
@@ -364,6 +397,12 @@ void performLowLevel(void* parameters)
     // update motor control
     // Serial.println("Update motor control");
     robotBase->updateControl();
+
+    // get_current_vl53l0x();
+#ifdef USE_MONITOR_BATTERY
+    // update sensors
+    monitor_battery();
+#endif
 
     // Serial.println("Register time");
     timeEndLoop = micros();
@@ -447,16 +486,46 @@ void setup()
   motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
 
+
+  Serial.println("Create robot base");
+  robotBase->setup();
+
+#ifdef USE_VL53L0X
+  Serial.println("Init VL53L0X");
+  init_vl53l0x();
+
+  xTaskCreatePinnedToCore(
+    task_update_vl53l0x, 
+    "task_update_vl53l0x",
+    2000,
+    NULL,
+    10,  // mid priority
+    NULL, 
+    1 // pin to core 1
+  ); 
+#endif
+
 #ifdef USE_MONITOR_BATTERY
   // monitor battery
   Serial.println("Init monitor battery");
   pinMode(BAT_READING, INPUT_PULLDOWN);
+  pinMode(TCRT_0, INPUT_PULLDOWN);
+  pinMode(TCRT_1, INPUT_PULLDOWN);
+  pinMode(TCRT_2, INPUT_PULLDOWN);
   analogReadResolution(12);
-  analogSetAttenuation(ADC_6db);
-#endif
+  // analogSetAttenuation(ADC_6db);
+  analogSetAttenuation(ADC_11db);
 
-  Serial.println("Create robot base");
-  robotBase->setup();
+  // xTaskCreatePinnedToCore(
+  //   task_update_analog_readings, 
+  //   "task_update_analog_readings",
+  //   2000,
+  //   NULL,
+  //   10,  // mid priority
+  //   NULL, 
+  //   1 // pin to core 1
+  // ); 
+#endif
 
   Serial.println("Launch low level loop");
   xTaskCreatePinnedToCore(
@@ -482,18 +551,18 @@ void setup()
   ); 
 #endif
 
-#ifdef ENABLE_OTA_UPDATE
-  Serial.println("Launch OTA");
-  xTaskCreatePinnedToCore(
-      handleOTATask, 
-      "handleOTATask",
-      10000,
-      NULL,
-      1,
-      NULL,
-      1 // pin to core 0
-  ); 
-#endif
+// #ifdef ENABLE_OTA_UPDATE
+//   Serial.println("Launch OTA");
+//   xTaskCreatePinnedToCore(
+//       handleOTATask, 
+//       "handleOTATask",
+//       10000,
+//       NULL,
+//       1,
+//       NULL,
+//       1 // pin to core 0
+//   ); 
+// #endif
 
   tc.maxWheelVelocity = motionController->getParameters().maxWheelSpeed * 0.9;
   tc.maxWheelAcceleration = motionController->getParameters().maxWheelAcceleration * 0.9;

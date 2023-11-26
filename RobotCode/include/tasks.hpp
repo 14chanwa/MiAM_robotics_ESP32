@@ -2,6 +2,7 @@
 #define _TASKS_HEADER
 
 #include <parameters.hpp>
+#include <Arduino.h>
 
 /////////////////////////////////////////////
 // Tasks
@@ -16,6 +17,19 @@ void monitor_battery();
 void print_battery();
 float get_current_battery_reading();
 float get_min_battery_reading();
+
+float get_current_tcrt0_reading();
+float get_current_tcrt1_reading();
+float get_current_tcrt2_reading();
+float get_current_touch_sensor_reading();
+
+void task_update_analog_readings(void* parameters);
+
+void init_vl53l0x();
+uint16_t get_current_vl53l0x();
+
+void task_update_vl53l0x(void* parameters);
+
 
 // // handle encoders
 // void run_handle_encoders();

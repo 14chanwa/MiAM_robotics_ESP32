@@ -1,4 +1,5 @@
-
+#include "../../include/parameters.hpp"
+#ifdef USE_STEPPER_MOTORS
 // #include "ESP32TimerInterrupt.h"
 #include "RobotBaseStepper.hpp"
 #include <cmath>
@@ -558,3 +559,4 @@ void RobotBaseStepper::forceStop()
     leftStepper->forceStop();
     rightStepper->forceStop();
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef USE_STEPPER_MOTORS
 #ifndef _ROBOTBASESTEPPER_HPP
 #define _ROBOTBASESTEPPER_HPP
 
@@ -85,4 +86,5 @@ class RobotBaseStepper : public AbstractRobotBase
 };
 
 
+#endif
 #endif
