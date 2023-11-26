@@ -572,99 +572,6 @@
         )
       )
     )
-    (symbol "Connector_Generic:Conn_02x04_Odd_Even" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
-      (property "Reference" "J" (at 1.27 5.08 0)
-        (effects (font (size 1.27 1.27)))
-      )
-      (property "Value" "Conn_02x04_Odd_Even" (at 1.27 -7.62 0)
-        (effects (font (size 1.27 1.27)))
-      )
-      (property "Footprint" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Datasheet" "~" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_keywords" "connector" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_description" "Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_fp_filters" "Connector*:*_2x??_*" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (symbol "Conn_02x04_Odd_Even_1_1"
-        (rectangle (start -1.27 -4.953) (end 0 -5.207)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start -1.27 -2.413) (end 0 -2.667)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start -1.27 0.127) (end 0 -0.127)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start -1.27 2.667) (end 0 2.413)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start -1.27 3.81) (end 3.81 -6.35)
-          (stroke (width 0.254) (type default))
-          (fill (type background))
-        )
-        (rectangle (start 3.81 -4.953) (end 2.54 -5.207)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start 3.81 -2.413) (end 2.54 -2.667)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start 3.81 0.127) (end 2.54 -0.127)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (rectangle (start 3.81 2.667) (end 2.54 2.413)
-          (stroke (width 0.1524) (type default))
-          (fill (type none))
-        )
-        (pin passive line (at -5.08 2.54 0) (length 3.81)
-          (name "Pin_1" (effects (font (size 1.27 1.27))))
-          (number "1" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at 7.62 2.54 180) (length 3.81)
-          (name "Pin_2" (effects (font (size 1.27 1.27))))
-          (number "2" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at -5.08 0 0) (length 3.81)
-          (name "Pin_3" (effects (font (size 1.27 1.27))))
-          (number "3" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at 7.62 0 180) (length 3.81)
-          (name "Pin_4" (effects (font (size 1.27 1.27))))
-          (number "4" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at -5.08 -2.54 0) (length 3.81)
-          (name "Pin_5" (effects (font (size 1.27 1.27))))
-          (number "5" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at 7.62 -2.54 180) (length 3.81)
-          (name "Pin_6" (effects (font (size 1.27 1.27))))
-          (number "6" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at -5.08 -5.08 0) (length 3.81)
-          (name "Pin_7" (effects (font (size 1.27 1.27))))
-          (number "7" (effects (font (size 1.27 1.27))))
-        )
-        (pin passive line (at 7.62 -5.08 180) (length 3.81)
-          (name "Pin_8" (effects (font (size 1.27 1.27))))
-          (number "8" (effects (font (size 1.27 1.27))))
-        )
-      )
-    )
     (symbol "Device:C_Polarized" (pin_numbers hide) (pin_names (offset 0.254)) (in_bom yes) (on_board yes)
       (property "Reference" "C" (at 0.635 2.54 0)
         (effects (font (size 1.27 1.27)) (justify left))
@@ -720,6 +627,154 @@
         )
         (pin passive line (at 0 -3.81 90) (length 2.794)
           (name "~" (effects (font (size 1.27 1.27))))
+          (number "2" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
+    (symbol "Device:D_Schottky" (pin_numbers hide) (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+      (property "Reference" "D" (at 0 2.54 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Value" "D_Schottky" (at 0 -2.54 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "~" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_keywords" "diode Schottky" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "Schottky diode" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "D_Schottky_0_1"
+        (polyline
+          (pts
+            (xy 1.27 0)
+            (xy -1.27 0)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 1.27)
+            (xy 1.27 -1.27)
+            (xy -1.27 0)
+            (xy 1.27 1.27)
+          )
+          (stroke (width 0.254) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy -1.905 0.635)
+            (xy -1.905 1.27)
+            (xy -1.27 1.27)
+            (xy -1.27 -1.27)
+            (xy -0.635 -1.27)
+            (xy -0.635 -0.635)
+          )
+          (stroke (width 0.254) (type default))
+          (fill (type none))
+        )
+      )
+      (symbol "D_Schottky_1_1"
+        (pin passive line (at -3.81 0 0) (length 2.54)
+          (name "K" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 3.81 0 180) (length 2.54)
+          (name "A" (effects (font (size 1.27 1.27))))
+          (number "2" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
+    (symbol "Device:LED" (pin_numbers hide) (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+      (property "Reference" "D" (at 0 2.54 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Value" "LED" (at 0 -2.54 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "~" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_keywords" "LED diode" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "Light emitting diode" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "LED_0_1"
+        (polyline
+          (pts
+            (xy -1.27 -1.27)
+            (xy -1.27 1.27)
+          )
+          (stroke (width 0.254) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy -1.27 0)
+            (xy 1.27 0)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 -1.27)
+            (xy 1.27 1.27)
+            (xy -1.27 0)
+            (xy 1.27 -1.27)
+          )
+          (stroke (width 0.254) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy -3.048 -0.762)
+            (xy -4.572 -2.286)
+            (xy -3.81 -2.286)
+            (xy -4.572 -2.286)
+            (xy -4.572 -1.524)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy -1.778 -0.762)
+            (xy -3.302 -2.286)
+            (xy -2.54 -2.286)
+            (xy -3.302 -2.286)
+            (xy -3.302 -1.524)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+      )
+      (symbol "LED_1_1"
+        (pin passive line (at -3.81 0 0) (length 2.54)
+          (name "K" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 3.81 0 180) (length 2.54)
+          (name "A" (effects (font (size 1.27 1.27))))
           (number "2" (effects (font (size 1.27 1.27))))
         )
       )
@@ -1030,11 +1085,11 @@
         )
       )
     )
-    (symbol "Jumper:SolderJumper_2_Open" (pin_names (offset 0) hide) (in_bom yes) (on_board yes)
+    (symbol "Jumper:SolderJumper_2_Bridged" (pin_names (offset 0) hide) (in_bom yes) (on_board yes)
       (property "Reference" "JP" (at 0 2.032 0)
         (effects (font (size 1.27 1.27)))
       )
-      (property "Value" "SolderJumper_2_Open" (at 0 -2.54 0)
+      (property "Value" "SolderJumper_2_Bridged" (at 0 -2.54 0)
         (effects (font (size 1.27 1.27)))
       )
       (property "Footprint" "" (at 0 0 0)
@@ -1046,13 +1101,17 @@
       (property "ki_keywords" "solder jumper SPST" (at 0 0 0)
         (effects (font (size 1.27 1.27)) hide)
       )
-      (property "ki_description" "Solder Jumper, 2-pole, open" (at 0 0 0)
+      (property "ki_description" "Solder Jumper, 2-pole, closed/bridged" (at 0 0 0)
         (effects (font (size 1.27 1.27)) hide)
       )
-      (property "ki_fp_filters" "SolderJumper*Open*" (at 0 0 0)
+      (property "ki_fp_filters" "SolderJumper*Bridged*" (at 0 0 0)
         (effects (font (size 1.27 1.27)) hide)
       )
-      (symbol "SolderJumper_2_Open_0_1"
+      (symbol "SolderJumper_2_Bridged_0_1"
+        (rectangle (start -0.508 0.508) (end 0.508 -0.508)
+          (stroke (width 0) (type default))
+          (fill (type outline))
+        )
         (arc (start -0.254 1.016) (mid -1.2656 0) (end -0.254 -1.016)
           (stroke (width 0) (type default))
           (fill (type none))
@@ -1086,7 +1145,7 @@
           (fill (type outline))
         )
       )
-      (symbol "SolderJumper_2_Open_1_1"
+      (symbol "SolderJumper_2_Bridged_1_1"
         (pin passive line (at -3.81 0 0) (length 2.54)
           (name "A" (effects (font (size 1.27 1.27))))
           (number "1" (effects (font (size 1.27 1.27))))
@@ -1167,6 +1226,195 @@
         (pin passive line (at 12.7 -3.81 180) (length 2.54)
           (name "OUT-" (effects (font (size 1.27 1.27))))
           (number "4" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
+    (symbol "MiAM_ESP32:SSD1306_vertical" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 5.08 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Value" "SSD1306_vertical" (at 0 -7.62 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "~" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_locked" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "ki_keywords" "connector" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "Generic connector, single row, 01x04, script generated" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_fp_filters" "Connector*:*_1x??_*" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "SSD1306_vertical_1_1"
+        (polyline
+          (pts
+            (xy 1.27 -5.08)
+            (xy 0.8636 -5.08)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 -2.54)
+            (xy 0.8636 -2.54)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 0)
+            (xy 0.8636 0)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 2.54)
+            (xy 0.8636 2.54)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start 0.8636 -4.953) (end 0 -5.207)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (rectangle (start 0.8636 -2.413) (end 0 -2.667)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (rectangle (start 0.8636 0.127) (end 0 -0.127)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (rectangle (start 0.8636 2.667) (end 0 2.413)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (text "GND" (at -2.54 -5.08 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (text "SCL" (at -2.54 0 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (text "SDA" (at -2.54 2.54 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (text "VCC" (at -2.54 -2.54 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (pin passive line (at 5.08 2.54 180) (length 3.81)
+          (name "SDA" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 5.08 0 180) (length 3.81)
+          (name "SCL" (effects (font (size 1.27 1.27))))
+          (number "2" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 5.08 -2.54 180) (length 3.81)
+          (name "VCC" (effects (font (size 1.27 1.27))))
+          (number "3" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 5.08 -5.08 180) (length 3.81)
+          (name "GND" (effects (font (size 1.27 1.27))))
+          (number "4" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
+    (symbol "MiAM_ESP32:TCRT5000L_Breakout" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 5.08 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Value" "TCRT5000L_Breakout" (at 0 -5.08 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "~" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_locked" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "ki_keywords" "connector" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "Generic connector, single row, 01x03, script generated" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_fp_filters" "Connector*:*_1x??_*" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "TCRT5000L_Breakout_1_1"
+        (polyline
+          (pts
+            (xy 1.27 -2.54)
+            (xy 0.8636 -2.54)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 0)
+            (xy 0.8636 0)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 1.27 2.54)
+            (xy 0.8636 2.54)
+          )
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start 0.8636 -2.413) (end 0 -2.667)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (rectangle (start 0.8636 0.127) (end 0 -0.127)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (rectangle (start 0.8636 2.667) (end 0 2.413)
+          (stroke (width 0.1524) (type default))
+          (fill (type outline))
+        )
+        (text "G" (at -1.27 2.54 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (text "S" (at -1.27 -2.54 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (text "V" (at -1.27 0 0)
+          (effects (font (size 1.27 1.27)))
+        )
+        (pin passive line (at 5.08 2.54 180) (length 3.81)
+          (name "G" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 5.08 0 180) (length 3.81)
+          (name "V" (effects (font (size 1.27 1.27))))
+          (number "2" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at 5.08 -2.54 180) (length 3.81)
+          (name "S" (effects (font (size 1.27 1.27))))
+          (number "3" (effects (font (size 1.27 1.27))))
         )
       )
     )
@@ -1574,20 +1822,16 @@
   (no_connect (at 74.93 166.37) (uuid 21af2d8d-8108-4fc3-9e24-62b2450fc382))
   (no_connect (at 173.99 80.01) (uuid 4dba4bf8-edee-4861-94bd-3901fd14d6b5))
   (no_connect (at 74.93 133.35) (uuid 5ea8038e-d261-45fc-839b-283d096249da))
+  (no_connect (at 120.65 116.84) (uuid 6cb04271-887b-41e8-9b7a-0a3fc5d0908f))
   (no_connect (at 34.29 163.83) (uuid 80a3f6c3-b7e2-4e22-9a38-3514a01a2540))
-  (no_connect (at 124.46 140.97) (uuid 87d59af0-1b16-45ee-a461-c7c2a2b59673))
   (no_connect (at 72.39 48.26) (uuid 8ffb92c2-752e-4063-9b5d-313ca55de91f))
-  (no_connect (at 124.46 162.56) (uuid 9c9908ae-4704-4696-8ad7-0140e5eb5a0d))
   (no_connect (at 29.845 95.25) (uuid addd6f1d-f3cf-4539-8f32-f2de406396d1))
   (no_connect (at 74.93 168.91) (uuid c45aad47-5a6d-4e7a-bb77-1facea640607))
   (no_connect (at 34.29 168.91) (uuid c9cc1efb-88d3-4a36-8352-a71cabcf8387))
   (no_connect (at 116.205 66.04) (uuid cc61dbe4-3c5e-4e41-bfd1-5b24764ebe2d))
-  (no_connect (at 124.46 160.02) (uuid ce11a7e0-b158-4aa5-8de8-ef7eb82eeb2c))
   (no_connect (at 34.29 128.27) (uuid ce470d86-241e-4292-af8b-4624065aacbd))
-  (no_connect (at 34.29 171.45) (uuid dcc818ad-fa2c-4871-8197-d7e932cc8011))
   (no_connect (at 34.29 166.37) (uuid e0492f96-ac67-4eda-918a-ded7ec8978a3))
-  (no_connect (at 58.42 95.25) (uuid e0e76362-4005-48d2-a6dd-d6a895e30945))
-  (no_connect (at 124.46 121.92) (uuid e7ebd995-8af6-4ae5-8546-5ee37b3e4c3c))
+  (no_connect (at 120.65 114.3) (uuid e7ebd995-8af6-4ae5-8546-5ee37b3e4c3c))
   (no_connect (at 74.93 171.45) (uuid eeb0c3c7-f866-4a47-ab90-fdb764cb1780))
 
   (wire (pts (xy 161.29 182.88) (xy 161.29 191.77))
@@ -1602,7 +1846,11 @@
     (stroke (width 0) (type default))
     (uuid 045f25ea-70bc-4fc6-bb53-c8aa6cf86b6f)
   )
-  (wire (pts (xy 116.205 60.96) (xy 126.365 60.96))
+  (wire (pts (xy 123.19 158.75) (xy 135.89 158.75))
+    (stroke (width 0) (type default))
+    (uuid 0812e59d-d570-44f4-8cb5-551a87f29e14)
+  )
+  (wire (pts (xy 116.205 60.96) (xy 133.35 60.96))
     (stroke (width 0) (type default))
     (uuid 0847050c-b4d0-4c55-8384-af6ff6c2e926)
   )
@@ -1622,6 +1870,10 @@
     (stroke (width 0) (type default))
     (uuid 189703fe-57cd-4e3b-936e-e00d10c2b56f)
   )
+  (wire (pts (xy 107.95 78.74) (xy 110.49 78.74))
+    (stroke (width 0) (type default))
+    (uuid 1c5f8ad9-d5ef-4e4a-8246-621bf2c9017e)
+  )
   (wire (pts (xy 47.625 23.495) (xy 50.165 23.495))
     (stroke (width 0) (type default))
     (uuid 22e05c34-96b8-4069-9f79-2d9ac090c4fd)
@@ -1629,10 +1881,6 @@
   (wire (pts (xy 161.29 173.99) (xy 171.45 173.99))
     (stroke (width 0) (type default))
     (uuid 236f2f7b-71fb-4bce-9e3a-bb30f4ed56e5)
-  )
-  (wire (pts (xy 116.205 63.5) (xy 123.19 63.5))
-    (stroke (width 0) (type default))
-    (uuid 2c2af9f9-dcb4-4db2-a4c9-2d03f7975023)
   )
   (wire (pts (xy 86.995 141.605) (xy 86.995 140.97))
     (stroke (width 0) (type default))
@@ -1646,6 +1894,10 @@
     (stroke (width 0) (type default))
     (uuid 3b956cf9-5468-4005-9fb8-f0c3d1b1b2be)
   )
+  (wire (pts (xy 123.19 143.51) (xy 135.89 143.51))
+    (stroke (width 0) (type default))
+    (uuid 3cf2e763-49bf-45d6-af17-6802d885222d)
+  )
   (wire (pts (xy 212.09 46.355) (xy 218.44 46.355))
     (stroke (width 0) (type default))
     (uuid 40db9c7c-c11f-4eb8-9958-62022445ef8e)
@@ -1658,17 +1910,17 @@
     (stroke (width 0) (type default))
     (uuid 47d23493-04dc-449c-8571-8222c6a6cbe6)
   )
-  (wire (pts (xy 124.46 114.3) (xy 132.08 114.3))
+  (wire (pts (xy 120.65 106.68) (xy 128.27 106.68))
     (stroke (width 0) (type default))
     (uuid 4cde7bc3-7e88-4a13-be0e-901944ded256)
-  )
-  (wire (pts (xy 58.42 92.71) (xy 69.215 92.71))
-    (stroke (width 0) (type default))
-    (uuid 4f8eadbf-5a08-4e71-9adb-2d2687954c34)
   )
   (wire (pts (xy 203.2 163.83) (xy 204.47 163.83))
     (stroke (width 0) (type default))
     (uuid 543e1fc8-cd15-49a1-8b00-cd9a14a0b6df)
+  )
+  (wire (pts (xy 95.25 78.74) (xy 100.33 78.74))
+    (stroke (width 0) (type default))
+    (uuid 56662209-2b80-4145-95cf-5827ca919099)
   )
   (wire (pts (xy 165.1 132.08) (xy 156.21 132.08))
     (stroke (width 0) (type default))
@@ -1677,10 +1929,6 @@
   (wire (pts (xy 86.995 140.97) (xy 74.93 140.97))
     (stroke (width 0) (type default))
     (uuid 5ee16172-8522-4718-9dae-a14d629da194)
-  )
-  (wire (pts (xy 22.86 133.35) (xy 34.29 133.35))
-    (stroke (width 0) (type default))
-    (uuid 5f7ebebb-cb3b-4bdf-a07f-21ddfb8df4d4)
   )
   (wire (pts (xy 204.47 161.29) (xy 204.47 163.83))
     (stroke (width 0) (type default))
@@ -1698,10 +1946,6 @@
     (stroke (width 0) (type default))
     (uuid 800ddcd7-88c1-4433-b4fa-05365021fecf)
   )
-  (wire (pts (xy 192.405 46.355) (xy 199.39 46.355))
-    (stroke (width 0) (type default))
-    (uuid 84660576-90b2-439e-855a-f8c43a60e0e3)
-  )
   (wire (pts (xy 232.41 154.94) (xy 234.95 154.94))
     (stroke (width 0) (type default))
     (uuid 848baccc-fa0a-4eb0-87f6-c4bec5b8564e)
@@ -1709,6 +1953,10 @@
   (wire (pts (xy 74.93 125.73) (xy 86.995 125.73))
     (stroke (width 0) (type default))
     (uuid 8f2d6df3-d0ca-4693-8036-9793b90990b2)
+  )
+  (wire (pts (xy 123.19 173.99) (xy 135.89 173.99))
+    (stroke (width 0) (type default))
+    (uuid 9efcef2a-3e61-494d-bdd1-5722298c0b9b)
   )
   (wire (pts (xy 52.705 23.495) (xy 50.165 23.495))
     (stroke (width 0) (type default))
@@ -1718,13 +1966,13 @@
     (stroke (width 0) (type default))
     (uuid a04a8832-1717-4ab7-a12c-be9e3f9eac05)
   )
+  (wire (pts (xy 31.115 171.45) (xy 34.29 171.45))
+    (stroke (width 0) (type default))
+    (uuid a3902077-ad2d-45e1-8a09-efca3b5a33ef)
+  )
   (wire (pts (xy 210.82 161.29) (xy 204.47 161.29))
     (stroke (width 0) (type default))
     (uuid b1568b76-de88-43fe-bfb2-2b8ccc4783d8)
-  )
-  (wire (pts (xy 124.46 152.4) (xy 132.08 152.4))
-    (stroke (width 0) (type default))
-    (uuid bb024037-f428-47b1-a0fb-28fd6e3e4eac)
   )
   (wire (pts (xy 234.95 109.22) (xy 234.95 116.84))
     (stroke (width 0) (type default))
@@ -1734,10 +1982,6 @@
     (stroke (width 0) (type default))
     (uuid c44168cf-7db0-4be3-ad2d-b1878d4a58f8)
   )
-  (wire (pts (xy 46.99 63.5) (xy 38.1 63.5))
-    (stroke (width 0) (type default))
-    (uuid c830c486-d72b-4da7-85af-0d8f5d76a0b1)
-  )
   (wire (pts (xy 37.465 23.495) (xy 40.005 23.495))
     (stroke (width 0) (type default))
     (uuid d08d0dc3-4fb3-485d-830d-17d0533095a5)
@@ -1745,10 +1989,6 @@
   (wire (pts (xy 235.585 78.105) (xy 252.73 78.105))
     (stroke (width 0) (type default))
     (uuid dee899d6-368b-4755-b540-83db0e827bb2)
-  )
-  (wire (pts (xy 124.46 133.35) (xy 132.08 133.35))
-    (stroke (width 0) (type default))
-    (uuid df2c6ba2-f0f8-4cc8-8ff2-895571f5aac3)
   )
   (wire (pts (xy 62.865 23.495) (xy 62.865 27.305))
     (stroke (width 0) (type default))
@@ -1765,6 +2005,10 @@
   (wire (pts (xy 210.82 132.08) (xy 210.82 161.29))
     (stroke (width 0) (type default))
     (uuid fb498d53-4f21-42ba-8099-8889c31b9843)
+  )
+  (wire (pts (xy 176.53 86.36) (xy 179.07 86.36))
+    (stroke (width 0) (type default))
+    (uuid fdd1c8ce-e373-4b17-81b3-5f6fc185ceaa)
   )
   (wire (pts (xy 156.21 161.29) (xy 204.47 161.29))
     (stroke (width 0) (type default))
@@ -1792,6 +2036,10 @@
     (effects (font (size 5 5)) (justify left bottom))
     (uuid 11d37eaf-422a-437f-8cd3-7d1f0b143e5e)
   )
+  (text "IR" (at 113.03 135.89 0)
+    (effects (font (size 5 5)) (justify left bottom))
+    (uuid 325b8637-06f8-456d-9643-fd3295a63bd6)
+  )
   (text "IO" (at 222.885 27.94 0)
     (effects (font (size 5 5)) (justify left bottom))
     (uuid 46278500-5571-47b1-91eb-e021d54ef186)
@@ -1804,7 +2052,7 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 716b3607-5dff-4790-925b-47049d84f661)
   )
-  (text "VLX" (at 113.665 102.87 0)
+  (text "VLX" (at 109.855 95.25 0)
     (effects (font (size 5 5)) (justify left bottom))
     (uuid 97b6ab1a-cbed-4708-860d-084ce41dbea8)
   )
@@ -1837,10 +2085,6 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 2132a73b-49c6-4091-976c-f52fde904fda)
   )
-  (label "SERVO_PWM_1" (at 222.885 83.185 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 21734cbe-8b24-49e5-b8cb-1b3e9ee967c5)
-  )
   (label "GPIO0" (at 233.68 39.37 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 2196dbb5-1eac-40c6-ba40-000706e92cfc)
@@ -1849,15 +2093,15 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 2590a4da-87f9-4d2a-af1f-8a7093d8a480)
   )
+  (label "5V_BOARD" (at 23.495 171.45 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid 265533c4-6316-4268-a649-7c9b87d138d4)
+  )
   (label "RX2" (at 74.93 153.67 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 289dd05f-94e2-4869-9990-9f8561d802f0)
   )
-  (label "SERVO_PWM_2" (at 235.585 83.185 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 2a3ae9dd-f259-405b-b663-048364778fac)
-  )
-  (label "SCL" (at 124.46 116.84 0) (fields_autoplaced)
+  (label "SCL" (at 120.65 109.22 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 2b0d8450-8336-4c78-807b-4a7e6de24d3b)
   )
@@ -1881,14 +2125,6 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 37602c15-edf2-445a-adf9-de0eb0258b60)
   )
-  (label "SDA" (at 124.46 157.48 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 3a4d8386-69b8-44c3-a929-d1f6eaeb2e78)
-  )
-  (label "GPIO4" (at 74.93 156.21 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 3acb3762-49a0-4395-9c2e-0be1fb88b712)
-  )
   (label "GPIO35" (at 233.68 54.61 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 3b074676-c830-4734-b6b1-4b54e670b41e)
@@ -1897,9 +2133,17 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 3d73a0ef-fa0c-40e3-ae7c-763e8e5ea850)
   )
+  (label "TCRT1" (at 34.29 133.35 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid 3e9e5e20-24ef-433a-8187-e2714a119c1b)
+  )
   (label "MS2" (at 153.67 182.88 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 42d2abf1-23b0-4aea-acd7-8c8c6fd86ace)
+  )
+  (label "EMERGENCY_BUTTON" (at 46.99 63.5 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid 458b295d-1118-4957-9425-ac6359ea5553)
   )
   (label "GPIO5" (at 74.93 148.59 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1909,13 +2153,9 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 4d215007-da65-4a11-bbc3-06b7916b625d)
   )
-  (label "EMERGENCY_BUTTON" (at 234.95 105.41 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 4d720b1f-ec81-415a-a0d5-c2aabaf4d0cc)
-  )
-  (label "SCL" (at 124.46 154.94 0) (fields_autoplaced)
+  (label "DIR_2" (at 74.93 128.27 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 51a76f88-2e87-4db7-bad9-bada6582a533)
+    (uuid 536f426b-41f5-4274-ae6a-4abd023de91a)
   )
   (label "MS1" (at 153.67 173.99 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -1924,10 +2164,6 @@
   (label "BAT_READING" (at 50.165 29.845 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 582478c1-2b8b-43d2-85cb-59350c641191)
-  )
-  (label "EMERGENCY_BUTTON" (at 180.34 106.045 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 583b1d16-9007-465c-8261-a0d190c843ea)
   )
   (label "GPIO15" (at 74.93 163.83 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1941,6 +2177,10 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 5e432e0f-f7ab-45aa-8807-573d341f47c9)
   )
+  (label "TCRT2" (at 34.29 143.51 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid 614dc071-9c26-4ff6-be98-eb67b5db4edc)
+  )
   (label "MS2" (at 165.1 144.78 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 6329b440-324c-4595-bc0c-687219f917e7)
@@ -1948,10 +2188,6 @@
   (label "GPIO34" (at 34.29 135.89 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 6726e2a1-6b8c-45ce-8f41-d63ba9716b5e)
-  )
-  (label "SCL" (at 124.46 135.89 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 6748b972-da85-49ec-a7ce-7c68fb52b592)
   )
   (label "GPIO19" (at 74.93 143.51 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1965,13 +2201,9 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 6fa1d44e-f343-4963-97aa-26562a947198)
   )
-  (label "EMERGENCY_BUTTON" (at 46.99 66.04 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 80c6bbff-b773-4c2b-9b2a-650379f1d7ec)
-  )
-  (label "GPIO23" (at 124.46 143.51 0) (fields_autoplaced)
+  (label "GPIO2" (at 118.11 78.74 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 855b40e5-4466-4ad1-a1d8-aac71c2285fa)
+    (uuid 7a1e4200-272c-4b0f-8c79-9a5ec4e18a3d)
   )
   (label "DIR_1" (at 34.29 153.67 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -1980,6 +2212,10 @@
   (label "GPIO5" (at 29.845 90.17 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 87cb236f-961a-4df2-bbd3-f8a8c8eedc51)
+  )
+  (label "TCRT1" (at 123.19 163.83 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 8905a883-42cb-47fb-97d2-4f52918e9ee3)
   )
   (label "GPIO19" (at 233.68 49.53 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1993,45 +2229,37 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 8f4f7c35-df25-4733-b207-2be3f176d504)
   )
-  (label "SCL" (at 199.39 43.815 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 921aa8bb-6e6c-4898-a8f5-12b71693a8ca)
+  (label "GPIO15" (at 233.68 44.45 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 902c7cdf-37c6-4134-a0c9-73dd30d59c72)
   )
-  (label "NOT_MOT_EN" (at 34.29 143.51 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 94122d48-62f4-483f-8a0b-48d558a6eb1b)
+  (label "NOT_MOT_EN" (at 74.93 156.21 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 978bed91-bef2-4d10-8f48-f641d8ff97e2)
   )
   (label "MS1" (at 219.71 142.24 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 97a2ab3e-a265-4ad9-8797-df61ee8cacaf)
   )
-  (label "GPIO15" (at 58.42 90.17 0) (fields_autoplaced)
+  (label "GPIO12" (at 233.68 41.91 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid 9f2c0c15-f6cc-4682-90e9-519e762161ac)
+    (uuid 9ee60c5b-8e84-451e-88fe-ed92bc1ee778)
   )
   (label "NOT_MOT_EN" (at 203.2 163.83 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid a20f0720-da1c-4dc8-b187-fe5e5991bbf4)
   )
+  (label "BATTERY_INPUT" (at 46.99 66.04 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid a25210ab-cc13-4824-b901-fedb932ca708)
+  )
   (label "SERVO_PWM_2" (at 34.29 148.59 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid a31db168-ee12-458d-aec1-a5f4487776b1)
   )
-  (label "GPIO4" (at 233.68 41.91 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid a8db01e2-d2f0-4f4a-9c70-e322370c1cf6)
-  )
-  (label "SDA" (at 199.39 41.275 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid a9d871c5-7b45-43c1-9064-c101cbdc74bb)
-  )
   (label "SCL" (at 212.09 43.815 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid adbae54b-96b1-4a41-9413-fd275f84ff9e)
-  )
-  (label "SDA" (at 124.46 138.43 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid b1b373bd-ab49-4b26-8637-d0f38f2ece75)
   )
   (label "SDA" (at 74.93 138.43 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -2040,10 +2268,6 @@
   (label "MS1" (at 165.1 142.24 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid b39f9cd7-d738-407a-aa78-46ed5cef95a4)
-  )
-  (label "GPIO12" (at 233.68 44.45 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid b49fcd3a-b170-488a-86a9-c6430c0866b3)
   )
   (label "GPIO2" (at 74.93 161.29 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -2057,27 +2281,31 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid b80f2115-1697-47cf-a4c9-10ba41b535f5)
   )
+  (label "TCRT0" (at 123.19 148.59 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid b852dfc3-690a-424f-8974-7972ea3eed1e)
+  )
+  (label "SERVO_PWM_2" (at 222.885 83.185 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid b93814d4-85b6-4609-b7f7-420a39bbd57e)
+  )
   (label "RX2" (at 262.89 38.1 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid bc59df5e-467a-40be-9e0b-be2fb940733f)
-  )
-  (label "GPIO23" (at 74.93 128.27 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid cda766f6-a37f-4e15-b002-d82c7fd058da)
-  )
-  (label "DIR_2" (at 34.29 140.97 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid cdfec5b8-e314-4e2a-8cae-577644063945)
   )
   (label "GPIO12" (at 34.29 156.21 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid d2c37804-81d5-44c4-a25b-481ef0086055)
   )
-  (label "POWER_SWITCH" (at 91.44 35.56 180) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid deba6c94-b1be-404e-ab80-4d5d25d0dde8)
+  (label "5V_BOARD" (at 116.205 58.42 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid d4b678f3-9b4f-40d5-8b9c-3581cf526862)
   )
-  (label "SDA" (at 124.46 119.38 0) (fields_autoplaced)
+  (label "TCRT2" (at 123.19 179.07 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid d7410af0-5da5-4e2a-b70c-a7f743e66483)
+  )
+  (label "SDA" (at 120.65 111.76 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e1489790-c04a-4217-8f06-bf65bc106315)
   )
@@ -2089,9 +2317,9 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid f02391c8-82b5-412e-b616-733bf3806ba8)
   )
-  (label "EMERGENCY_BUTTON" (at 176.53 86.36 0) (fields_autoplaced)
+  (label "SERVO_PWM_1" (at 235.585 83.185 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid f0ae1445-b3c7-4613-a591-e4a8c19114c1)
+    (uuid f12daef1-d424-48aa-90c3-0e6990e815aa)
   )
   (label "SCL" (at 74.93 130.81 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -2101,13 +2329,17 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f478d1ed-9109-452d-afca-b506dfdb28aa)
   )
+  (label "POWER_SWITCH" (at 116.205 63.5 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid f73b8caa-6d01-4c20-9542-d8208c4339db)
+  )
   (label "STEP_1" (at 165.1 134.62 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid f80f6dbb-d6cd-49ce-abdf-d6723e5c388c)
   )
-  (label "GPIO2" (at 124.46 124.46 0) (fields_autoplaced)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid f9acd13f-6128-4448-bd84-4196a3833a4b)
+  (label "TCRT0" (at 34.29 140.97 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid f82d4c78-8993-4b4d-938f-7b15cc64c25c)
   )
   (label "POWER_SWITCH" (at 37.465 23.495 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right bottom))
@@ -2117,60 +2349,9 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid fb944a88-5863-401e-85d5-812a246592e4)
   )
-
-  (symbol (lib_id "MiAM_ESP32:VL53L01XV2") (at 114.3 154.94 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 00d2c748-8839-429e-80e8-b060c7f946c6)
-    (property "Reference" "U7" (at 111.125 149.225 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Value" "~" (at 114.3 154.94 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" (at 114.3 154.94 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 114.3 154.94 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 95eb461a-ed61-4959-90b3-b51bb7f610df))
-    (pin "2" (uuid 44c3f9aa-7089-45cb-8434-03acfa530999))
-    (pin "3" (uuid 1cc57764-a9ea-4f52-bbb9-fd32aee901fe))
-    (pin "4" (uuid 6c6d8b16-c315-4acb-9970-457bbe5c230d))
-    (pin "5" (uuid 249aa60d-25e3-4e71-b1ef-a7824b9363ec))
-    (pin "6" (uuid 0ac9d775-8ef7-4b16-920c-836c79ee185a))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "U7") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+3V3") (at 116.205 58.42 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 01cbfc86-4fd1-4ee8-b8d1-bc2378c594eb)
-    (property "Reference" "#PWR0119" (at 116.205 62.23 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3V3" (at 116.205 53.34 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 116.205 58.42 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 116.205 58.42 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 0902409c-a0f5-47d4-8391-d38bfa3c59b5))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR0119") (unit 1)
-        )
-      )
-    )
+  (label "EMERGENCY_BUTTON" (at 91.44 35.56 180) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid fe1ebc5a-148a-497a-b15b-bd45682071f8)
   )
 
   (symbol (lib_id "power:GND") (at 162.56 29.845 0) (unit 1)
@@ -2190,91 +2371,9 @@
     )
     (pin "1" (uuid 36c6b466-035e-4ad4-9fa7-234e225c3580))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR014") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+12V") (at 123.19 63.5 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 04946cca-ec06-44b4-a85c-67b093f4a1a1)
-    (property "Reference" "#PWR0110" (at 123.19 67.31 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+12V" (at 123.19 58.42 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 123.19 63.5 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 123.19 63.5 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 638e7cda-f2b7-4bba-84db-158f1b89b212))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR0110") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+3V3") (at 192.405 46.355 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 08737dcf-2fce-4bd4-9d70-8a09020ae313)
-    (property "Reference" "#PWR04" (at 192.405 50.165 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3V3" (at 192.405 41.275 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 192.405 46.355 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 192.405 46.355 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 88214599-ff95-4d27-8313-782cc2c44246))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR04") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "Connector_Generic:Conn_02x04_Odd_Even") (at 204.47 43.815 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 0a65b99a-b5a0-46e0-8a99-62243ecd339a)
-    (property "Reference" "I2C1" (at 205.74 34.925 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Value" "Conn_02x04_Odd_Even" (at 205.74 37.465 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical" (at 204.47 43.815 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "~" (at 204.47 43.815 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 9c530d65-ba9f-41af-85b6-e300b983a242))
-    (pin "2" (uuid c78b4e1a-f740-4c35-9a7c-5b790f13ffa0))
-    (pin "3" (uuid c13de284-75a5-4267-91a6-fe1a209b592f))
-    (pin "4" (uuid 708b66f1-e291-4676-858e-1649357d5f9f))
-    (pin "5" (uuid d142d3a3-2b07-432f-87b2-42d8e8dcb43b))
-    (pin "6" (uuid 2ff32fa7-4dc4-4f60-b0ec-abdc622c0b33))
-    (pin "7" (uuid c28e9192-7fb2-41cb-bb9b-045385ad58e9))
-    (pin "8" (uuid 6f82e0db-9e13-4c3b-b2d9-328771b04841))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "I2C1") (unit 1)
         )
       )
     )
@@ -2298,7 +2397,7 @@
     (pin "1" (uuid 273f7b5d-1da2-4d89-80fd-7b4eb91cab11))
     (pin "2" (uuid 21ed2e08-23f0-457b-aeeb-b784c06cb485))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "C3") (unit 1)
         )
@@ -2306,19 +2405,19 @@
     )
   )
 
-  (symbol (lib_id "MiAM_ESP32:VL53L01XV2") (at 114.3 116.84 0) (unit 1)
+  (symbol (lib_id "MiAM_ESP32:VL53L01XV2") (at 110.49 109.22 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 192dda2d-5283-4575-a681-a9bdb10c2611)
-    (property "Reference" "U5" (at 111.125 111.125 0)
+    (property "Reference" "U5" (at 107.315 103.505 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "~" (at 114.3 116.84 0)
+    (property "Value" "~" (at 110.49 109.22 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" (at 114.3 116.84 0)
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" (at 110.49 109.22 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 114.3 116.84 0)
+    (property "Datasheet" "" (at 110.49 109.22 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 6fe9725a-cae9-4e1b-a16f-6cd4bb4f746a))
@@ -2328,7 +2427,7 @@
     (pin "5" (uuid 3f17ad45-53c7-4af1-bd1c-c76aa03e1b52))
     (pin "6" (uuid 836a6838-9b19-4be8-a0b6-9f23defe672e))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "U5") (unit 1)
         )
@@ -2353,9 +2452,37 @@
     )
     (pin "1" (uuid 60560fc4-ca2e-4b1a-9fa1-0573f6159eee))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR036") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "MiAM_ESP32:SSD1306_vertical") (at 207.01 43.815 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 1d1668f4-5587-41dc-b9d4-94e9b542eecf)
+    (property "Reference" "J3" (at 205.3899 35.56 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "SSD1306_vertical" (at 205.3899 38.1 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "MiAM_ESP32_Footprints:SSD1306_vertical" (at 207.01 43.815 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 207.01 43.815 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "2" (uuid 1238afdf-452e-423c-b600-682d13292581))
+    (pin "1" (uuid 5ff365b5-8253-4957-8b6e-660e8244a145))
+    (pin "4" (uuid b3f6c0b4-8e20-48b1-bdb5-8feb177c7373))
+    (pin "3" (uuid 42539acc-9921-4341-a6d7-bc4848fe6099))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "J3") (unit 1)
         )
       )
     )
@@ -2378,7 +2505,7 @@
     )
     (pin "1" (uuid 0cfbc937-f5c5-49d5-b281-4943529805a6))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "H2") (unit 1)
         )
@@ -2406,7 +2533,7 @@
     (pin "3" (uuid 27c1be25-45e9-4752-bd7b-2cafc49021a2))
     (pin "4" (uuid 8b34a685-86d7-4b94-a908-55940195a9be))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "U3") (unit 1)
         )
@@ -2414,26 +2541,26 @@
     )
   )
 
-  (symbol (lib_id "power:+12V") (at 116.84 35.56 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 2c43ab6d-c70d-421b-b0f5-2c1a081da746)
-    (property "Reference" "#PWR0118" (at 116.84 39.37 0)
+  (symbol (lib_id "power:GND") (at 135.89 173.99 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 310a4794-3038-4548-b29e-767cda1bb306)
+    (property "Reference" "#PWR034" (at 135.89 180.34 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+12V" (at 116.84 30.48 0)
+    (property "Value" "GND" (at 135.89 179.07 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 116.84 35.56 0)
+    (property "Footprint" "" (at 135.89 173.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 116.84 35.56 0)
+    (property "Datasheet" "" (at 135.89 173.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid ed13ed02-5f67-40c5-b1c5-8981d8f3329e))
+    (pin "1" (uuid 3c777d5c-58fb-4c1c-8152-6528defd38dd))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR0118") (unit 1)
+          (reference "#PWR034") (unit 1)
         )
       )
     )
@@ -2448,7 +2575,7 @@
     (property "Value" "Conn_01x04_Male" (at 243.84 128.27 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (at 247.65 134.62 0)
+    (property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical" (at 247.65 134.62 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 247.65 134.62 0)
@@ -2459,7 +2586,7 @@
     (pin "3" (uuid 165c7f74-33e0-4578-a3b7-f541777c262a))
     (pin "4" (uuid f2b646a9-0e18-43f5-9483-d60f4ba5577b))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "MOT2") (unit 1)
         )
@@ -2485,7 +2612,7 @@
     (pin "1" (uuid da55f9d6-ea18-4356-9f40-d0c49578fdeb))
     (pin "2" (uuid 419bb9be-eda1-4c16-b90b-286a0fb107d7))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "BAT1") (unit 1)
         )
@@ -2510,9 +2637,60 @@
     )
     (pin "1" (uuid 453829cb-2d8b-4457-b013-2a7f393215c7))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR012") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:GND") (at 95.25 78.74 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 3eb04b26-9119-48aa-9001-da3ab268127d)
+    (property "Reference" "#PWR035" (at 95.25 85.09 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "GND" (at 95.25 83.82 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 95.25 78.74 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 95.25 78.74 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 8274a629-6c02-4816-8f32-dab8913cb907))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR035") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Device:D_Schottky") (at 27.305 171.45 180) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 3f50b45b-38ff-4b5c-957e-d89603ea5955)
+    (property "Reference" "D2" (at 27.6225 165.1 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "D_Schottky" (at 27.6225 167.64 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "Diode_SMD:D_SOD-323_HandSoldering" (at 27.305 171.45 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 27.305 171.45 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 38ed27ce-3335-49be-8261-bea0311e1626))
+    (pin "2" (uuid 549f373c-28a9-4ffc-953f-33eeef6a402d))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "D2") (unit 1)
         )
       )
     )
@@ -2541,9 +2719,36 @@
     (pin "6" (uuid a80c149b-abfe-4927-b5d9-6441991b40b7))
     (pin "7" (uuid c891dac7-c24c-4cc5-b3b5-4c28ff9c691a))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "GPIO2") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "MiAM_ESP32:TCRT5000L_Breakout") (at 118.11 176.53 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 43049fd1-34fe-4602-8466-4a5b545bd95a)
+    (property "Reference" "J5" (at 117.775 167.64 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "TCRT5000L_Breakout" (at 117.775 170.18 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "MiAM_ESP32_Footprints:TCRT5000L_Breakout" (at 118.11 176.53 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 118.11 176.53 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "2" (uuid 6eb81cae-d051-4f76-8978-1a58ac25c685))
+    (pin "1" (uuid c6ff169e-b14a-4a9b-9db1-32ec4a17f74e))
+    (pin "3" (uuid 2c42da7d-b25f-4e06-ab2d-8aeaff233bae))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "J5") (unit 1)
         )
       )
     )
@@ -2566,7 +2771,7 @@
     )
     (pin "1" (uuid 7519465a-f5ec-41b5-82d0-cba3cbf7db03))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR01") (unit 1)
         )
@@ -2591,7 +2796,7 @@
     )
     (pin "1" (uuid 3c2f68ef-2248-45c9-bb01-5f6ddcb04dae))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR0117") (unit 1)
         )
@@ -2616,59 +2821,9 @@
     )
     (pin "1" (uuid e8a85290-a2cf-4974-8111-ba09a3ec67cf))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR016") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:GND") (at 22.86 133.35 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 4fbc038f-da42-4fe3-a094-467d36c5784e)
-    (property "Reference" "#PWR013" (at 22.86 139.7 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "GND" (at 22.86 138.43 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 22.86 133.35 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 22.86 133.35 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 0ffce1f5-44da-4e29-877f-fe345c60b85a))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR013") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:GND") (at 199.39 48.895 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 5073557b-bcb8-4321-950f-6d1c682f2bea)
-    (property "Reference" "#PWR05" (at 199.39 55.245 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "GND" (at 199.39 53.975 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 199.39 48.895 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 199.39 48.895 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 7ba46f5b-2366-4831-a200-55363c67953c))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR05") (unit 1)
         )
       )
     )
@@ -2680,7 +2835,7 @@
     (property "Reference" "U2" (at 101.6 61.595 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "3V3" (at 101.6 63.5 0)
+    (property "Value" "5V" (at 101.6 63.5 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "MiAM_ESP32_Footprints:VoltageRegulator" (at 103.505 62.23 0)
@@ -2694,7 +2849,7 @@
     (pin "3" (uuid 98b6ac44-e702-4d73-ad83-d61f13ac2fef))
     (pin "4" (uuid 469d1061-4f98-4b6c-b945-b563d369b5c8))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "U2") (unit 1)
         )
@@ -2702,51 +2857,52 @@
     )
   )
 
-  (symbol (lib_id "power:GND") (at 132.08 152.4 0) (unit 1)
+  (symbol (lib_id "Device:LED") (at 104.14 78.74 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 598c2e48-200e-4e9c-879c-48fdb97019f4)
-    (property "Reference" "#PWR030" (at 132.08 158.75 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "GND" (at 132.08 157.48 0)
+    (uuid 5ac1241b-0df6-457e-afc0-42a58537e4e7)
+    (property "Reference" "D1" (at 102.5525 72.39 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 132.08 152.4 0)
+    (property "Value" "LED" (at 102.5525 74.93 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "LED_THT:LED_D3.0mm" (at 104.14 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 132.08 152.4 0)
+    (property "Datasheet" "~" (at 104.14 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid ffad82b3-507e-4831-b1cc-510f288b1ddd))
+    (pin "1" (uuid 568e1eed-7484-4a31-be09-6b704f9ec1aa))
+    (pin "2" (uuid 996a2203-c425-49bc-9ba9-b97b0d4078d2))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR030") (unit 1)
+          (reference "D1") (unit 1)
         )
       )
     )
   )
 
-  (symbol (lib_id "power:+3V3") (at 124.46 149.86 0) (unit 1)
+  (symbol (lib_id "power:GND") (at 135.89 143.51 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 5d8456af-2fdf-41a2-9a6b-cdd910a74804)
-    (property "Reference" "#PWR029" (at 124.46 153.67 0)
+    (uuid 64d69b40-984b-43d9-bff1-96ce630a2aef)
+    (property "Reference" "#PWR027" (at 135.89 149.86 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+3V3" (at 124.46 144.78 0)
+    (property "Value" "GND" (at 135.89 148.59 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 124.46 149.86 0)
+    (property "Footprint" "" (at 135.89 143.51 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 124.46 149.86 0)
+    (property "Datasheet" "" (at 135.89 143.51 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid c4c58ede-32f7-419c-8468-b69659c06b9a))
+    (pin "1" (uuid 664ad54f-848f-452c-b142-b5d9f8dac9a9))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR029") (unit 1)
+          (reference "#PWR027") (unit 1)
         )
       )
     )
@@ -2770,9 +2926,34 @@
     (pin "1" (uuid baf9f715-90ae-4e2f-bb63-fff113f601a4))
     (pin "2" (uuid 7f94e4d6-6781-4cb0-96ca-2bb869670590))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "R2") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:+12V") (at 116.84 35.56 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 6bcdf06c-0f59-4d0c-abd1-eb060a301b1f)
+    (property "Reference" "#PWR037" (at 116.84 39.37 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+12V" (at 116.84 30.48 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 116.84 35.56 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 116.84 35.56 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 5f22a7c0-a26e-4b48-8eb0-c9e7173daf3e))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR037") (unit 1)
         )
       )
     )
@@ -2797,7 +2978,7 @@
     (pin "2" (uuid a8339280-5a72-4caa-af63-0be5aba52aaf))
     (pin "3" (uuid 5645b4e9-0266-4e30-a8d7-f3dcc6c5ecb7))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "EMGBUT1") (unit 1)
         )
@@ -2822,9 +3003,34 @@
     )
     (pin "1" (uuid 866162cd-1220-45e0-b56b-d25f0a652831))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR018") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:+3V3") (at 123.19 146.05 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 75107649-a72e-4703-b442-e5afe62dc6a0)
+    (property "Reference" "#PWR028" (at 123.19 149.86 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3V3" (at 123.19 140.97 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 123.19 146.05 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 123.19 146.05 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 8ee7615a-ffc3-419b-81b2-d78878a63952))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR028") (unit 1)
         )
       )
     )
@@ -2847,7 +3053,7 @@
     )
     (pin "1" (uuid 172ea5ad-fac1-43d6-bb84-db83413a8a71))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR015") (unit 1)
         )
@@ -2872,7 +3078,7 @@
     )
     (pin "1" (uuid 1347d4ed-81b5-4b83-bbb6-d2481ba43b8a))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR010") (unit 1)
         )
@@ -2886,7 +3092,7 @@
     (property "Reference" "U4" (at 159.385 75.565 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "3V3" (at 159.385 77.47 0)
+    (property "Value" "5V" (at 159.385 77.47 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "MiAM_ESP32_Footprints:VoltageRegulator" (at 161.29 76.2 0)
@@ -2900,7 +3106,7 @@
     (pin "3" (uuid d00f9237-2c54-4f4f-b0b9-68e1303a1844))
     (pin "4" (uuid 198cc633-d36c-4c62-9b28-06b1a8d21029))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "U4") (unit 1)
         )
@@ -2908,16 +3114,16 @@
     )
   )
 
-  (symbol (lib_id "Jumper:SolderJumper_2_Open") (at 157.48 182.88 0) (unit 1)
+  (symbol (lib_id "Jumper:SolderJumper_2_Bridged") (at 157.48 182.88 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 7f100205-2866-40d0-8a05-3ee4d378d946)
-    (property "Reference" "MS2" (at 157.48 177.165 0)
+    (property "Reference" "MS2" (at 157.48 176.53 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "SolderJumper_2_Open" (at 157.48 179.705 0)
+    (property "Value" "SolderJumper_2_Bridged" (at 157.48 179.07 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" (at 157.48 182.88 0)
+    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm" (at 157.48 182.88 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 157.48 182.88 0)
@@ -2926,7 +3132,7 @@
     (pin "1" (uuid 9dbaab08-b550-45d3-83bb-b1dfc4ae57e0))
     (pin "2" (uuid 5e25a7ab-540d-403f-acc2-98980c8c3839))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "MS2") (unit 1)
         )
@@ -2951,9 +3157,34 @@
     )
     (pin "1" (uuid 98cc0f0e-ac13-411d-a790-e38c042bf184))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR032") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:GND") (at 135.89 158.75 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 87898f33-0404-4c3f-acf8-56f3dc8291f1)
+    (property "Reference" "#PWR030" (at 135.89 165.1 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "GND" (at 135.89 163.83 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 135.89 158.75 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 135.89 158.75 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid d2f384dc-0e7e-4b2e-bafe-d76d13b77d81))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR030") (unit 1)
         )
       )
     )
@@ -2976,7 +3207,7 @@
     )
     (pin "1" (uuid 39acf06f-4920-40ed-8e12-e5c6a82c1e79))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR017") (unit 1)
         )
@@ -3001,9 +3232,34 @@
     )
     (pin "1" (uuid 481752ea-c652-4f79-a29e-d5b7af8bb92e))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR021") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:+3V3") (at 123.19 161.29 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 8f3d8977-3abd-42cb-a86f-c28ac49478b3)
+    (property "Reference" "#PWR029" (at 123.19 165.1 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3V3" (at 123.19 156.21 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 123.19 161.29 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 123.19 161.29 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 1621daa4-5a0a-427a-b71a-b881ddbab1c6))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR029") (unit 1)
         )
       )
     )
@@ -3026,7 +3282,7 @@
     )
     (pin "1" (uuid 006a5b3a-3d7d-4b04-9e17-31cba997fc9b))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR011") (unit 1)
         )
@@ -3051,7 +3307,7 @@
     )
     (pin "1" (uuid 1d9fd35e-e8e2-4c33-a921-4b378b726bfd))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR0115") (unit 1)
         )
@@ -3076,36 +3332,9 @@
     )
     (pin "1" (uuid 246dc6b4-3393-48e0-89e1-cedb2e3a4850))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR06") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "Connector:Conn_01x03_Male") (at 53.34 92.71 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid 9ae6685b-e6a5-4564-b4d1-156616d132db)
-    (property "Reference" "J3" (at 53.975 85.09 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Value" "Conn_01x03_Male" (at 53.975 87.63 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "MiAM_ESP32_Footprints:Microruptor" (at 53.34 92.71 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "~" (at 53.34 92.71 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid cca2baea-6432-45a6-bca8-f8f6e94ae032))
-    (pin "2" (uuid fce6c852-97ab-4b28-a4d8-5917e2c81381))
-    (pin "3" (uuid 0d8c2095-60c4-433e-b318-b1720d602a9e))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "J3") (unit 1)
         )
       )
     )
@@ -3143,7 +3372,7 @@
     (pin "8" (uuid fd897773-ab6f-4e8e-a1ae-986c605c8f8b))
     (pin "9" (uuid 75aa6c76-5db2-468c-98d8-ba23f505598c))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "A1") (unit 1)
         )
@@ -3169,9 +3398,35 @@
     (pin "1" (uuid 8c9c7577-9bfb-4875-b7fa-22140af2a7ec))
     (pin "2" (uuid b90b0d3d-1a47-4a43-8c79-a20c3ff9ddfc))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "R1") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Device:R") (at 114.3 78.74 90) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid a81ea3fc-6e94-4692-b2fd-034d3348648c)
+    (property "Reference" "R4" (at 114.3 72.39 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "200" (at 114.3 74.93 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "Resistor_SMD:R_0805_2012Metric" (at 114.3 80.518 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 114.3 78.74 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 45fd9de9-92a3-4fd5-9f86-068dbf43db6d))
+    (pin "2" (uuid b1238a10-6ff6-49b5-bd2c-596b7c43a4b2))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "R4") (unit 1)
         )
       )
     )
@@ -3194,7 +3449,7 @@
     )
     (pin "1" (uuid fb97b132-7772-4928-9f3e-d59f6f9c4ac8))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR08") (unit 1)
         )
@@ -3220,7 +3475,7 @@
     (pin "1" (uuid 594efb6f-a66f-43c8-a889-62994553c4e2))
     (pin "2" (uuid b016e06b-4e8b-4f1e-8ca6-9698a7637535))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "UART1") (unit 1)
         )
@@ -3245,7 +3500,7 @@
     )
     (pin "1" (uuid dba330b0-1b2e-4836-a922-93acbcf03471))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR020") (unit 1)
         )
@@ -3253,24 +3508,24 @@
     )
   )
 
-  (symbol (lib_id "power:+3V3") (at 124.46 111.76 0) (unit 1)
+  (symbol (lib_id "power:+3V3") (at 120.65 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid bdf37d20-1c23-403f-a5cc-799892f03b2b)
-    (property "Reference" "#PWR026" (at 124.46 115.57 0)
+    (property "Reference" "#PWR026" (at 120.65 107.95 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+3V3" (at 124.46 106.68 0)
+    (property "Value" "+3V3" (at 120.65 99.06 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 124.46 111.76 0)
+    (property "Footprint" "" (at 120.65 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 124.46 111.76 0)
+    (property "Datasheet" "" (at 120.65 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 2038943e-1ee8-40e7-bb54-45489cc291cc))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR026") (unit 1)
         )
@@ -3310,7 +3565,7 @@
     (pin "8" (uuid 22a03055-40a5-4664-bf91-b2e892a70190))
     (pin "9" (uuid 55eeb2df-8824-481b-a15f-8568fe9c09f9))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "A2") (unit 1)
         )
@@ -3318,24 +3573,24 @@
     )
   )
 
-  (symbol (lib_id "power:GND") (at 132.08 114.3 0) (unit 1)
+  (symbol (lib_id "power:GND") (at 128.27 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid bfd9f6ee-b229-4a3e-89f7-3ecb671b2602)
-    (property "Reference" "#PWR09" (at 132.08 120.65 0)
+    (property "Reference" "#PWR09" (at 128.27 113.03 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "GND" (at 132.08 119.38 0)
+    (property "Value" "GND" (at 128.27 111.76 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 132.08 114.3 0)
+    (property "Footprint" "" (at 128.27 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 132.08 114.3 0)
+    (property "Datasheet" "" (at 128.27 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid bed20a58-54f1-4d4c-9eb2-5ab158ec3239))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR09") (unit 1)
         )
@@ -3352,7 +3607,7 @@
     (property "Value" "Conn_01x04_Male" (at 189.23 128.27 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (at 193.04 134.62 0)
+    (property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical" (at 193.04 134.62 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 193.04 134.62 0)
@@ -3363,7 +3618,7 @@
     (pin "3" (uuid 96c46d36-66dc-44c3-b49b-71b53cd59c49))
     (pin "4" (uuid ea2c8838-623a-442a-ac15-5f409417a187))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "MOT1") (unit 1)
         )
@@ -3388,7 +3643,7 @@
     )
     (pin "1" (uuid 3b21cbcd-dfaa-4a33-a473-fd43f9a952a5))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR031") (unit 1)
         )
@@ -3396,26 +3651,26 @@
     )
   )
 
-  (symbol (lib_id "power:GND") (at 132.08 133.35 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid c7021658-d2d2-49e7-9a6d-a7812c502ffd)
-    (property "Reference" "#PWR028" (at 132.08 139.7 0)
+  (symbol (lib_id "power:+12V") (at 179.07 86.36 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid c5f7dc88-3374-49ce-bce4-305eaab687fe)
+    (property "Reference" "#PWR025" (at 179.07 90.17 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "GND" (at 132.08 138.43 0)
+    (property "Value" "+12V" (at 179.07 81.28 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 132.08 133.35 0)
+    (property "Footprint" "" (at 179.07 86.36 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 132.08 133.35 0)
+    (property "Datasheet" "" (at 179.07 86.36 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 00ca955d-a8c0-45c5-a1a1-a727984a09b8))
+    (pin "1" (uuid 31b4e226-bbce-4676-a44e-409e913e0ed5))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR028") (unit 1)
+          (reference "#PWR025") (unit 1)
         )
       )
     )
@@ -3438,7 +3693,7 @@
     )
     (pin "1" (uuid 516ddeeb-ebe4-4593-8fb5-e61d864d07ca))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR022") (unit 1)
         )
@@ -3463,7 +3718,7 @@
     )
     (pin "1" (uuid 2c6dcce8-ab97-42ab-b253-3962c66d1031))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "H1") (unit 1)
         )
@@ -3488,9 +3743,34 @@
     )
     (pin "1" (uuid 0f6d9cd5-df21-4028-a196-4bee55a32311))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR024") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:+12V") (at 180.34 106.045 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid d1c0ddfb-470a-42ba-a384-df47da4e9423)
+    (property "Reference" "#PWR038" (at 180.34 109.855 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+12V" (at 180.34 100.965 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 180.34 106.045 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 180.34 106.045 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 07e3a353-2ce7-4aac-ac36-25862c073bf8))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "#PWR038") (unit 1)
         )
       )
     )
@@ -3514,7 +3794,7 @@
     (pin "1" (uuid 409604d9-dc67-4070-8781-431cbc7e2f2c))
     (pin "2" (uuid 9d925a5e-9f93-4918-b5a5-54f6ba7bbbd1))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "R3") (unit 1)
         )
@@ -3522,26 +3802,26 @@
     )
   )
 
-  (symbol (lib_id "power:+3V3") (at 124.46 130.81 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid d86b1de5-0da5-46c5-ad0f-c57ca5dfd637)
-    (property "Reference" "#PWR027" (at 124.46 134.62 0)
+  (symbol (lib_id "power:+12V") (at 234.95 105.41 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid d8957235-ca68-44bf-a65f-b409921db435)
+    (property "Reference" "#PWR039" (at 234.95 109.22 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+3V3" (at 124.46 125.73 0)
+    (property "Value" "+12V" (at 234.95 100.33 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 124.46 130.81 0)
+    (property "Footprint" "" (at 234.95 105.41 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 124.46 130.81 0)
+    (property "Datasheet" "" (at 234.95 105.41 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b3c3f9e6-eca9-486c-b8d0-d5a76187417d))
+    (pin "1" (uuid 9f482e2f-725c-43d8-a032-4521603714da))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR027") (unit 1)
+          (reference "#PWR039") (unit 1)
         )
       )
     )
@@ -3564,7 +3844,7 @@
     )
     (pin "1" (uuid d2502746-c8f1-4a5b-b8c8-e70a999709f0))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "H4") (unit 1)
         )
@@ -3589,7 +3869,7 @@
     )
     (pin "1" (uuid 93a37e4e-907a-4130-8af1-9ffdcdd93526))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR033") (unit 1)
         )
@@ -3614,7 +3894,7 @@
     )
     (pin "1" (uuid 81a7aaaf-2a86-49c5-b179-48d08743bf14))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR02") (unit 1)
         )
@@ -3639,7 +3919,7 @@
     )
     (pin "1" (uuid d27cbe59-04cb-4793-9534-063fa215abc1))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "H3") (unit 1)
         )
@@ -3665,7 +3945,7 @@
     (pin "1" (uuid aedfb54f-b4cc-4c01-a389-bea6527c84ef))
     (pin "2" (uuid af9b7584-b7f4-43ff-8093-8d757d5bf6de))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "C4") (unit 1)
         )
@@ -3673,16 +3953,16 @@
     )
   )
 
-  (symbol (lib_id "Jumper:SolderJumper_2_Open") (at 157.48 173.99 0) (unit 1)
+  (symbol (lib_id "Jumper:SolderJumper_2_Bridged") (at 157.48 173.99 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid e0e0168f-74f7-4dff-9838-92da03baf555)
-    (property "Reference" "MS1" (at 157.48 168.275 0)
+    (property "Reference" "MS1" (at 157.48 167.64 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "SolderJumper_2_Open" (at 157.48 170.815 0)
+    (property "Value" "SolderJumper_2_Bridged" (at 157.48 170.18 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" (at 157.48 173.99 0)
+    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm" (at 157.48 173.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 157.48 173.99 0)
@@ -3691,7 +3971,7 @@
     (pin "1" (uuid a7172697-d456-4bbd-a75e-9e7c9ee7197e))
     (pin "2" (uuid bc5a20b5-dde8-4507-8fe7-647b5af51f6f))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "MS1") (unit 1)
         )
@@ -3718,7 +3998,7 @@
     (pin "2" (uuid 10ea8a16-29a4-47c1-92b1-1e22ffe9a641))
     (pin "3" (uuid 5b93aa82-4a15-4732-b2c0-4812650e5e50))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "J2") (unit 1)
         )
@@ -3726,56 +4006,28 @@
     )
   )
 
-  (symbol (lib_id "MiAM_ESP32:VL53L01XV2") (at 114.3 135.89 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid e37543ee-7520-4f00-a0c0-73761ce8fce1)
-    (property "Reference" "U6" (at 111.125 130.175 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Value" "~" (at 114.3 135.89 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" (at 114.3 135.89 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 114.3 135.89 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid ef2afc40-fb42-477b-aa26-297b317f584f))
-    (pin "2" (uuid 256a95db-978a-42e3-97db-bd53374c7c5a))
-    (pin "3" (uuid 7209fde7-f5b2-48bb-99cb-532f1c8fdbc1))
-    (pin "4" (uuid db781a43-443d-4df3-8a90-5c1477872cfb))
-    (pin "5" (uuid 07e4a0fa-f3c5-45bc-b073-93e2e018da5e))
-    (pin "6" (uuid f8297cc2-33ed-460a-be1b-487549c80f9f))
-    (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
-        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "U6") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+12V") (at 38.1 63.5 0) (mirror y) (unit 1)
+  (symbol (lib_id "MiAM_ESP32:TCRT5000L_Breakout") (at 118.11 161.29 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid e4258e1e-78c4-4087-99ab-3813f3bd65fa)
-    (property "Reference" "#PWR03" (at 38.1 67.31 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+12V" (at 38.1 58.42 0)
+    (uuid e8a9a0a9-6504-4c8f-aa46-a9c9f9c35b4a)
+    (property "Reference" "J4" (at 117.775 152.4 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 38.1 63.5 0)
+    (property "Value" "TCRT5000L_Breakout" (at 117.775 154.94 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "MiAM_ESP32_Footprints:TCRT5000L_Breakout" (at 118.11 161.29 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 38.1 63.5 0)
+    (property "Datasheet" "~" (at 118.11 161.29 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 56597002-2160-43e5-82f7-72cc6cebdcc0))
+    (pin "2" (uuid 836f7a9d-1de7-4ced-bf3d-46ef0dced899))
+    (pin "1" (uuid 4081a2e9-e688-43b4-99a5-bd8badf5f9cc))
+    (pin "3" (uuid 886a4866-0c9b-4503-b226-0b4cdd95a2ea))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR03") (unit 1)
+          (reference "J4") (unit 1)
         )
       )
     )
@@ -3798,7 +4050,7 @@
     )
     (pin "1" (uuid cfc8a52c-6a7f-4277-9568-1e3a49c608c3))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR019") (unit 1)
         )
@@ -3823,7 +4075,7 @@
     )
     (pin "1" (uuid b816522c-506c-4bdd-a3b2-d459b7f983a6))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR0120") (unit 1)
         )
@@ -3831,49 +4083,49 @@
     )
   )
 
-  (symbol (lib_id "power:GND") (at 69.215 92.71 0) (unit 1)
+  (symbol (lib_id "power:+3V3") (at 123.19 176.53 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
-    (uuid f217e896-d022-43a1-be8e-ec1c5e064054)
-    (property "Reference" "#PWR025" (at 69.215 99.06 0)
+    (uuid eefedea3-f167-48cf-9657-473263d219b7)
+    (property "Reference" "#PWR013" (at 123.19 180.34 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "GND" (at 69.215 97.79 0)
+    (property "Value" "+3V3" (at 123.19 171.45 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 69.215 92.71 0)
+    (property "Footprint" "" (at 123.19 176.53 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 69.215 92.71 0)
+    (property "Datasheet" "" (at 123.19 176.53 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 72c42266-9a8e-4d57-9139-69cf6c9a753f))
+    (pin "1" (uuid 7836183b-728f-4c6a-8edf-b06b20472eee))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
-          (reference "#PWR025") (unit 1)
+          (reference "#PWR013") (unit 1)
         )
       )
     )
   )
 
-  (symbol (lib_id "power:GND") (at 126.365 60.96 0) (unit 1)
+  (symbol (lib_id "power:GND") (at 133.35 60.96 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid f2c834f9-c103-4334-8883-5d3b18f11be6)
-    (property "Reference" "#PWR0111" (at 126.365 67.31 0)
+    (property "Reference" "#PWR0111" (at 133.35 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "GND" (at 126.365 66.04 0)
+    (property "Value" "GND" (at 133.35 66.04 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 126.365 60.96 0)
+    (property "Footprint" "" (at 133.35 60.96 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 126.365 60.96 0)
+    (property "Datasheet" "" (at 133.35 60.96 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 3e00e575-478e-4bc3-8968-c4bdac614c72))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR0111") (unit 1)
         )
@@ -3898,7 +4150,7 @@
     )
     (pin "1" (uuid b1e501b9-6973-43d7-a705-9bf7040b14e4))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR07") (unit 1)
         )
@@ -3960,7 +4212,7 @@
     (pin "8" (uuid 707e0759-28fd-4eef-a088-2e64829123b3))
     (pin "9" (uuid d1a6756b-df31-4bb9-9c6a-5aa5dc3abf74))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "U1") (unit 1)
         )
@@ -3990,7 +4242,7 @@
     (pin "2" (uuid ae7c5ca4-3272-420e-8568-cf58296ed68f))
     (pin "1" (uuid ef5e2060-0c7c-46f1-8a47-e51914242555))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "SW1") (unit 1)
         )
@@ -3998,16 +4250,43 @@
     )
   )
 
-  (symbol (lib_id "Jumper:SolderJumper_2_Open") (at 157.48 191.77 0) (unit 1)
+  (symbol (lib_id "MiAM_ESP32:TCRT5000L_Breakout") (at 118.11 146.05 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid f9e9380c-1e8d-4f1c-be47-771b6db11f48)
+    (property "Reference" "J1" (at 117.775 137.16 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "TCRT5000L_Breakout" (at 117.775 139.7 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "MiAM_ESP32_Footprints:TCRT5000L_Breakout" (at 118.11 146.05 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 118.11 146.05 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "2" (uuid a7306051-f05e-466b-b6b7-3c11899aa3d7))
+    (pin "1" (uuid 2bc49ce8-0e2b-4bbf-9864-147f0fc3ec45))
+    (pin "3" (uuid 3b5a252d-87ab-4a79-9457-b7a4b85becfe))
+    (instances
+      (project "MiAM_PAMI_V3_Stepper"
+        (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
+          (reference "J1") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Jumper:SolderJumper_2_Bridged") (at 157.48 191.77 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid fa1acdd4-4baa-4268-8f55-eae4f2957598)
-    (property "Reference" "MS3" (at 157.48 186.055 0)
+    (property "Reference" "MS3" (at 157.48 185.42 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "SolderJumper_2_Open" (at 157.48 188.595 0)
+    (property "Value" "SolderJumper_2_Bridged" (at 157.48 187.96 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" (at 157.48 191.77 0)
+    (property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm" (at 157.48 191.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 157.48 191.77 0)
@@ -4016,7 +4295,7 @@
     (pin "1" (uuid 1200a117-0e7a-4dc4-b7b1-510d766712e7))
     (pin "2" (uuid 50d3d017-2cb1-4b98-9949-b7efe04be9fc))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "MS3") (unit 1)
         )
@@ -4041,7 +4320,7 @@
     )
     (pin "1" (uuid 4dcdc55f-37b5-42d1-a1da-5bf5286d5b44))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "#PWR023") (unit 1)
         )
@@ -4071,7 +4350,7 @@
     (pin "5" (uuid 1ca56d36-7c8a-4be3-a597-bd49aab7c5e7))
     (pin "6" (uuid 2dd6fb63-b54b-440c-9ed1-8b3fda545582))
     (instances
-      (project "MiAM_PAMI_V2_StepperMainBoard"
+      (project "MiAM_PAMI_V3_Stepper"
         (path "/25619b26-f8ce-486a-87c9-e743f43b219f"
           (reference "SRV1") (unit 1)
         )

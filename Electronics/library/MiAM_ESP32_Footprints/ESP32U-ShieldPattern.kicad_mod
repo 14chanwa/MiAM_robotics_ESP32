@@ -9,7 +9,7 @@
       (effects (font (size 1 1) (thickness 0.15)))
     (tstamp 817ae84a-eea2-444b-b22b-d683679c044a)
   )
-  (fp_text user "USB" (at 0 19.939 unlocked) (layer "F.SilkS")
+  (fp_text user "USB" (at 9.525 19.939 unlocked) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)) (justify bottom))
     (tstamp af0677c7-3fc9-4180-b797-eb56f692a99c)
   )
@@ -17,9 +17,9 @@
     (stroke (width 0.2) (type solid)) (fill none) (layer "F.SilkS") (tstamp ba55f648-4b6a-4e43-b508-80bb97db4bea))
   (fp_poly
     (pts
-      (xy -1.778 20.574)
-      (xy 1.778 20.574)
-      (xy 0 23.749)
+      (xy 7.747 20.574)
+      (xy 11.303 20.574)
+      (xy 9.525 23.749)
     )
 
     (stroke (width 0.12) (type solid)) (fill solid) (layer "F.SilkS") (tstamp 09a7f3d9-b5f1-40ee-9d58-adfacc0bd262))

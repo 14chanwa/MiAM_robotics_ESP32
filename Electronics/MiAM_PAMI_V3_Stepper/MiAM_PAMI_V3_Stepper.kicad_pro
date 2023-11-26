@@ -406,7 +406,9 @@
   },
   "libraries": {
     "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_symbol_libs": [
+      "MiAM_ESP32"
+    ]
   },
   "meta": {
     "filename": "MiAM_PAMI_V3_Stepper.kicad_pro",
@@ -474,6 +476,10 @@
       {
         "netclass": "POWER",
         "pattern": "/5V_POWER"
+      },
+      {
+        "netclass": "POWER",
+        "pattern": "/5V_BOARD"
       }
     ]
   },
