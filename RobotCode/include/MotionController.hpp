@@ -93,13 +93,17 @@ class MotionController
         }
 
         TrajectoryVector getCurrentTrajectories();
+
+        RobotPosition getCurrentPosition();
+        void setCurrentPosition(RobotPosition position);
+
         float getCurvilinearAbscissa();
 
         BaseSpeed targetSpeed_;
-        RobotPosition currentPosition_; ///< Current robot position,
         TrajectoryPoint targetPoint;
     private:
         float currentTime_{0.0};
+        RobotPosition currentPosition_; ///< Current robot position,
 
         // Trajectory definition.
         TrajectoryVector newTrajectories_; ///< Vector of new trajectories to follow.

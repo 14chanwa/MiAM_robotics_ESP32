@@ -248,8 +248,9 @@ void logTelemetry(void* parameters)
 
       // teleplot.update("currentPosition.x", motionController->currentPosition_.x);
       // teleplot.update("currentPosition.y", motionController->currentPosition_.y);
-      teleplot.update2D("currentPosition", motionController->currentPosition_.x, motionController->currentPosition_.y);
-      teleplot.update("currentPosition.theta", motionController->currentPosition_.theta);
+      RobotPosition curPos = motionController->getCurrentPosition();
+      teleplot.update2D("currentPosition", curPos.x, curPos.y);
+      teleplot.update("currentPosition.theta", curPos.theta);
       // teleplot.update("targetPosition.x", motionController->targetPoint.position.x);
       // teleplot.update("targetPosition.y", motionController->targetPoint.position.y);
       teleplot.update2D("targetPosition", motionController->targetPoint.position.x, motionController->targetPoint.position.y);
@@ -414,35 +415,112 @@ void performLowLevel(void* parameters)
 }
 
 TrajectoryConfig tc;
+TrajectoryVector traj;
 
+void go_forward(float distance)
+{
+  RobotPosition curPos(motionController->getCurrentPosition());
+  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
+  motionController->setTrajectoryToFollow(tv);
+  motionController->waitForTrajectoryFinished();
+
+}
+
+void turn_around(float angle)
+{
+  traj.clear();
+  RobotPosition curPos(motionController->getCurrentPosition());
+  std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, curPos.theta + angle));
+  traj.push_back(pt);
+  motionController->setTrajectoryToFollow(traj);
+  motionController->waitForTrajectoryFinished();
+}
+
+void go_to_point(RobotPosition targetPoint)
+{
+  RobotPosition curPos(motionController->getCurrentPosition());
+  TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
+  motionController->setTrajectoryToFollow(tv);
+  motionController->waitForTrajectoryFinished();
+}
 
 void loop_task_planning(void* parameters)
 {
-  TrajectoryVector traj;
+  // for (;;)
+  // {
+  //   RobotPosition currentPosition(0.0, 0.0, 0.0);
+  //   RobotPosition targetPosition(currentPosition);
+  //   targetPosition.x += 1000;
+
+  //   traj.clear();
+  //   std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
+  //   traj.push_back(sl);
+  //   std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
+  //   traj.push_back(pt);
+  //   std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition, 0.0, 0.0, false));
+  //   traj.push_back(sl2);
+  //   std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
+  //   traj.push_back(pt2);
+  //   std::shared_ptr<Trajectory> pt3(new PointTurn(tc, pt2->getEndPoint().position, 0));
+  //   traj.push_back(pt3);
+
+  //   motionController->setTrajectoryToFollow(traj);
+  //   motionController->waitForTrajectoryFinished();
+
+  //   vTaskDelay(1000 / portTICK_PERIOD_MS);
+  // }
+
+
+  RobotPosition startPosition(motionController->getCurrentPosition());
+  RobotPosition targetPosition(startPosition);
+  
   for (;;)
   {
-    RobotPosition currentPosition(0.0, 0.0, 0.0);
-    RobotPosition targetPosition(currentPosition);
+
     targetPosition.x += 1000;
+    go_to_point(targetPosition);
+    turn_around(M_PI_2);
+    targetPosition.y += 1000;
+    go_to_point(targetPosition);
+    turn_around(M_PI_2);
+    targetPosition.x -= 1000;
+    go_to_point(targetPosition);
+    turn_around(M_PI_2);
+    targetPosition.y -= 1000;
+    go_to_point(targetPosition);
+    turn_around(M_PI_2);
 
-    traj.clear();
-    std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
-    traj.push_back(sl);
-    std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
-    traj.push_back(pt);
-    std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition, 0.0, 0.0, false));
-    traj.push_back(sl2);
-    std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
-    traj.push_back(pt2);
-    std::shared_ptr<Trajectory> pt3(new PointTurn(tc, pt2->getEndPoint().position, 0));
-    traj.push_back(pt3);
+    // RobotPosition currentPosition(0.0, 0.0, 0.0);
+    // RobotPosition targetPosition(currentPosition);
 
-    motionController->setTrajectoryToFollow(traj);
-    motionController->waitForTrajectoryFinished();
+    // traj.clear();
+    // targetPosition.x += 1000;
+    // std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
+    // traj.push_back(sl);
+    // std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, M_PI_2));
+    // traj.push_back(pt);
+    // targetPosition.y += 1000;
+    // std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, targetPosition, 0.0, 0.0, false));
+    // traj.push_back(sl2);
+    // std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
+    // traj.push_back(pt2);
+    // targetPosition.x -= 1000;
+    // std::shared_ptr<Trajectory> sl3(new StraightLine(tc, pt2->getEndPoint().position, targetPosition, 0.0, 0.0, false));
+    // traj.push_back(sl3);
+    // std::shared_ptr<Trajectory> pt3(new PointTurn(tc, sl3->getEndPoint().position, M_PI_2));
+    // traj.push_back(pt3);
+    // targetPosition.y -= 1000;
+    // std::shared_ptr<Trajectory> sl4(new StraightLine(tc, pt3->getEndPoint().position, targetPosition, 0.0, 0.0, false));
+    // traj.push_back(sl4);
+    // std::shared_ptr<Trajectory> pt4(new PointTurn(tc, sl4->getEndPoint().position, M_PI_2));
+    // traj.push_back(pt4);
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // motionController->setTrajectoryToFollow(traj);
+    // motionController->waitForTrajectoryFinished();
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
   }
-  
+
 }
 
 

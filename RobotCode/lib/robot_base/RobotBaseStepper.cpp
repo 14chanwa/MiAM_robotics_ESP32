@@ -12,8 +12,8 @@
 #define STEP_1 13
 #define DIR_1 14
 #define STEP_2 27
-#define DIR_2 32
-#define NOT_ENABLE 33
+#define DIR_2 23
+#define NOT_ENABLE 4
 
 /////////////////////////////////////////////
 // Motor & encoder specs
@@ -30,8 +30,8 @@
 // Wheel specs
 /////////////////////////////////////////////
 
-#define WHEEL_RADIUS_MM 31.0f
-#define WHEEL_SPACING_MM 31.6f
+#define WHEEL_RADIUS_MM 30.0f
+#define WHEEL_SPACING_MM 31.0f
 
 // give 20% overhead
 #define MAX_SPEED_RPM (MOTOR_RATED_RPM)
@@ -247,8 +247,11 @@ StepperState rightStepperState = STOP;
 bool lastQueueWasDesyncLeft = false;
 bool lastQueueWasDesyncRight = false;
 
-int8_t applyTargetToStepper(int target, FastAccelStepper* stepper, StepperState& stepperState, bool& lastQueueWasDesync, bool forceUpdate)
+int8_t applyTargetToStepper(int target, FastAccelStepper* stepper, StepperState& stepperState, bool reverseDirection, bool& lastQueueWasDesync, bool forceUpdate)
 {
+    if (reverseDirection)
+        target = -target;
+    
     if (std::abs(target) == 0)
     {
         if (stepperState == StepperState::STOP)
@@ -367,8 +370,8 @@ void RobotBaseStepper::updateControl()
         // leftStepperResult_ = leftStepper->setSpeedInHz((uint32_t)std::abs(baseTarget_left_));
         // rightStepperResult_ = rightStepper->setSpeedInHz((uint32_t)std::abs(baseTarget_right_));
 
-        leftStepperResult_ = applyTargetToStepper(baseTarget_left_, leftStepper, leftStepperState, lastQueueWasDesyncLeft, std::abs(currentSpeed_left_ - targetSpeed_left_) > 0.25);
-        rightStepperResult_ = applyTargetToStepper(baseTarget_right_, rightStepper, rightStepperState, lastQueueWasDesyncRight, std::abs(currentSpeed_right_ - targetSpeed_right_) > 0.25);
+        leftStepperResult_ = applyTargetToStepper(baseTarget_left_, leftStepper, leftStepperState, true, lastQueueWasDesyncLeft, std::abs(currentSpeed_left_ - targetSpeed_left_) > 0.25);
+        rightStepperResult_ = applyTargetToStepper(baseTarget_right_, rightStepper, rightStepperState, false, lastQueueWasDesyncRight, std::abs(currentSpeed_right_ - targetSpeed_right_) > 0.25);
 
         // // // leftStepper->setSpeedInMilliHz((uint32_t)std::abs(newTarget_left_*1000));
         // // if(leftStepper->isRunning() && leftStepperResult_ < 0 && !leftStepper->isStopping()) 
@@ -516,7 +519,7 @@ void RobotBaseStepper::updateSensors()
 
         // currentSpeed_left_ = (leftStepperState == StepperState::FORWARD ? 1 : (leftStepperState == StepperState::BACKWARD ? -1 : 0)) * step_s_to_rad_s(leftStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
         // currentSpeed_right_ = (rightStepperState == StepperState::FORWARD ? 1 : (rightStepperState == StepperState::BACKWARD ? -1 : 0)) * step_s_to_rad_s(rightStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
-        currentSpeed_left_ = step_s_to_rad_s(leftStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
+        currentSpeed_left_ = -step_s_to_rad_s(leftStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
         currentSpeed_right_ = step_s_to_rad_s(rightStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
 
         targetSpeedDriver_left_ = step_s_to_rad_s(leftStepper->getSpeedInMilliHz() / 1000.0f);
@@ -536,8 +539,8 @@ void RobotBaseStepper::updateSensors()
         
     }
     oldTimeEncoderSpeed_ = currentTimeEncoderSpeed_;
-    oldEncoderValue_left_ = encoderValue_left_;
-    oldEncoderValue_right_ = encoderValue_right_;
+    // oldEncoderValue_left_ = encoderValue_left_;
+    // oldEncoderValue_right_ = encoderValue_right_;
 }
 
 

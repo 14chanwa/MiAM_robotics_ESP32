@@ -22,7 +22,7 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
     initialPosition.x = 0;
     initialPosition.y = 0;
     initialPosition.theta = 0;
-    currentPosition_ = initialPosition;
+    setCurrentPosition(initialPosition);
 
     // Set PIDs.
     PIDLinear_ = miam::PID(LINEAR_KP, LINEAR_KD, LINEAR_KI, 0.2);
@@ -37,7 +37,7 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
 
 void MotionController::init(RobotPosition const& startPosition)
 {
-    currentPosition_ = startPosition;
+    setCurrentPosition(startPosition);
     currentTime_ = 0.0;
 }
 
@@ -53,9 +53,7 @@ float MotionController::getCurvilinearAbscissa()
 
 void MotionController::resetPosition(miam::RobotPosition const &resetPosition, bool const &resetX, bool const &resetY, bool const &resetTheta)
 {
-    currentPosition_.x = resetPosition.x;
-    currentPosition_.y = resetPosition.y;
-    currentPosition_.theta = resetPosition.theta;
+    setCurrentPosition(resetPosition);
 }
 
 bool MotionController::setTrajectoryToFollow(TrajectoryVector const &trajectories)
@@ -363,6 +361,30 @@ DrivetrainTarget MotionController::resolveMotionControllerState(
     }
 
     return target;
+}
+
+
+// // semaphore
+// SemaphoreHandle_t xMutex_currentPosition = NULL;
+
+RobotPosition MotionController::getCurrentPosition()
+{
+    RobotPosition result;
+    // if (xSemaphoreTake(xMutex_currentPosition, portMAX_DELAY))
+    // {
+        result = currentPosition_;
+    //     xSemaphoreGive(xMutex_currentPosition);  // release the mutex
+    // }
+    return result;
+}
+
+void MotionController::setCurrentPosition(RobotPosition position)
+{
+    // if (xSemaphoreTake(xMutex_currentPosition, portMAX_DELAY))
+    // {
+        currentPosition_ = position;
+    //     xSemaphoreGive(xMutex_currentPosition);  // release the mutex
+    // }
 }
 
 // void MotionController::setLowAvoidanceZone(RobotPosition lowAvoidanceCenter, float lowAvoidanceRadius)
