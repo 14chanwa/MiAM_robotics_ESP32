@@ -414,115 +414,39 @@ void performLowLevel(void* parameters)
   }
 }
 
+
+// I2C Semaphore
+SemaphoreHandle_t xMutex_I2C = NULL;
+
+void task_update_vl53l0x(void* parameters)
+{
+    for (;;)
+    {
+      if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
+      {
+        update_vl53l0x();
+        xSemaphoreGive(xMutex_I2C);  // release the mutex
+      }
+      vTaskDelay(25 / portTICK_PERIOD_MS);
+    }
+}
+
+
+void task_update_ssd1306(void* parameters)
+{
+    for (;;)
+    {
+      if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
+      {
+        update_ssd1306();
+        xSemaphoreGive(xMutex_I2C);  // release the mutex
+      }
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
+    }
+}
+
+
 TrajectoryConfig tc;
-TrajectoryVector traj;
-
-void go_forward(float distance)
-{
-  RobotPosition curPos(motionController->getCurrentPosition());
-  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
-  motionController->setTrajectoryToFollow(tv);
-  motionController->waitForTrajectoryFinished();
-
-}
-
-void turn_around(float angle)
-{
-  traj.clear();
-  RobotPosition curPos(motionController->getCurrentPosition());
-  std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, curPos.theta + angle));
-  traj.push_back(pt);
-  motionController->setTrajectoryToFollow(traj);
-  motionController->waitForTrajectoryFinished();
-}
-
-void go_to_point(RobotPosition targetPoint)
-{
-  RobotPosition curPos(motionController->getCurrentPosition());
-  TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
-  motionController->setTrajectoryToFollow(tv);
-  motionController->waitForTrajectoryFinished();
-}
-
-void loop_task_planning(void* parameters)
-{
-  // for (;;)
-  // {
-  //   RobotPosition currentPosition(0.0, 0.0, 0.0);
-  //   RobotPosition targetPosition(currentPosition);
-  //   targetPosition.x += 1000;
-
-  //   traj.clear();
-  //   std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
-  //   traj.push_back(sl);
-  //   std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, -M_PI));
-  //   traj.push_back(pt);
-  //   std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, currentPosition, 0.0, 0.0, false));
-  //   traj.push_back(sl2);
-  //   std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
-  //   traj.push_back(pt2);
-  //   std::shared_ptr<Trajectory> pt3(new PointTurn(tc, pt2->getEndPoint().position, 0));
-  //   traj.push_back(pt3);
-
-  //   motionController->setTrajectoryToFollow(traj);
-  //   motionController->waitForTrajectoryFinished();
-
-  //   vTaskDelay(1000 / portTICK_PERIOD_MS);
-  // }
-
-
-  RobotPosition startPosition(motionController->getCurrentPosition());
-  RobotPosition targetPosition(startPosition);
-  
-  for (;;)
-  {
-
-    targetPosition.x += 1000;
-    go_to_point(targetPosition);
-    turn_around(M_PI_2);
-    targetPosition.y += 1000;
-    go_to_point(targetPosition);
-    turn_around(M_PI_2);
-    targetPosition.x -= 1000;
-    go_to_point(targetPosition);
-    turn_around(M_PI_2);
-    targetPosition.y -= 1000;
-    go_to_point(targetPosition);
-    turn_around(M_PI_2);
-
-    // RobotPosition currentPosition(0.0, 0.0, 0.0);
-    // RobotPosition targetPosition(currentPosition);
-
-    // traj.clear();
-    // targetPosition.x += 1000;
-    // std::shared_ptr<Trajectory> sl(new StraightLine(tc, currentPosition, targetPosition, 0.0, 0.0, false));
-    // traj.push_back(sl);
-    // std::shared_ptr<Trajectory> pt(new PointTurn(tc, sl->getEndPoint().position, M_PI_2));
-    // traj.push_back(pt);
-    // targetPosition.y += 1000;
-    // std::shared_ptr<Trajectory> sl2(new StraightLine(tc, pt->getEndPoint().position, targetPosition, 0.0, 0.0, false));
-    // traj.push_back(sl2);
-    // std::shared_ptr<Trajectory> pt2(new PointTurn(tc, sl2->getEndPoint().position, M_PI_2));
-    // traj.push_back(pt2);
-    // targetPosition.x -= 1000;
-    // std::shared_ptr<Trajectory> sl3(new StraightLine(tc, pt2->getEndPoint().position, targetPosition, 0.0, 0.0, false));
-    // traj.push_back(sl3);
-    // std::shared_ptr<Trajectory> pt3(new PointTurn(tc, sl3->getEndPoint().position, M_PI_2));
-    // traj.push_back(pt3);
-    // targetPosition.y -= 1000;
-    // std::shared_ptr<Trajectory> sl4(new StraightLine(tc, pt3->getEndPoint().position, targetPosition, 0.0, 0.0, false));
-    // traj.push_back(sl4);
-    // std::shared_ptr<Trajectory> pt4(new PointTurn(tc, sl4->getEndPoint().position, M_PI_2));
-    // traj.push_back(pt4);
-
-    // motionController->setTrajectoryToFollow(traj);
-    // motionController->waitForTrajectoryFinished();
-
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
-  }
-
-}
-
 
 void setup()
 {
@@ -560,6 +484,7 @@ void setup()
   #endif
 
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
+  xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
 
   motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
@@ -568,9 +493,11 @@ void setup()
   Serial.println("Create robot base");
   robotBase->setup();
 
+  Wire.begin(SDA, SCL, 400000);
+
 #ifdef USE_VL53L0X
   Serial.println("Init VL53L0X");
-  init_vl53l0x();
+  init_vl53l0x(&Wire);
 
   xTaskCreatePinnedToCore(
     task_update_vl53l0x, 
@@ -582,6 +509,19 @@ void setup()
     1 // pin to core 1
   ); 
 #endif
+
+  Serial.println("Init SSD1306");
+  initOLEDScreen(&Wire);
+
+  xTaskCreatePinnedToCore(
+    task_update_ssd1306, 
+    "task_update_ssd1306",
+    2000,
+    NULL,
+    10,  // mid priority
+    NULL, 
+    1 // pin to core 1
+  ); 
 
 #ifdef USE_MONITOR_BATTERY
   // monitor battery
@@ -659,6 +599,84 @@ void setup()
   // ); 
 }
 
+
+
+
+/////////////////////////////////////////////////////////////////////
+// Strategy
+/////////////////////////////////////////////////////////////////////
+
+TrajectoryVector traj;
+
+void go_forward(float distance)
+{
+  RobotPosition curPos(motionController->getCurrentPosition());
+  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
+  motionController->setTrajectoryToFollow(tv);
+  motionController->waitForTrajectoryFinished();
+
+}
+
+void turn_around(float angle)
+{
+  traj.clear();
+  RobotPosition curPos(motionController->getCurrentPosition());
+  std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, curPos.theta + angle));
+  traj.push_back(pt);
+  motionController->setTrajectoryToFollow(traj);
+  motionController->waitForTrajectoryFinished();
+}
+
+void go_to_point(RobotPosition targetPoint)
+{
+  RobotPosition curPos(motionController->getCurrentPosition());
+  TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
+  motionController->setTrajectoryToFollow(tv);
+  motionController->waitForTrajectoryFinished();
+}
+
+void make_a_square()
+{
+  RobotPosition startPosition(motionController->getCurrentPosition());
+  RobotPosition targetPosition(startPosition);
+
+  targetPosition.x += 1000;
+  go_to_point(targetPosition);
+  turn_around(M_PI_2);
+  targetPosition.y += 1000;
+  go_to_point(targetPosition);
+  turn_around(M_PI_2);
+  targetPosition.x -= 1000;
+  go_to_point(targetPosition);
+  turn_around(M_PI_2);
+  targetPosition.y -= 1000;
+  go_to_point(targetPosition);
+  turn_around(M_PI_2);
+}
+
+void go_to_zone_3()
+{
+  motionController->resetPosition(RobotPosition(1275, 1925, -M_PI_2), true, true, true);
+  RobotPosition startPosition(motionController->getCurrentPosition());
+  RobotPosition targetPosition(startPosition);
+  targetPosition.x = 2815;
+  targetPosition.y = 980;
+
+  go_to_point(targetPosition);
+}
+
+void loop_task_planning(void* parameters)
+{
+  
+  for (;;)
+  {
+    // make_a_square();
+    go_to_zone_3();
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+  }
+
+}
 
 
 

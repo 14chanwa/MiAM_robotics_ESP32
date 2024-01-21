@@ -3,6 +3,8 @@
 
 #include <parameters.hpp>
 #include <Arduino.h>
+#include "WString.h"
+#include <Wire.h>
 
 /////////////////////////////////////////////
 // Tasks
@@ -25,11 +27,15 @@ float get_current_touch_sensor_reading();
 
 void task_update_analog_readings(void* parameters);
 
-void init_vl53l0x();
+void init_vl53l0x(TwoWire* wire);
 uint16_t get_current_vl53l0x();
-
 void task_update_vl53l0x(void* parameters);
+void update_vl53l0x();
 
+void initOLEDScreen(TwoWire* wire);
+void printOLEDMessage(String message);
+void task_update_ssd1306(void* parameters);
+void update_ssd1306();
 
 // // handle encoders
 // void run_handle_encoders();

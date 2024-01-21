@@ -33,6 +33,7 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
 
     // Create mutex
     xMutex = xSemaphoreCreateMutex();  // crete a mutex object
+    xMutex_currentPosition = xSemaphoreCreateMutex();
 }
 
 void MotionController::init(RobotPosition const& startPosition)
@@ -362,10 +363,6 @@ DrivetrainTarget MotionController::resolveMotionControllerState(
 
     return target;
 }
-
-
-// // semaphore
-// SemaphoreHandle_t xMutex_currentPosition = NULL;
 
 RobotPosition MotionController::getCurrentPosition()
 {

@@ -6,7 +6,7 @@
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 uint16_t vlx_ranging_data_mm = 1000;
 
-void init_vl53l0x()
+void init_vl53l0x(TwoWire* wire)
 {
     // Serial.println("Init vlx");
     // Wire.begin(SDA, SCL, 400000);
@@ -29,9 +29,9 @@ void init_vl53l0x()
     //     sensor.startContinuous(50);
     // }
 
-    Wire.begin(SDA, SCL, 400000);
+    // Wire.begin(SDA, SCL, 400000);
     if (!lox.begin(VL53L0X_I2C_ADDR, false,
-                &Wire,
+                wire,
                 Adafruit_VL53L0X::VL53L0X_SENSE_DEFAULT)) {
         Serial.println(F("Failed to boot VL53L0X"));
         while(1);
@@ -51,16 +51,23 @@ uint16_t get_current_vl53l0x()
     return vlx_ranging_data_mm;
 }
 
-void task_update_vl53l0x(void* parameters)
+void update_vl53l0x()
 {
-    for (;;)
-    {
-        // get vlx data
-        // sensor.read();
-        // vlx_ranging_data_mm = sensor.ranging_data.range_mm;
-        if (lox.isRangeComplete()) {
+    if (lox.isRangeComplete()) {
         vlx_ranging_data_mm = lox.readRange();
-        }
-        vTaskDelay(25 / portTICK_PERIOD_MS);
     }
 }
+
+// void task_update_vl53l0x(void* parameters)
+// {
+//     for (;;)
+//     {
+//         // get vlx data
+//         // sensor.read();
+//         // vlx_ranging_data_mm = sensor.ranging_data.range_mm;
+//         if (lox.isRangeComplete()) {
+//             vlx_ranging_data_mm = lox.readRange();
+//         }
+//         vTaskDelay(25 / portTICK_PERIOD_MS);
+//     }
+// }

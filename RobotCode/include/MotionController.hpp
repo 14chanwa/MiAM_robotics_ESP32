@@ -112,6 +112,7 @@ class MotionController
 
         SemaphoreHandle_t* xMutex_Serial_;  // Create a mutex object
         SemaphoreHandle_t xMutex = NULL;  // Create a mutex object
+        SemaphoreHandle_t xMutex_currentPosition = NULL;
 
         float curvilinearAbscissa_; ///< Curvilinear abscissa of the current trajectory.
         DrivetrainKinematics kinematics_;
