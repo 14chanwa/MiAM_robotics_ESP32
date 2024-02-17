@@ -104,7 +104,7 @@ MessageType MessageReceiver::receive()
     // }
   
     // closing the socket. 
-    shutdown(serverSocket); 
+    close(serverSocket); 
     
     tmpvec.clear();
 
