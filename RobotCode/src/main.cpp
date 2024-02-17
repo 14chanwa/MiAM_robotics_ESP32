@@ -678,10 +678,27 @@ void loop_task_planning(void* parameters)
 
 }
 
+#include <MessageReceiver.hpp>
+MessageReceiver messageReceiver;
 
 
 void loop()
 {
-  // taskYIELD();
-  loop_task_planning(NULL);
+
+  for(;;)
+  {
+    // taskYIELD();
+    // loop_task_planning(NULL);
+      Serial.println("Standby...");
+    MessageType mt = messageReceiver.receive();
+
+    if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
+    {
+      Serial.println("Received trajectory, following...");
+      motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
+      motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
+      motionController->waitForTrajectoryFinished();
+    }
+
+  }
 }
