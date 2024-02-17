@@ -18,7 +18,7 @@ MessageType MessageReceiver::receive()
 {
 
     // creating socket 
-    int serverSocket = socket(AF_INET, SOCK_RAW, 0); 
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
   
     // specifying the address 
     sockaddr_in serverAddress; 
