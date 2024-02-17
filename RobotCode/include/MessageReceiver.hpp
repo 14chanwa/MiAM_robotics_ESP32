@@ -20,6 +20,9 @@ public:
 
     TrajectoryVector targetTrajectory;
 
+private:
+    float* buffer; 
+    std::vector<float > tmpvec;
 };
 
 #endif

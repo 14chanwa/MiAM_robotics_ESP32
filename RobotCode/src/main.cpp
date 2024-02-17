@@ -684,21 +684,20 @@ MessageReceiver messageReceiver;
 
 void loop()
 {
+  // taskYIELD();
+  // loop_task_planning(NULL);
+  Serial.println("Standby...");
+  MessageType mt = messageReceiver.receive();
 
-  for(;;)
+  if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
   {
-    // taskYIELD();
-    // loop_task_planning(NULL);
-      Serial.println("Standby...");
-    MessageType mt = messageReceiver.receive();
-
-    if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
-    {
-      Serial.println("Received trajectory, following...");
-      motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
-      motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
-      motionController->waitForTrajectoryFinished();
-    }
-
+    Serial.println("Received trajectory, following...");
+    motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
+    motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
+    motionController->waitForTrajectoryFinished();
+  }
+  else
+  {
+    Serial.println("Received error");
   }
 }

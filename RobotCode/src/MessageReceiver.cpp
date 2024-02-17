@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <MessageReceiver.hpp>
 #include <cstring> 
 #include <netinet/in.h> 
@@ -10,14 +11,14 @@
 
 MessageReceiver::MessageReceiver()
 {
-
+    buffer = new float[SIZE_OF_BUFFER]();
 };
 
 MessageType MessageReceiver::receive()
 {
 
     // creating socket 
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
+    int serverSocket = socket(AF_INET, SOCK_RAW, 0); 
   
     // specifying the address 
     sockaddr_in serverAddress; 
@@ -37,17 +38,15 @@ MessageType MessageReceiver::receive()
         = accept(serverSocket, nullptr, nullptr); 
   
     // recieving data 
-    std::vector<float > tmpvec;
-    float* buffer = new float[SIZE_OF_BUFFER](); 
-
     int sizeofreceiveddata;
+    tmpvec.clear();
 
     while((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
     {
         // cout << "Receiving: " << sizeofreceiveddata << std::endl; 
         // cout << "Message from client: " << buffer 
         //         << endl; 
-        for (int i = 0; i < SIZE_OF_BUFFER; i++)
+        for (int i = 0; i < sizeofreceiveddata / 4; i++)
         {
             float f = buffer[i];
             // cout << f << endl;
@@ -65,6 +64,16 @@ MessageType MessageReceiver::receive()
 
     int size_of_trajectory = tmpvec.at(0);
     float duration_of_trajectory = tmpvec.at(1);
+
+    if ((size_of_trajectory * 5 + 2) != tmpvec.size())
+    {
+        Serial.println("Decrepency in received traj!");
+        Serial.print("Expected ");
+        Serial.print(size_of_trajectory * 5 + 2);
+        Serial.print(" received ");
+        Serial.println(tmpvec.size());
+        return MessageType::ERROR;
+    }
 
     // cout << "Size of trajectory: " << size_of_trajectory << endl;
     // cout << "Duration of trajectory: " << duration_of_trajectory << endl;
@@ -95,7 +104,9 @@ MessageType MessageReceiver::receive()
     // }
   
     // closing the socket. 
-    close(serverSocket); 
+    shutdown(serverSocket); 
+    
+    tmpvec.clear();
 
     return NEW_TRAJECTORY_RECEIVED;
 };
