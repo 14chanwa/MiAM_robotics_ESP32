@@ -452,6 +452,23 @@ void setup()
 {
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
+  #ifdef USE_DC_MOTORS
+  robotBase = RobotBaseDC::getInstance();
+  #else 
+  #ifdef USE_STEPPER_MOTORS
+  robotBase = RobotBaseStepper::getInstance();
+  #endif
+  #endif
+
+  xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
+  xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
+
+  motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
+  motionController->init(RobotPosition(0.0, 0.0, 0.0));
+
+  Serial.println("Create robot base");
+  robotBase->setup();
+
   Serial.begin(115200);
   Serial.println("Attempt connect WiFi");
 
@@ -474,24 +491,6 @@ void setup()
       NULL,
       0 // pin to core 0
   ); 
-
-  #ifdef USE_DC_MOTORS
-  robotBase = RobotBaseDC::getInstance();
-  #else 
-  #ifdef USE_STEPPER_MOTORS
-  robotBase = RobotBaseStepper::getInstance();
-  #endif
-  #endif
-
-  xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
-  xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
-
-  motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
-  motionController->init(RobotPosition(0.0, 0.0, 0.0));
-
-
-  Serial.println("Create robot base");
-  robotBase->setup();
 
   Wire.begin(SDA, SCL, 400000);
 
@@ -684,20 +683,24 @@ MessageReceiver messageReceiver;
 
 void loop()
 {
-  // taskYIELD();
-  // loop_task_planning(NULL);
-  Serial.println("Standby...");
-  MessageType mt = messageReceiver.receive();
+  messageReceiver.begin();
+  for (;;)
+  {
+    // taskYIELD();
+    // loop_task_planning(NULL);
+    Serial.println("Standby...");
+    MessageType mt = messageReceiver.receive();
 
-  if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
-  {
-    Serial.println("Received trajectory, following...");
-    motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
-    motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
-    motionController->waitForTrajectoryFinished();
-  }
-  else
-  {
-    Serial.println("Received error");
+    if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
+    {
+      Serial.println("Received trajectory, following...");
+      motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
+      motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
+      motionController->waitForTrajectoryFinished();
+    }
+    else
+    {
+      Serial.println("Received error");
+    }
   }
 }

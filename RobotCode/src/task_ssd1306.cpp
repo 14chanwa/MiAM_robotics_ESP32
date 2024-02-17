@@ -4,6 +4,8 @@
 #include <Adafruit_SSD1306.h>
 
 #include <tasks.hpp>
+#include <WiFi.h>
+#include <string>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -31,25 +33,37 @@ void initOLEDScreen(TwoWire* wire)
     display->display();
 }
 
-void printOLEDMessage(String message)
+void printOLEDMessage(String message, int16_t cursor_offset_x, int16_t cursor_offset_y)
 {
-    display->clearDisplay();
     display->setTextSize(1);             // Normal 1:1 pixel scale
     display->setTextColor(WHITE);        // Draw white text
-    display->setCursor(0,0);             // Start at top-left corner
+    display->setCursor(cursor_offset_x, cursor_offset_y);             // Start at top-left corner
     display->println(message);
     display->display();
 }
 
 bool flipMessage = false;
+
+std::string message;
+char buffer[16] = { "" };
+
 void update_ssd1306()
 {
-    display->startscrollleft(0x00, 0x0F);
-    if (flipMessage)
-        printOLEDMessage("Hello");
-    else
-        printOLEDMessage("World");
+    display->clearDisplay();
+    // display->startscrollleft(0x00, 0x0F);
+    // if (flipMessage)
+    //     printOLEDMessage("Hello");
+    // else
+    //     printOLEDMessage("World");
     flipMessage = !flipMessage;
+    IPAddress ip = WiFi.localIP();
+    sprintf(buffer,"%d:%d:%d:%d", ip[0],ip[1],ip[2],ip[3]);
+    printOLEDMessage(buffer, 0, 0);
+    if (flipMessage)
+        printOLEDMessage("/", 0, 10);
+    else
+        printOLEDMessage("\\", 0, 10);
+    
 }
 
 // void task_update_ssd1306(void* parameters)

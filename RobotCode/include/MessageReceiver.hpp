@@ -16,6 +16,9 @@ class MessageReceiver
 
 public:
     MessageReceiver();
+    ~MessageReceiver();
+    void begin();
+    
     MessageType receive();
 
     TrajectoryVector targetTrajectory;
@@ -23,6 +26,7 @@ public:
 private:
     float* buffer; 
     std::vector<float > tmpvec;
+    int serverSocket;
 };
 
 #endif

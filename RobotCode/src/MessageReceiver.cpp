@@ -11,14 +11,15 @@
 
 MessageReceiver::MessageReceiver()
 {
-    buffer = new float[SIZE_OF_BUFFER]();
+
 };
 
-MessageType MessageReceiver::receive()
+void MessageReceiver::begin()
 {
+    buffer = new float[SIZE_OF_BUFFER]();
 
     // creating socket 
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
   
     // specifying the address 
     sockaddr_in serverAddress; 
@@ -29,6 +30,16 @@ MessageType MessageReceiver::receive()
     // binding socket. 
     bind(serverSocket, (struct sockaddr*)&serverAddress, 
          sizeof(serverAddress)); 
+}
+
+MessageReceiver::~MessageReceiver()
+{
+    // closing the socket. 
+    close(serverSocket); 
+}
+
+MessageType MessageReceiver::receive()
+{
   
     // listening to the assigned socket 
     listen(serverSocket, 5); 
@@ -102,9 +113,6 @@ MessageType MessageReceiver::receive()
     // {
     //     std::cout << tp << std::endl;
     // }
-  
-    // closing the socket. 
-    close(serverSocket); 
     
     tmpvec.clear();
 
