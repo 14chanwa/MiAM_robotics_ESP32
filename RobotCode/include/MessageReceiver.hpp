@@ -7,8 +7,9 @@ using namespace miam::trajectory;
 
 enum MessageType
 {
-    NEW_TRAJECTORY_RECEIVED,
-    ERROR
+    NEW_TRAJECTORY = 0,
+    SET_ID = 1,
+    ERROR = 99
 };
 
 class MessageReceiver

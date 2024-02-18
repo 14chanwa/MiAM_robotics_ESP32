@@ -685,7 +685,7 @@ void loop()
     Serial.println("Standby...");
     MessageType mt = messageReceiver.receive();
 
-    if (mt == MessageType::NEW_TRAJECTORY_RECEIVED)
+    if (mt == MessageType::NEW_TRAJECTORY)
     {
       Serial.println("Received trajectory, following...");
       motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);

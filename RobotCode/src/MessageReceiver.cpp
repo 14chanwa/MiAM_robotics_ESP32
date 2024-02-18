@@ -65,6 +65,8 @@ MessageType MessageReceiver::receive()
         }
     }
 
+    MessageType mt(MessageType::ERROR);
+
     // for (int i=0; i < tmpvec.size(); i++)
     // {
     //     std::cout << tmpvec.at(i);
@@ -72,49 +74,58 @@ MessageType MessageReceiver::receive()
     //         std::cout << std::endl;
     // }
     
+    float message_type = tmpvec.at(0);
 
-    int size_of_trajectory = tmpvec.at(0);
-    float duration_of_trajectory = tmpvec.at(1);
-
-    if ((size_of_trajectory * 5 + 2) != tmpvec.size())
+    if (message_type == 0)
     {
-        Serial.println("Decrepency in received traj!");
-        Serial.print("Expected ");
-        Serial.print(size_of_trajectory * 5 + 2);
-        Serial.print(" received ");
-        Serial.println(tmpvec.size());
-        return MessageType::ERROR;
+        mt = MessageType::NEW_TRAJECTORY;
+
+        int size_of_trajectory = tmpvec.at(1);
+        float duration_of_trajectory = tmpvec.at(2);
+
+        int expected_size = size_of_trajectory * 5 + 3;
+
+        if (expected_size != tmpvec.size())
+        {
+            Serial.println("Decrepency in received traj!");
+            Serial.print("Expected ");
+            Serial.print(expected_size);
+            Serial.print(" received ");
+            Serial.println(tmpvec.size());
+            return MessageType::ERROR;
+        }
+
+        // cout << "Size of trajectory: " << size_of_trajectory << endl;
+        // cout << "Duration of trajectory: " << duration_of_trajectory << endl;
+
+        std::vector<TrajectoryPoint > trajectoryPoints;
+        // int serializationIndex = 2;
+        for (int i = 0; i < size_of_trajectory; i++)
+        {
+            TrajectoryPoint tp;
+            tp.position.x = tmpvec.at(3 + 5*i);
+            tp.position.y = tmpvec.at(3 + 5*i + 1);
+            tp.position.theta = tmpvec.at(3 + 5*i + 2);
+            tp.linearVelocity = tmpvec.at(3 + 5*i + 3);
+            tp.angularVelocity = tmpvec.at(3 + 5*i + 4);
+            trajectoryPoints.push_back(tp);
+        }
+
+        TrajectoryConfig tc;
+
+        std::shared_ptr<SampledTrajectory > traj(new SampledTrajectory(tc, trajectoryPoints, duration_of_trajectory));
+
+        targetTrajectory.clear();
+        targetTrajectory.push_back(traj);
+
+        // for (auto& tp : trajectoryPoints)
+        // {
+        //     std::cout << tp << std::endl;
+        // }
+        
+        tmpvec.clear();
     }
 
-    // cout << "Size of trajectory: " << size_of_trajectory << endl;
-    // cout << "Duration of trajectory: " << duration_of_trajectory << endl;
 
-    std::vector<TrajectoryPoint > trajectoryPoints;
-    // int serializationIndex = 2;
-    for (int i = 0; i < size_of_trajectory; i++)
-    {
-        TrajectoryPoint tp;
-        tp.position.x = tmpvec.at(2 + 5*i);
-        tp.position.y = tmpvec.at(2 + 5*i + 1);
-        tp.position.theta = tmpvec.at(2 + 5*i + 2);
-        tp.linearVelocity = tmpvec.at(2 + 5*i + 3);
-        tp.angularVelocity = tmpvec.at(2 + 5*i + 4);
-        trajectoryPoints.push_back(tp);
-    }
-
-    TrajectoryConfig tc;
-
-    std::shared_ptr<SampledTrajectory > traj(new SampledTrajectory(tc, trajectoryPoints, duration_of_trajectory));
-
-    targetTrajectory.clear();
-    targetTrajectory.push_back(traj);
-
-    // for (auto& tp : trajectoryPoints)
-    // {
-    //     std::cout << tp << std::endl;
-    // }
-    
-    tmpvec.clear();
-
-    return NEW_TRAJECTORY_RECEIVED;
+    return mt;
 };
