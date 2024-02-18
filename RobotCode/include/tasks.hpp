@@ -35,7 +35,15 @@ void update_vl53l0x();
 void initOLEDScreen(TwoWire* wire);
 void printOLEDMessage(String message);
 void task_update_ssd1306(void* parameters);
-void update_ssd1306();
+
+class DisplayInformations
+{
+    public:
+        std::string ip_address;
+        int id;
+};
+
+void update_ssd1306(DisplayInformations* informations);
 
 // // handle encoders
 // void run_handle_encoders();

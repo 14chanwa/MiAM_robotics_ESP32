@@ -18,17 +18,7 @@
 AbstractRobotBase* robotBase;
 
 #ifdef SEND_TELEPLOT_UDP
-  // #include <WiFiUdp.h>
-  // WiFiUDP udp;
-  // char buffer[30];
 
-  // void sendTelemetry(const char* variableName, const float value)
-  // {
-  //   udp.beginPacket("192.168.0.255",47269);
-  //   size_t size = snprintf(buffer, 30, "%s:%f", variableName, value);
-  //   udp.write((uint8_t*)&buffer, size);
-  //   udp.endPacket();
-  // }
   #include <TeleplotArduino.hpp>
   Teleplot teleplot("192.168.0.255", 47269);
 
@@ -425,6 +415,7 @@ void task_update_vl53l0x(void* parameters)
     }
 }
 
+DisplayInformations display_informations;
 
 void task_update_ssd1306(void* parameters)
 {
