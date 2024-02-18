@@ -17,6 +17,9 @@
 // RobotBase
 AbstractRobotBase* robotBase;
 
+// Robot ID
+int robotID = 0;
+
 #ifdef SEND_TELEPLOT_UDP
 
   #include <TeleplotArduino.hpp>
@@ -415,15 +418,23 @@ void task_update_vl53l0x(void* parameters)
     }
 }
 
+IPAddress ip;
 DisplayInformations display_informations;
 
 void task_update_ssd1306(void* parameters)
 {
     for (;;)
     {
+      // Update IP
+      ip = WiFi.localIP();
+      sprintf(display_informations.ip_address,"%d:%d:%d:%d", ip[0],ip[1],ip[2],ip[3]);
+
+      // Update ID
+      display_informations.id = robotID;
+
       if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
       {
-        update_ssd1306();
+        update_ssd1306(&display_informations);
         xSemaphoreGive(xMutex_I2C);  // release the mutex
       }
       vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -687,6 +698,7 @@ void loop()
     {
       Serial.print("Received new id: ");
       Serial.println(messageReceiver.newID);
+      robotID = messageReceiver.newID;
     }
     else
     {

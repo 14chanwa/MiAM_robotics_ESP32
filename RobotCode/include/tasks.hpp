@@ -39,7 +39,11 @@ void task_update_ssd1306(void* parameters);
 class DisplayInformations
 {
     public:
-        std::string ip_address;
+        DisplayInformations()
+        {
+            ip_address = new char[16]();
+        };
+        char* ip_address;
         int id;
 };
 

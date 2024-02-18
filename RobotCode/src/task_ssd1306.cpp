@@ -4,8 +4,6 @@
 #include <Adafruit_SSD1306.h>
 
 #include <tasks.hpp>
-#include <WiFi.h>
-#include <string>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -30,13 +28,14 @@ void initOLEDScreen(TwoWire* wire)
 
     // Show initial display buffer contents on the screen --
     // the library initializes this with an Adafruit splash screen.
+    display->clearDisplay();
     display->display();
 }
 
-void printOLEDMessage(String message, int16_t cursor_offset_x, int16_t cursor_offset_y)
+void printOLEDMessage(String message, int16_t cursor_offset_x, int16_t cursor_offset_y, uint8_t size)
 {
-    display->setTextSize(1);             // Normal 1:1 pixel scale
-    display->setTextColor(WHITE);        // Draw white text
+    display->setTextSize(size);             // Normal 1:1 pixel scale
+    display->setTextColor(WHITE, BLACK);        // Draw white text
     display->setCursor(cursor_offset_x, cursor_offset_y);             // Start at top-left corner
     display->println(message);
     display->display();
@@ -44,44 +43,21 @@ void printOLEDMessage(String message, int16_t cursor_offset_x, int16_t cursor_of
 
 bool flipMessage = false;
 
-std::string message;
-char buffer[16] = { "" };
 
-void update_ssd1306()
+void update_ssd1306(DisplayInformations* display_informations)
 {
-    display->clearDisplay();
-    // display->startscrollleft(0x00, 0x0F);
-    // if (flipMessage)
-    //     printOLEDMessage("Hello");
-    // else
-    //     printOLEDMessage("World");
+    // display->clearDisplay();
     flipMessage = !flipMessage;
-    IPAddress ip = WiFi.localIP();
-    sprintf(buffer,"%d:%d:%d:%d", ip[0],ip[1],ip[2],ip[3]);
-    printOLEDMessage(buffer, 0, 0);
+
+    printOLEDMessage(display_informations->ip_address, 0, 0, 1);
     if (flipMessage)
-        printOLEDMessage("/", 0, 10);
+    {
+        printOLEDMessage("/", 0, 10, 1);
+    }
     else
-        printOLEDMessage("\\", 0, 10);
+    {
+        printOLEDMessage("\\", 0, 10, 1);
+    }
+    printOLEDMessage(std::to_string(display_informations->id).c_str(), 0, 20, 2);
     
 }
-
-// void task_update_ssd1306(void* parameters)
-// {
-//     // char str[3];
-//     // char tmp = 0;
-//     for (;;)
-//     {
-//         // snprintf(str, sizeof(str), "%2d", tmp);
-//         // printOLEDMessage(strcat("Message ", str));
-//         // tmp++;
-//         // if (tmp > 10)
-//         //     tmp = 0;
-
-//         display->startscrollleft(0x00, 0x0F);
-//         printOLEDMessage("Hello");
-//         vTaskDelay(1000 / portTICK_PERIOD_MS);
-//         printOLEDMessage("World");
-//         vTaskDelay(1000 / portTICK_PERIOD_MS);
-//     }
-// }
