@@ -97,13 +97,13 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     // Odometry
     kinematics_.integratePosition(wheelIncrementRad, currentPosition_);
 
-    BaseSpeed baseSpeed = kinematics_.forwardKinematics(measurements.motorSpeed, true);
+    // BaseSpeed baseSpeed = kinematics_.forwardKinematics(measurements.motorSpeed, true);
 
     DrivetrainTarget target;
 
     // Compute slowdown
-    // slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.lidarDetection, hasMatchStarted);
-    slowDownCoeff_ = 1.0;
+    slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
+    // slowDownCoeff_ = 1.0;
     clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
 
     changeMotionControllerState();

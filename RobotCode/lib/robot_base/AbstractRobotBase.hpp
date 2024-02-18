@@ -19,6 +19,7 @@ typedef struct {
 typedef struct {
     Vector2 motorSpeed; ///<< Measured motor speed, in rad/s
     // std::deque<DetectedRobot> lidarDetection; ///< Robots detected by the lidar.
+    float vlx_range_detection_mm;
 } DrivetrainMeasurements;
 
 

@@ -257,13 +257,14 @@ void logTelemetry(void* parameters)
       teleplot.update("targetPosition.theta", motionController->targetPoint.position.theta);
       teleplot.update("targetPoint.linear", motionController->targetPoint.linearVelocity);
       teleplot.update("targetPoint.angular", motionController->targetPoint.angularVelocity);
-      teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
+      teleplot.update("clampedSlowDownCoeff_", motionController->clampedSlowDownCoeff_);
+      // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("battery_reading", get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("tcrt0", get_current_tcrt0_reading(), "", 0);
       teleplot.update("tcrt1", get_current_tcrt1_reading(), "", 0);
       teleplot.update("tcrt2", get_current_tcrt2_reading(), "", 0);
-      teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
+      // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
 
 
       #ifdef USE_DC_MOTORS
@@ -280,32 +281,24 @@ void logTelemetry(void* parameters)
       // sendTelemetry("rightNewPWMTarget", rightRobotWheel->newPWMTarget_);
 
       #ifdef USE_STEPPER_MOTORS
-      // sendTelemetry("encoderValue_left_", (static_cast<RobotBaseStepper* >(robotBase))->encoderValue_left_);
-      // sendTelemetry("encoderValue_right_", (static_cast<RobotBaseStepper* >(robotBase))->encoderValue_right_);
-      teleplot.update("baseTarget_left_", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_left_, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("baseTarget_left_", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_left_, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("targetSpeed_left_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeed_left_);
-      teleplot.update("targetSpeedDriver_left_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeedDriver_left_, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("targetSpeedDriver_left_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeedDriver_left_, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("currentSpeed_left_", (static_cast<RobotBaseStepper* >(robotBase))->currentSpeed_left_);
-      // sendTelemetry("newTarget_left_", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_left_);
-      teleplot.update("baseTarget_right_", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_right_, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("baseTarget_right_", (static_cast<RobotBaseStepper* >(robotBase))->baseTarget_right_, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("targetSpeed_right_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeed_right_);
-      teleplot.update("targetSpeedDriver_right_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeedDriver_right_, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("targetSpeedDriver_right_", (static_cast<RobotBaseStepper* >(robotBase))->targetSpeedDriver_right_, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("currentSpeed_right_", (static_cast<RobotBaseStepper* >(robotBase))->currentSpeed_right_);
-      // sendTelemetry("newTarget_right_", (static_cast<RobotBaseStepper* >(robotBase))->newTarget_right_);
-      teleplot.update("leftStepperResult_", (int)(static_cast<RobotBaseStepper* >(robotBase))->leftStepperResult_, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("rightStepperResult_", (int)(static_cast<RobotBaseStepper* >(robotBase))->rightStepperResult_, "", 0, TELEPLOT_FLAG_NOPLOT);
-      // sendTelemetry("leftStepInterval", (static_cast<RobotBaseStepper* >(robotBase))->getStepIntervalLeft());
-      // sendTelemetry("rightStepInterval", (static_cast<RobotBaseStepper* >(robotBase))->getStepIntervalRight());
-      teleplot.update("isQueueRunningLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isRunningLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isQueueRunningRight_", (static_cast<RobotBaseStepper* >(robotBase))->isRunningRight, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isQueueEmptyLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isQueueEmptyRight_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyRight, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isQueueFullLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isQueueFullRight_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyRight, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isGenActiveLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isGenActiveLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("isGenActiveRight_", (static_cast<RobotBaseStepper* >(robotBase))->isGenActiveRight, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("desyncDetectedLeft_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("desyncDetectedRight_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedRight, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueRunningLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isRunningLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueRunningRight_", (static_cast<RobotBaseStepper* >(robotBase))->isRunningRight, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueEmptyLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueEmptyRight_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyRight, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueFullLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isQueueFullRight_", (static_cast<RobotBaseStepper* >(robotBase))->isEmptyRight, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isGenActiveLeft_", (static_cast<RobotBaseStepper* >(robotBase))->isGenActiveLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("isGenActiveRight_", (static_cast<RobotBaseStepper* >(robotBase))->isGenActiveRight, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("desyncDetectedLeft_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedLeft, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("desyncDetectedRight_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedRight, "", 0, TELEPLOT_FLAG_NOPLOT);
       #endif
 
       teleplot.update("vlx_ranging_data_mm", get_current_vl53l0x());
@@ -368,6 +361,7 @@ void performLowLevel(void* parameters)
     robotBase->updateSensors();
     // Serial.println("Get measurements");
     measurements = robotBase->getMeasurements();
+    measurements.vlx_range_detection_mm = get_current_vl53l0x();
 
     // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
     if (motionController->isPlayingRightSide_)

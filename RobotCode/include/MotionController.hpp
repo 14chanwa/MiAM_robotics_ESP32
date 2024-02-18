@@ -101,6 +101,9 @@ class MotionController
 
         BaseSpeed targetSpeed_;
         TrajectoryPoint targetPoint;
+
+        float slowDownCoeff_ = 1.0;
+        float clampedSlowDownCoeff_ = 1.0;
     private:
         float currentTime_{0.0};
         RobotPosition currentPosition_; ///< Current robot position,
@@ -140,7 +143,7 @@ class MotionController
         // /// \brief Updates the LiDAR and sets the avoidance strategy
         // /// \param [in] detectedRobots Obstacles detected by the lidar.
         // /// \return coefficient for trajectory time increase
-        // float computeObstacleAvoidanceSlowdown(std::deque<DetectedRobot> const& detectedRobots, bool const& hasMatchStarted);
+        float computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const& hasMatchStarted);
 
         // RobotPosition lidarPointToRobotPosition(LidarPoint const &point);
         // bool isLidarPointWithinTable(LidarPoint const& point);
@@ -148,8 +151,6 @@ class MotionController
         bool isStopped_;
         bool trajectoryDone_ = false;
 
-        float slowDownCoeff_ = 1.0;
-        float clampedSlowDownCoeff_ = 1.0;
         long timeSinceFirstStopped_;
 
         float trajectoryTimeout_ = 1.0; // Number of seconds after the end of trajectory after which timeout is raised
