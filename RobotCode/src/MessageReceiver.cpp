@@ -54,27 +54,18 @@ MessageType MessageReceiver::receive()
 
     while((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
     {
-        // cout << "Receiving: " << sizeofreceiveddata << std::endl; 
-        // cout << "Message from client: " << buffer 
-        //         << endl; 
         for (int i = 0; i < sizeofreceiveddata / 4; i++)
         {
             float f = buffer[i];
-            // cout << f << endl;
             tmpvec.push_back(f);
         }
     }
 
     MessageType mt(MessageType::ERROR);
-
-    // for (int i=0; i < tmpvec.size(); i++)
-    // {
-    //     std::cout << tmpvec.at(i);
-    //     if (i > 0 && i % 5 == 0)
-    //         std::cout << std::endl;
-    // }
     
     float message_type = tmpvec.at(0);
+    Serial.print("Received message type ");
+    Serial.println(message_type);
 
     if (message_type == 0)
     {
@@ -87,19 +78,15 @@ MessageType MessageReceiver::receive()
 
         if (expected_size != tmpvec.size())
         {
-            Serial.println("Decrepency in received traj!");
+            Serial.println("Decrepency in message sizes!");
             Serial.print("Expected ");
             Serial.print(expected_size);
             Serial.print(" received ");
             Serial.println(tmpvec.size());
             return MessageType::ERROR;
         }
-
-        // cout << "Size of trajectory: " << size_of_trajectory << endl;
-        // cout << "Duration of trajectory: " << duration_of_trajectory << endl;
-
         std::vector<TrajectoryPoint > trajectoryPoints;
-        // int serializationIndex = 2;
+
         for (int i = 0; i < size_of_trajectory; i++)
         {
             TrajectoryPoint tp;
@@ -117,15 +104,27 @@ MessageType MessageReceiver::receive()
 
         targetTrajectory.clear();
         targetTrajectory.push_back(traj);
-
-        // for (auto& tp : trajectoryPoints)
-        // {
-        //     std::cout << tp << std::endl;
-        // }
         
         tmpvec.clear();
     }
+    else if (message_type == 1)
+    {
+        mt = MessageType::SET_ID;
 
+        int expected_size = 2;
+
+        if (expected_size != tmpvec.size())
+        {
+            Serial.println("Decrepency in message sizes!");
+            Serial.print("Expected ");
+            Serial.print(expected_size);
+            Serial.print(" received ");
+            Serial.println(tmpvec.size());
+            return MessageType::ERROR;
+        }
+
+        newID = (int)tmpvec.at(1);
+    }
 
     return mt;
 };

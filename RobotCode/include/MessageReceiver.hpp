@@ -23,6 +23,7 @@ public:
     MessageType receive();
 
     TrajectoryVector targetTrajectory;
+    int newID;
 
 private:
     float* buffer; 

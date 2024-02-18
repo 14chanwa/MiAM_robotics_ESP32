@@ -692,6 +692,11 @@ void loop()
       motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
       motionController->waitForTrajectoryFinished();
     }
+    else if (mt == MessageType::SET_ID)
+    {
+      Serial.print("Received new id: ");
+      Serial.println(messageReceiver.newID);
+    }
     else
     {
       Serial.println("Received error");
