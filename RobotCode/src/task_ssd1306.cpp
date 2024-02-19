@@ -43,13 +43,22 @@ void printOLEDMessage(String message, int16_t cursor_offset_x, int16_t cursor_of
 
 bool flipMessage = false;
 
+DisplayInformations current_displayed_informations;
 
 void update_ssd1306(DisplayInformations* display_informations)
 {
     // display->clearDisplay();
     flipMessage = !flipMessage;
 
-    printOLEDMessage(display_informations->ip_address, 0, 0, 1);
+    // ip
+    if (current_displayed_informations.ip_address != display_informations->ip_address)
+    {
+        // clear
+        printOLEDMessage("               ", 0, 20, 2);
+        printOLEDMessage(display_informations->ip_address, 0, 0, 1);
+    }
+    
+    // heartbeat
     if (flipMessage)
     {
         printOLEDMessage("/", 0, 10, 1);
@@ -58,6 +67,28 @@ void update_ssd1306(DisplayInformations* display_informations)
     {
         printOLEDMessage("\\", 0, 10, 1);
     }
-    printOLEDMessage(std::to_string(display_informations->id).c_str(), 0, 20, 2);
+
+    // id
+    if (current_displayed_informations.ip_address != display_informations->ip_address)
+    {
+        // clear
+        printOLEDMessage("   ", 0, 20, 2);
+        printOLEDMessage(std::to_string(display_informations->id).c_str(), 0, 20, 2);
+    }
+
+    // time
+    if (current_displayed_informations.match_started != display_informations->match_started ||
+        current_displayed_informations.current_time_s != display_informations->match_started)
+    {
+        // clear
+        printOLEDMessage("     ", 60, 20, 2);
+        if (display_informations->match_started)
+        {
+            std::string tmp;
+            tmp += "t=" + std::to_string(display_informations->current_time_s);
+            printOLEDMessage(tmp.c_str(), 60, 20, 2);
+        }
+    }
     
+    current_displayed_informations = *display_informations;
 }

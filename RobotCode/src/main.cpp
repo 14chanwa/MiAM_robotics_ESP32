@@ -14,11 +14,29 @@
 #include <RobotBaseDC.hpp>
 #include <RobotBaseStepper.hpp>
 
+#include <Preferences.h>
+#include <SampledTrajectory.h>
+
+#define MATCH_DURATION_S 100.0f
+#define LED_SLOW_BLINK_MS 1000
+#define LED_FAST_BLINK_MS 150
+
 // RobotBase
 AbstractRobotBase* robotBase;
 
 // Robot ID
 int robotID = 0;
+int length_of_saved_traj_float = 0;
+float duration_of_saved_traj = 0.0f;
+float* saved_trajectory;
+
+bool match_started = false;
+float match_current_time_s = 0.0f;
+
+TrajectoryVector saved_trajectory_vector;
+
+// Preferences
+Preferences preferences;
 
 #ifdef SEND_TELEPLOT_UDP
 
@@ -349,6 +367,16 @@ void performLowLevel(void* parameters)
     timeEndLoop = micros();
     dt_period_ms = (timeEndLoop - timeStartLoop) / 1000.0;
     timeStartLoop = timeEndLoop;
+
+    // update match time
+    if (match_started)
+    {
+      match_current_time_s += dt_period_ms / 1000;
+      if (match_current_time_s > MATCH_DURATION_S)
+      {
+        match_started = false;
+      }
+    }
     
     // Serial.println("Update sensors");
     robotBase->updateSensors();
@@ -401,6 +429,26 @@ void performLowLevel(void* parameters)
   }
 }
 
+void task_blink_led(void* parameters)
+{
+  for(;;)
+  {
+    if (match_started) {
+      ledcWrite(0, 32);
+      vTaskDelay(LED_FAST_BLINK_MS / portTICK_PERIOD_MS);
+      ledcWrite(0, 0);
+      vTaskDelay(LED_FAST_BLINK_MS / portTICK_PERIOD_MS);
+    }
+    else
+    {
+      ledcWrite(0, 32);
+      vTaskDelay(LED_SLOW_BLINK_MS / portTICK_PERIOD_MS);
+      ledcWrite(0, 0);
+      vTaskDelay(LED_SLOW_BLINK_MS / portTICK_PERIOD_MS);
+    }
+
+  }
+}
 
 // I2C Semaphore
 SemaphoreHandle_t xMutex_I2C = NULL;
@@ -418,27 +466,32 @@ void task_update_vl53l0x(void* parameters)
     }
 }
 
-IPAddress ip;
+
 DisplayInformations display_informations;
 
 void task_update_ssd1306(void* parameters)
 {
-    for (;;)
+  IPAddress ip;
+  for (;;)
+  {
+    // Update IP
+    ip = WiFi.localIP();
+    sprintf(display_informations.ip_address,"%d:%d:%d:%d", ip[0],ip[1],ip[2],ip[3]);
+
+    // Update ID
+    display_informations.id = robotID;
+
+    // Update match state
+    display_informations.match_started = match_started;
+    display_informations.current_time_s = std::round(match_current_time_s);
+
+    if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
     {
-      // Update IP
-      ip = WiFi.localIP();
-      sprintf(display_informations.ip_address,"%d:%d:%d:%d", ip[0],ip[1],ip[2],ip[3]);
-
-      // Update ID
-      display_informations.id = robotID;
-
-      if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
-      {
-        update_ssd1306(&display_informations);
-        xSemaphoreGive(xMutex_I2C);  // release the mutex
-      }
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
+      update_ssd1306(&display_informations);
+      xSemaphoreGive(xMutex_I2C);  // release the mutex
     }
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+  }
 }
 
 
@@ -455,6 +508,42 @@ void setup()
   robotBase = RobotBaseStepper::getInstance();
   #endif
   #endif
+
+  // Init preferences
+  preferences.begin("miam-pami", false); 
+  // Load existing preferences
+  robotID = preferences.getInt("id", -1);
+  length_of_saved_traj_float = preferences.getInt("traj_len_float", -1);
+  duration_of_saved_traj = preferences.getFloat("traj_duration", -1);
+  if (length_of_saved_traj_float > 0)
+  {
+    Serial.print("Reading saved traj of length ");
+    Serial.print(length_of_saved_traj_float);
+    Serial.print(", duration ");
+    Serial.println(duration_of_saved_traj);
+    saved_trajectory = new float[length_of_saved_traj_float]();
+    preferences.getBytes("traj_coord", saved_trajectory, length_of_saved_traj_float*4);
+    Serial.print("First float ");
+    Serial.println(saved_trajectory[0]);
+    Serial.print("Last float ");
+    Serial.println(saved_trajectory[length_of_saved_traj_float-1]);
+
+    std::vector<TrajectoryPoint > tp_vec;
+    TrajectoryPoint tp;
+    for (int i = 0; i < length_of_saved_traj_float / 5; i++)
+    {
+      tp.position.x = saved_trajectory[5*i];
+      tp.position.y = saved_trajectory[5*i+1];
+      tp.position.theta = saved_trajectory[5*i+2];
+      tp.linearVelocity = saved_trajectory[5*i+3];
+      tp.angularVelocity = saved_trajectory[5*i+4];
+      tp_vec.push_back(tp);
+    }
+
+    saved_trajectory_vector.clear();
+    std::shared_ptr<Trajectory > traj(new SampledTrajectory(tc, tp_vec, duration_of_saved_traj));
+    saved_trajectory_vector.push_back(traj);
+  }
 
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
   xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
@@ -699,6 +788,57 @@ void loop()
       Serial.print("Received new id: ");
       Serial.println(messageReceiver.newID);
       robotID = messageReceiver.newID;
+      preferences.putInt("id", robotID);
+    }
+    else if (mt == MessageType::NEW_TRAJECTORY_SAVE)
+    {
+      Serial.println("Received trajectory, saving...");
+
+      length_of_saved_traj_float = (int)messageReceiver.receivedTrajectory.at(1) * 5;
+      duration_of_saved_traj = (float)messageReceiver.receivedTrajectory.at(2);
+
+      if ((messageReceiver.receivedTrajectory.size() - 3) == length_of_saved_traj_float)
+      {
+        preferences.putInt("traj_len_float", length_of_saved_traj_float);
+        preferences.putFloat("traj_duration", duration_of_saved_traj);
+
+        // Ignore first 3 bytes
+        float* tmp = new float[length_of_saved_traj_float]();
+        for (int i = 0; i < length_of_saved_traj_float; i++)
+        {
+          tmp[i] = messageReceiver.receivedTrajectory.at(i+3);
+        }
+        preferences.putBytes("traj_coord", tmp, length_of_saved_traj_float * 4);
+        Serial.print("Saved traj of length ");
+        Serial.println(length_of_saved_traj_float);
+
+        delete tmp;
+      }
+      else
+      {
+        Serial.println("Not saving: decrepency in sizes");
+        Serial.print("Expected ");
+        Serial.print(length_of_saved_traj_float);
+        Serial.print(" received ");
+        Serial.println(messageReceiver.receivedTrajectory.size() - 3);
+      }
+    }
+    else if (mt == MessageType::MATCH_STATE)
+    {
+      Serial.println("Received match state");
+      if (messageReceiver.matchStarted)
+      {
+        Serial.print("Match started, current time ");
+        Serial.println(messageReceiver.matchCurrentTime);
+        match_started = true;
+        match_current_time_s = messageReceiver.matchCurrentTime;
+      }
+      else
+      {
+        Serial.println("Match not started");
+        match_started = false;
+        match_current_time_s = 0.0f;
+      }
     }
     else
     {

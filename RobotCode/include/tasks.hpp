@@ -45,6 +45,8 @@ class DisplayInformations
         };
         char* ip_address;
         int id;
+        bool match_started;
+        int current_time_s;
 };
 
 void update_ssd1306(DisplayInformations* informations);

@@ -9,8 +9,11 @@ enum MessageType
 {
     NEW_TRAJECTORY = 0,
     SET_ID = 1,
+    NEW_TRAJECTORY_SAVE = 2,
+    MATCH_STATE = 3,
     ERROR = 99
 };
+
 
 class MessageReceiver
 {
@@ -22,12 +25,15 @@ public:
     
     MessageType receive();
 
+    std::vector<float > receivedTrajectory;
     TrajectoryVector targetTrajectory;
     int newID;
 
+    bool matchStarted;
+    float matchCurrentTime;
+
 private:
     float* buffer; 
-    std::vector<float > tmpvec;
     int serverSocket;
 };
 
