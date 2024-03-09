@@ -7,14 +7,17 @@
 // Pinout
 /////////////////////////////////////////////
 
-#define IN1_A 16
-#define IN2_A 17
-#define IN1_B 32
-#define IN2_B 33
-#define EN_A 27
-#define EN_B 14
+#define STBY 12
 
-#define ENCODER_A1 13
+#define IN1_A 18
+#define IN2_A 19
+#define EN_A 27
+
+#define IN1_B 23
+#define IN2_B 15
+#define EN_B 13
+
+#define ENCODER_A1 14
 #define ENCODER_B1 4
 
 #define ENCODER_A2 34
@@ -204,8 +207,9 @@ void IRAM_ATTR encoderInterruptRight()
 
 RobotBaseDC::RobotBaseDC()
 {
-    rightWheel_ = new RobotWheelDC(EN_A, IN1_A, IN2_A, ENCODER_A1, ENCODER_B1, "right_", 2);
+    rightWheel_ = new RobotWheelDC(EN_A, IN1_A, IN2_A, ENCODER_B1, ENCODER_A1, "right_", 2);
     leftWheel_ = new RobotWheelDC(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "left_", 4);
+
 }
 
 void RobotBaseDC::setup()
@@ -219,6 +223,9 @@ void RobotBaseDC::setup()
     pinMode(rightWheel_->pinEncoderB_, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(rightWheel_->pinEncoderA_), encoderInterruptRight, CHANGE);
     attachInterrupt(digitalPinToInterrupt(rightWheel_->pinEncoderB_), encoderInterruptRight, CHANGE);
+
+    pinMode(STBY, OUTPUT);
+    digitalWrite(STBY, HIGH);
 }
 
 DrivetrainMeasurements RobotBaseDC::getMeasurements()

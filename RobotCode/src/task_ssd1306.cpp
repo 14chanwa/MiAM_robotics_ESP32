@@ -20,8 +20,13 @@ void initOLEDScreen(TwoWire* wire)
  
     display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, wire, OLED_RESET);
 
-    if(!display->begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true, false)) { 
+    if (!display->begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true, false))
+    {
         Serial.println(F("SSD1306 allocation failed"));
+    }
+    else
+    {
+        Serial.println("Begin OK");
     }
 
     display->setRotation(2);
@@ -69,12 +74,13 @@ void update_ssd1306(DisplayInformations* display_informations)
     }
 
     // id
-    if (current_displayed_informations.ip_address != display_informations->ip_address)
+    if (current_displayed_informations.id != display_informations->id)
     {
         // clear
         printOLEDMessage("   ", 0, 20, 2);
         printOLEDMessage(std::to_string(display_informations->id).c_str(), 0, 20, 2);
     }
+    
 
     // time
     if (current_displayed_informations.match_started != display_informations->match_started ||

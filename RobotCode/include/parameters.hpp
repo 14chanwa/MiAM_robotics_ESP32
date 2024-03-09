@@ -1,19 +1,11 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-#define USE_WIFI
-#define USE_MONITOR_BATTERY
-#define USE_VL53L0X
+#define USE_DC_MOTORS
+// #define USE_STEPPER_MOTORS
 
-#ifdef USE_WIFI
-  #define ENABLE_OTA_UPDATE
-  #define SEND_TELEPLOT_UDP
-#endif
+#define SEND_TELEPLOT_UDP
 // #define SEND_SERIAL
-
-// #define USE_DC_MOTORS
-#define USE_STEPPER_MOTORS
-
 
 /////////////////////////////////////////////
 // Pins
@@ -27,7 +19,7 @@
 #define TCRT_1 39
 #define TCRT_2 33
 
-#define TOUCH_SENSOR 12
+#define TOUCH_SENSOR 0
 
 /////////////////////////////////////////////
 // Resistor values

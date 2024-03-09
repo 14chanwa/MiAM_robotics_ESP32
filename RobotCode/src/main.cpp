@@ -18,8 +18,11 @@
 #include <SampledTrajectory.h>
 
 #define MATCH_DURATION_S 100.0f
+#define MATCH_PAMI_START_TIME_S 90.0f
 #define LED_SLOW_BLINK_MS 1000
 #define LED_FAST_BLINK_MS 150
+
+#define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 // RobotBase
 AbstractRobotBase* robotBase;
@@ -31,6 +34,8 @@ float duration_of_saved_traj = 0.0f;
 float* saved_trajectory;
 
 bool match_started = false;
+bool trajectory_was_read = false;
+bool movement_override = false;
 float match_current_time_s = 0.0f;
 
 TrajectoryVector saved_trajectory_vector;
@@ -38,26 +43,18 @@ TrajectoryVector saved_trajectory_vector;
 // Preferences
 Preferences preferences;
 
+// Display
+DisplayInformations display_informations;
+
+// Semaphores
+SemaphoreHandle_t xMutex_Serial = NULL;
+SemaphoreHandle_t xMutex_I2C = NULL;
+
 #ifdef SEND_TELEPLOT_UDP
 
   #include <TeleplotArduino.hpp>
   Teleplot teleplot("192.168.0.255", 47269);
 
-  // void sendTelemetry(const char* variableName, const float value, bool plot = true, unsigned int maxFrequencyHz = 0U)
-  // {
-  //   if (plot)
-  //     teleplot.update(variableName, value, "", maxFrequencyHz);
-  //   else
-  //     teleplot.update(variableName, value, "", maxFrequencyHz, TELEPLOT_FLAG_NOPLOT);
-  // }
-
-  // void sendTelemetry(const char* variableName, const float value, bool plot = true, unsigned int maxFrequencyHz = 0U)
-  // {
-  //   if (plot)
-  //     teleplot.update(variableName, value, "", maxFrequencyHz);
-  //   else
-  //     teleplot.update(variableName, value, "", maxFrequencyHz, TELEPLOT_FLAG_NOPLOT);
-  // }
 #endif
 
 #ifdef ENABLE_OTA_UPDATE
@@ -119,7 +116,6 @@ Preferences preferences;
 #endif
 
 void initWiFi() {
-#ifdef USE_WIFI
   WiFi.mode(WIFI_STA);
   WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
   Serial.print("Connecting to WiFi ..");
@@ -129,7 +125,6 @@ void initWiFi() {
   }
   Serial.println(WiFi.localIP());
   delay(1000);
-#endif
 
 #ifdef ENABLE_OTA_UPDATE
   // // byte mac[6];
@@ -230,6 +225,10 @@ void initWiFi() {
 #endif
 }
 
+/////////////////////////////////////////////////////////////////////
+// Tasks
+/////////////////////////////////////////////////////////////////////
+
 using namespace miam;
 using namespace miam::trajectory;
 
@@ -239,16 +238,9 @@ MotionController* motionController;
 // low level loop timing
 float dt_lowLevel_ms = 0.0;
 float dt_period_ms = 0.0;
-long timeStartLoop = 0;
-long timeEndLoop = 0;
-
-bool hasMatchStarted_ = true;
 
 DrivetrainMeasurements measurements;
 DrivetrainTarget target;
-
-// Serial semaphore
-SemaphoreHandle_t xMutex_Serial = NULL;
 
 void logTelemetry(void* parameters)
 {
@@ -283,6 +275,10 @@ void logTelemetry(void* parameters)
       teleplot.update("rightWheelTargetSpeed", robotBase->getRightWheel()->targetSpeed_);
       teleplot.update("leftWheelCurrentSpeed", robotBase->getLeftWheel()->currentSpeed_);
       teleplot.update("leftWheelTargetSpeed", robotBase->getLeftWheel()->targetSpeed_);
+      teleplot.update("rightBasePWM", static_cast<RobotWheelDC*>(robotBase->getRightWheel())->basePWMTarget_);
+      teleplot.update("leftBasePWM", static_cast<RobotWheelDC*>(robotBase->getLeftWheel())->basePWMTarget_);
+      teleplot.update("rightNewPWM", static_cast<RobotWheelDC*>(robotBase->getRightWheel())->newPWMTarget_);
+      teleplot.update("leftNewPWM", static_cast<RobotWheelDC*>(robotBase->getLeftWheel())->newPWMTarget_);
       #endif
 
 
@@ -362,6 +358,8 @@ void logTelemetry(void* parameters)
 
 void performLowLevel(void* parameters)
 {
+  long timeStartLoop = 0;
+  long timeEndLoop = 0;
   for(;;)
   {
     timeEndLoop = micros();
@@ -372,9 +370,22 @@ void performLowLevel(void* parameters)
     if (match_started)
     {
       match_current_time_s += dt_period_ms / 1000;
+
+      // if match started and trajectory was not read, start
+      if (!trajectory_was_read && match_current_time_s > MATCH_PAMI_START_TIME_S && motionController->isTrajectoryFinished())
+      {
+        if (saved_trajectory_vector.size() > 0)
+        {
+          motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
+          motionController->setTrajectoryToFollow(saved_trajectory_vector);
+        }
+      }
+
       if (match_current_time_s > MATCH_DURATION_S)
       {
         match_started = false;
+        trajectory_was_read = false;
+        motionController->clearTrajectories();
       }
     }
     
@@ -393,10 +404,11 @@ void performLowLevel(void* parameters)
     }
 
     // Serial.println("Compute drivetrain motion");
+    // Motion occurs only if match started
     target = motionController->computeDrivetrainMotion(
       measurements, 
       dt_period_ms / 1000.0, 
-      hasMatchStarted_
+      match_started || movement_override
     );
 
     // invert kinematics
@@ -414,11 +426,8 @@ void performLowLevel(void* parameters)
     // Serial.println("Update motor control");
     robotBase->updateControl();
 
-    // get_current_vl53l0x();
-#ifdef USE_MONITOR_BATTERY
     // update sensors
     monitor_battery();
-#endif
 
     // Serial.println("Register time");
     timeEndLoop = micros();
@@ -450,9 +459,6 @@ void task_blink_led(void* parameters)
   }
 }
 
-// I2C Semaphore
-SemaphoreHandle_t xMutex_I2C = NULL;
-
 void task_update_vl53l0x(void* parameters)
 {
     for (;;)
@@ -465,9 +471,6 @@ void task_update_vl53l0x(void* parameters)
       vTaskDelay(25 / portTICK_PERIOD_MS);
     }
 }
-
-
-DisplayInformations display_informations;
 
 void task_update_ssd1306(void* parameters)
 {
@@ -490,10 +493,13 @@ void task_update_ssd1306(void* parameters)
       update_ssd1306(&display_informations);
       xSemaphoreGive(xMutex_I2C);  // release the mutex
     }
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
+/////////////////////////////////////////////////////////////////////
+// Setup
+/////////////////////////////////////////////////////////////////////
 
 TrajectoryConfig tc;
 
@@ -579,7 +585,6 @@ void setup()
 
   Wire.begin(SDA, SCL, 400000);
 
-#ifdef USE_VL53L0X
   Serial.println("Init VL53L0X");
   init_vl53l0x(&Wire);
 
@@ -592,7 +597,6 @@ void setup()
     NULL, 
     1 // pin to core 1
   ); 
-#endif
 
   Serial.println("Init SSD1306");
   initOLEDScreen(&Wire);
@@ -607,27 +611,14 @@ void setup()
     1 // pin to core 1
   ); 
 
-#ifdef USE_MONITOR_BATTERY
-  // monitor battery
-  Serial.println("Init monitor battery");
+  // analog readings: monitor battery and infrared captors
+  Serial.println("Init analog readings");
   pinMode(BAT_READING, INPUT_PULLDOWN);
   pinMode(TCRT_0, INPUT_PULLDOWN);
   pinMode(TCRT_1, INPUT_PULLDOWN);
   pinMode(TCRT_2, INPUT_PULLDOWN);
   analogReadResolution(12);
-  // analogSetAttenuation(ADC_6db);
   analogSetAttenuation(ADC_11db);
-
-  // xTaskCreatePinnedToCore(
-  //   task_update_analog_readings, 
-  //   "task_update_analog_readings",
-  //   2000,
-  //   NULL,
-  //   10,  // mid priority
-  //   NULL, 
-  //   1 // pin to core 1
-  // ); 
-#endif
 
   Serial.println("Launch low level loop");
   xTaskCreatePinnedToCore(
@@ -635,7 +626,7 @@ void setup()
       "performLowLevel",
       10000,
       NULL,
-      19,  // high priority
+      19, // high priority
       NULL, 
       0 // pin to core 0
   ); 
@@ -671,20 +662,7 @@ void setup()
   tc.robotWheelSpacing = motionController->getParameters().wheelSpacing;
 
   vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  // xTaskCreatePinnedToCore(
-  //   loop_task_planning, 
-  //   "loop_task_planning",
-  //   30000,
-  //   NULL,
-  //   1,
-  //   NULL,
-  //   0 // pin to core 0
-  // ); 
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 // Strategy
@@ -749,30 +727,30 @@ void go_to_zone_3()
   go_to_point(targetPosition);
 }
 
-void loop_task_planning(void* parameters)
-{
-  
-  for (;;)
-  {
-    // make_a_square();
-    go_to_zone_3();
-
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
-  }
-
-}
+/////////////////////////////////////////////////////////////////////
+// Receiver loop
+/////////////////////////////////////////////////////////////////////
 
 #include <MessageReceiver.hpp>
 MessageReceiver messageReceiver;
 
-
 void loop()
 {
+#ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
+  taskYIELD();
+  for (;;)
+  {
+    Serial.println("Moving...");
+    movement_override = true;
+    make_a_square();
+    // go_to_zone_3();
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+  }
+#else
   messageReceiver.begin();
   for (;;)
   {
-    // taskYIELD();
-    // loop_task_planning(NULL);
     Serial.println("Standby...");
     MessageType mt = messageReceiver.receive();
 
@@ -780,8 +758,10 @@ void loop()
     {
       Serial.println("Received trajectory, following...");
       motionController->resetPosition(messageReceiver.targetTrajectory.getCurrentPoint(0).position, true, true, true);
+      movement_override = true;
       motionController->setTrajectoryToFollow(messageReceiver.targetTrajectory);
       motionController->waitForTrajectoryFinished();
+      movement_override = false;
     }
     else if (mt == MessageType::SET_ID)
     {
@@ -838,6 +818,8 @@ void loop()
         Serial.println("Match not started");
         match_started = false;
         match_current_time_s = 0.0f;
+        trajectory_was_read = false;
+        motionController->clearTrajectories();
       }
     }
     else
@@ -845,4 +827,5 @@ void loop()
       Serial.println("Received error");
     }
   }
+#endif
 }

@@ -70,6 +70,8 @@ class MotionController
         /// \brief Get status of last trajectory following.
         bool wasTrajectoryFollowingSuccessful();
 
+        void clearTrajectories();
+
 
         /// \brief Compute next motor target.
         ///

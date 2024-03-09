@@ -384,6 +384,12 @@ void MotionController::setCurrentPosition(RobotPosition position)
     // }
 }
 
+void MotionController::clearTrajectories()
+{
+    TrajectoryVector tv;
+    setTrajectoryToFollow(tv);
+}
+
 // void MotionController::setLowAvoidanceZone(RobotPosition lowAvoidanceCenter, float lowAvoidanceRadius)
 // {
 //     lowAvoidanceZone_ = std::make_pair(lowAvoidanceCenter, lowAvoidanceRadius);
