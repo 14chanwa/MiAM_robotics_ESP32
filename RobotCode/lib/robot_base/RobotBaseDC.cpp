@@ -208,7 +208,7 @@ void IRAM_ATTR encoderInterruptRight()
 RobotBaseDC::RobotBaseDC()
 {
     rightWheel_ = new RobotWheelDC(EN_A, IN1_A, IN2_A, ENCODER_B1, ENCODER_A1, "right_", 2);
-    leftWheel_ = new RobotWheelDC(EN_B, IN1_B, IN2_B, ENCODER_B2, ENCODER_A2, "left_", 4);
+    leftWheel_ = new RobotWheelDC(EN_B, IN2_B, IN1_B, ENCODER_A2, ENCODER_B2, "left_", 4);
 
 }
 
