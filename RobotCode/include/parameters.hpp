@@ -1,8 +1,8 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-#define USE_DC_MOTORS
-// #define USE_STEPPER_MOTORS
+// #define USE_DC_MOTORS
+#define USE_STEPPER_MOTORS
 
 #define SEND_TELEPLOT_UDP
 // #define SEND_SERIAL
