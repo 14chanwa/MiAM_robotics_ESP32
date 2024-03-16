@@ -20,6 +20,8 @@
 #include <Servo.hpp>
 
 #include <Strategy.hpp>
+#include <AnalogReadings.hpp>
+#include <I2CHandler.hpp>
 
 #define MATCH_DURATION_S 100.0f
 #define MATCH_PAMI_START_TIME_S 90.0f
@@ -50,7 +52,6 @@ DisplayInformations display_informations;
 
 // Semaphores
 SemaphoreHandle_t xMutex_Serial = NULL;
-SemaphoreHandle_t xMutex_I2C = NULL;
 
 #ifdef SEND_TELEPLOT_UDP
 
@@ -266,10 +267,10 @@ void logTelemetry(void* parameters)
       teleplot.update("clampedSlowDownCoeff_", motionController->clampedSlowDownCoeff_);
       // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("battery_reading", get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("tcrt0", get_current_tcrt0_reading(), "", 0);
-      teleplot.update("tcrt1", get_current_tcrt1_reading(), "", 0);
-      teleplot.update("tcrt2", get_current_tcrt2_reading(), "", 0);
+      teleplot.update("battery_reading", AnalogReadings::get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
+      teleplot.update("tcrt0", AnalogReadings::get_current_tcrt0_reading(), "", 0);
+      teleplot.update("tcrt1", AnalogReadings::get_current_tcrt1_reading(), "", 0);
+      teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
       // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
 
 
@@ -311,14 +312,14 @@ void logTelemetry(void* parameters)
       // teleplot.update("desyncDetectedRight_", (static_cast<RobotBaseStepper* >(robotBase))->desyncDetectedRight, "", 0, TELEPLOT_FLAG_NOPLOT);
       #endif
 
-      teleplot.update("vlx_ranging_data_mm", get_current_vl53l0x());
+      teleplot.update("vlx_ranging_data_mm", I2CHandler::get_current_vl53l0x());
 
     #else
     #ifdef SEND_SERIAL
 
     if (xSemaphoreTake(xMutex_Serial, portMAX_DELAY))
     {
-      print_battery();
+      // print_battery();
       leftRobotWheel->logTelemetry();
       rightRobotWheel->logTelemetry();
       Serial.print(">targetSpeed.linear:");
@@ -425,7 +426,7 @@ void performLowLevel(void* parameters)
     robotBase->updateSensors();
     // Serial.println("Get measurements");
     measurements = robotBase->getMeasurements();
-    measurements.vlx_range_detection_mm = get_current_vl53l0x();
+    measurements.vlx_range_detection_mm = I2CHandler::get_current_vl53l0x();
 
     // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
     if (motionController->isPlayingRightSide_)
@@ -459,7 +460,7 @@ void performLowLevel(void* parameters)
     robotBase->updateControl();
 
     // update sensors
-    monitor_battery();
+    AnalogReadings::update();
 
     // Serial.println("Register time");
     timeEndLoop = micros();
@@ -495,11 +496,7 @@ void task_update_vl53l0x(void* parameters)
 {
     for (;;)
     {
-      if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
-      {
-        update_vl53l0x();
-        xSemaphoreGive(xMutex_I2C);  // release the mutex
-      }
+      I2CHandler::update_vl53l0x();
       vTaskDelay(25 / portTICK_PERIOD_MS);
     }
 }
@@ -520,11 +517,9 @@ void task_update_ssd1306(void* parameters)
     display_informations.match_started = match_started;
     display_informations.current_time_s = std::round(match_current_time_s);
 
-    if (xSemaphoreTake(xMutex_I2C, portMAX_DELAY))
-    {
-      update_ssd1306(&display_informations);
-      xSemaphoreGive(xMutex_I2C);  // release the mutex
-    }
+    // Update display
+    I2CHandler::update_ssd1306(&display_informations);
+
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -589,7 +584,6 @@ void setup()
   }
 
   xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
-  xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
 
   motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
@@ -620,10 +614,8 @@ void setup()
       0 // pin to core 0
   ); 
 
-  Wire.begin(SDA, SCL, 400000);
-
-  Serial.println("Init VL53L0X");
-  init_vl53l0x(&Wire);
+  // Init i2c peripherals
+  I2CHandler::init();
 
   xTaskCreatePinnedToCore(
     task_update_vl53l0x, 
@@ -634,9 +626,6 @@ void setup()
     NULL, 
     1 // pin to core 1
   ); 
-
-  Serial.println("Init SSD1306");
-  initOLEDScreen(&Wire);
 
   xTaskCreatePinnedToCore(
     task_update_ssd1306, 
@@ -650,12 +639,7 @@ void setup()
 
   // analog readings: monitor battery and infrared captors
   Serial.println("Init analog readings");
-  pinMode(BAT_READING, INPUT_PULLDOWN);
-  pinMode(TCRT_0, INPUT_PULLDOWN);
-  pinMode(TCRT_1, INPUT_PULLDOWN);
-  pinMode(TCRT_2, INPUT_PULLDOWN);
-  analogReadResolution(12);
-  analogSetAttenuation(ADC_11db);
+  AnalogReadings::init();
 
   // init the servo
   Servo::init();

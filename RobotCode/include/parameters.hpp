@@ -1,12 +1,12 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-#define PAMI_ID 1
+#define PAMI_ID 3
 
 #if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
-    #define USE_DC_MOTORS
-#else
     #define USE_STEPPER_MOTORS
+#else
+    #define USE_DC_MOTORS
 #endif
 
 #define SEND_TELEPLOT_UDP
