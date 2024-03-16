@@ -4,6 +4,9 @@
 #define SERVO_PIN 25
 #define SERVO_PWM_CHANNEL 6
 
+#define SERVO_UP_POSITION 10
+#define SERVO_DOWN_POSITION 100
+
 const int TIMER_RESOLUTION = std::min(16, SOC_LEDC_TIMER_BIT_WIDE_NUM);
 const int PERIOD_TICKS = (1 << TIMER_RESOLUTION) - 1;
 const int DEFAULT_FREQUENCY = 50;
@@ -43,6 +46,16 @@ namespace Servo
     void servoWrite(float angle) {
         angle = constrain(angle, _minAngle, _maxAngle);
         servoWriteMicroseconds(_angleToUs(angle));
+    }
+
+    void servoUp()
+    {
+        Servo::servoWrite(SERVO_UP_POSITION);
+    }
+
+    void servoDown()
+    {
+        Servo::servoWrite(SERVO_DOWN_POSITION);
     }
 }
 

@@ -1,11 +1,20 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-// #define USE_DC_MOTORS
-#define USE_STEPPER_MOTORS
+#define PAMI_ID 1
+
+#if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
+    #define USE_DC_MOTORS
+#else
+    #define USE_STEPPER_MOTORS
+#endif
 
 #define SEND_TELEPLOT_UDP
 // #define SEND_SERIAL
+
+#define DEBUG_MODE_MATCH
+// #define DEBUG_MODE_SERVO
+// #define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 /////////////////////////////////////////////
 // Pins
@@ -22,27 +31,9 @@
 #define TOUCH_SENSOR 0
 
 /////////////////////////////////////////////
-// Resistor values
-/////////////////////////////////////////////
-
-#define RESISTOR_R1 100000.0f
-#define RESISTOR_R2 10000.0f
-
-/////////////////////////////////////////////
 // Motion controller specs
 /////////////////////////////////////////////
 
 #define LOW_LEVEL_LOOP_TIME_MS 10
-
-// Motion controller PID parameters
-#define LINEAR_KP 3.5f
-#define LINEAR_KD 0.01f
-#define LINEAR_KI 0.0f
-
-#define TRANSVERSE_KP 0.005f
-
-#define ROTATION_KP 5.0f
-#define ROTATION_KD 0.0f
-#define ROTATION_KI 0.0f
 
 #endif

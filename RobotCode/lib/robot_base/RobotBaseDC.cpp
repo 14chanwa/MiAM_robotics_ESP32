@@ -60,7 +60,7 @@
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
-#define VELOCITY_KP 0.2f
+#define VELOCITY_KP 0.1f
 #define VELOCITY_KD 0.0f
 #define VELOCITY_KI 0.05f
 

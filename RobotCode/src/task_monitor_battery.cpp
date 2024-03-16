@@ -2,6 +2,13 @@
 #include <parameters.hpp>
 #include <tasks.hpp>
 
+/////////////////////////////////////////////
+// Resistor values
+/////////////////////////////////////////////
+
+#define RESISTOR_R1 100000.0f
+#define RESISTOR_R2 10000.0f
+
 // Moving average for battery reading
 #define FILTER_LEN  5
 
@@ -85,13 +92,13 @@ float get_current_touch_sensor_reading()
   return touchSensorValue;
 }
 
-void task_update_analog_readings(void* parameters){
-    for(;;)
-    {
-      monitor_battery();
-      vTaskDelay(20 / portTICK_PERIOD_MS);
-    }
-}
+// void task_update_analog_readings(void* parameters){
+//     for(;;)
+//     {
+//       monitor_battery();
+//       vTaskDelay(20 / portTICK_PERIOD_MS);
+//     }
+// }
 
 /////////////////////////////////////////////
 // Functions

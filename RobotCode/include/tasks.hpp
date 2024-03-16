@@ -25,7 +25,7 @@ float get_current_tcrt1_reading();
 float get_current_tcrt2_reading();
 float get_current_touch_sensor_reading();
 
-void task_update_analog_readings(void* parameters);
+// void task_update_analog_readings(void* parameters);
 
 void init_vl53l0x(TwoWire* wire);
 uint16_t get_current_vl53l0x();

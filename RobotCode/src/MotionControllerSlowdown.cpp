@@ -1,7 +1,7 @@
 #include <MotionController.hpp>
 #include <Utilities.h>
 
-#define MIN_RANGE 30
+#define MIN_RANGE 100
 #define MAX_RANGE 300
 
 float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const &hasMatchStarted)

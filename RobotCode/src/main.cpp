@@ -19,13 +19,12 @@
 
 #include <Servo.hpp>
 
+#include <Strategy.hpp>
+
 #define MATCH_DURATION_S 100.0f
 #define MATCH_PAMI_START_TIME_S 90.0f
 #define LED_SLOW_BLINK_MS 1000
 #define LED_FAST_BLINK_MS 150
-
-#define DEBUG_MODE_SERVO
-// #define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 // RobotBase
 AbstractRobotBase* robotBase;
@@ -56,7 +55,8 @@ SemaphoreHandle_t xMutex_I2C = NULL;
 #ifdef SEND_TELEPLOT_UDP
 
   #include <TeleplotArduino.hpp>
-  Teleplot teleplot("192.168.0.255", 47269);
+  // Teleplot teleplot("192.168.0.255", 47269);
+  Teleplot teleplot("10.42.0.255", 47269);
 
 #endif
 
@@ -359,6 +359,17 @@ void logTelemetry(void* parameters)
   }
 }
 
+void performStrategy(void* parameters)
+{
+  strategy::perform_strategy(
+      motionController,
+      0.0, 
+      saved_trajectory_vector
+  );
+  Serial.println("Strategy ended");
+  vTaskDelete( NULL );
+}
+
 void performLowLevel(void* parameters)
 {
   long timeStartLoop = 0;
@@ -375,12 +386,30 @@ void performLowLevel(void* parameters)
       match_current_time_s += dt_period_ms / 1000;
 
       // if match started and trajectory was not read, start
-      if (!trajectory_was_read && match_current_time_s > MATCH_PAMI_START_TIME_S && motionController->isTrajectoryFinished())
+      if (
+        !trajectory_was_read && 
+        match_current_time_s > MATCH_PAMI_START_TIME_S && 
+        match_current_time_s < MATCH_DURATION_S && 
+        motionController->isTrajectoryFinished()
+      )
       {
         if (saved_trajectory_vector.size() > 0)
         {
-          motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
-          motionController->setTrajectoryToFollow(saved_trajectory_vector);
+          trajectory_was_read = true;
+          Serial.println("Beginning match");
+          // Start the strategy
+          xTaskCreate(
+            performStrategy,
+            "performStrategy",
+            10000,
+            NULL,
+            10,
+            NULL
+          );
+        }
+        else
+        {
+          Serial.println("No trajectory to perform");
         }
       }
 
@@ -522,6 +551,11 @@ void setup()
   preferences.begin("miam-pami", false); 
   // Load existing preferences
   robotID = preferences.getInt("id", -1);
+  if (robotID == -1)
+  {
+    robotID = PAMI_ID;
+  }
+
   length_of_saved_traj_float = preferences.getInt("traj_len_float", -1);
   duration_of_saved_traj = preferences.getFloat("traj_duration", -1);
   if (length_of_saved_traj_float > 0)
@@ -625,6 +659,7 @@ void setup()
 
   // init the servo
   Servo::init();
+  Servo::servoUp();
 
   // begin low level loop
   Serial.println("Launch low level loop");
@@ -672,88 +707,37 @@ void setup()
 }
 
 /////////////////////////////////////////////////////////////////////
-// Strategy
-/////////////////////////////////////////////////////////////////////
-
-TrajectoryVector traj;
-
-void go_forward(float distance)
-{
-  RobotPosition curPos(motionController->getCurrentPosition());
-  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
-  motionController->setTrajectoryToFollow(tv);
-  motionController->waitForTrajectoryFinished();
-
-}
-
-void turn_around(float angle)
-{
-  traj.clear();
-  RobotPosition curPos(motionController->getCurrentPosition());
-  std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, curPos.theta + angle));
-  traj.push_back(pt);
-  motionController->setTrajectoryToFollow(traj);
-  motionController->waitForTrajectoryFinished();
-}
-
-void go_to_point(RobotPosition targetPoint)
-{
-  RobotPosition curPos(motionController->getCurrentPosition());
-  TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
-  motionController->setTrajectoryToFollow(tv);
-  motionController->waitForTrajectoryFinished();
-}
-
-void make_a_square()
-{
-  RobotPosition startPosition(motionController->getCurrentPosition());
-  RobotPosition targetPosition(startPosition);
-
-  targetPosition.x += 1000;
-  go_to_point(targetPosition);
-  turn_around(M_PI_2);
-  targetPosition.y += 1000;
-  go_to_point(targetPosition);
-  turn_around(M_PI_2);
-  targetPosition.x -= 1000;
-  go_to_point(targetPosition);
-  turn_around(M_PI_2);
-  targetPosition.y -= 1000;
-  go_to_point(targetPosition);
-  turn_around(M_PI_2);
-}
-
-void go_to_zone_3()
-{
-  motionController->resetPosition(RobotPosition(1275, 1925, -M_PI_2), true, true, true);
-  RobotPosition startPosition(motionController->getCurrentPosition());
-  RobotPosition targetPosition(startPosition);
-  targetPosition.x = 2815;
-  targetPosition.y = 980;
-
-  go_to_point(targetPosition);
-}
-
-/////////////////////////////////////////////////////////////////////
 // Receiver loop
 /////////////////////////////////////////////////////////////////////
 
 #include <MessageReceiver.hpp>
 MessageReceiver messageReceiver;
 
-
-
 void loop()
 {
-
+#ifdef DEBUG_MODE_MATCH
+  TrajectoryConfig tc = motionController->getTrajectoryConfig();
+  RobotPosition curPos(motionController->getCurrentPosition());
+  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, 300.0));
+  saved_trajectory_vector = tv;
+  match_started = true;
+  match_current_time_s = 85.0f;  
+#endif
 #ifdef DEBUG_MODE_SERVO
+  taskYIELD();
   for(;;)
   {
-    for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-      Servo::servoWrite(posDegrees);
-      // Serial.println(posDegrees);
-      delay(20);
-    }
+    // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
+    //   Servo::servoWrite(posDegrees);
+    //   // Serial.println(posDegrees);
+    //   delay(20);
+    // }
+    Serial.println("Up");
+    Servo::servoUp();
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    Serial.println("Down");
+    Servo::servoDown();
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
   }
 #endif 
 #ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
@@ -762,8 +746,8 @@ void loop()
   {
     Serial.println("Moving...");
     movement_override = true;
-    make_a_square();
-    // go_to_zone_3();
+    strategy::make_a_square(motionController);
+    // strategy::go_to_zone_3(motionController);
 
     vTaskDelay(10000 / portTICK_PERIOD_MS);
   }

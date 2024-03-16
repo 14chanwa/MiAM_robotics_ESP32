@@ -6,6 +6,8 @@ namespace Servo
 {
     void init();
     void servoWrite(float angle);
+    void servoUp();
+    void servoDown();
 }
 
 #endif
