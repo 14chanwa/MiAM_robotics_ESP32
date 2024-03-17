@@ -24,6 +24,10 @@ namespace strategy
         float waiting_time_before_start_s, 
         TrajectoryVector trajectory_to_objective
     );
+
+    TrajectoryVector get_default_trajectory(MotionController* motionController);
+
+    float get_waiting_time_s();
 }
 
 

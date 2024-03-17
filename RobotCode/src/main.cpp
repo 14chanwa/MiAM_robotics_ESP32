@@ -62,61 +62,16 @@ SemaphoreHandle_t xMutex_Serial = NULL;
 #endif
 
 #ifdef ENABLE_OTA_UPDATE
-// // #include <ArduinoOTA.h>
-// // char mdnsName[] = "miam-pami";
-// // char otaPassword[] = "";
-// // String critERR = "";
+#include <ArduinoOTA.h>
 
-// // #include <AsyncTCP.h>
-// // #include <ESPAsyncWebServer.h>
-// #include <ElegantOTA.h>
-// AsyncWebServer server(80);
-
-
-// unsigned long ota_progress_millis = 0;
-
-// void onOTAStart() {
-//   // Log when OTA has started
-//   Serial.println("OTA update started!");
-//   // <Add your own code here>
-// }
-
-// void onOTAProgress(size_t current, size_t final) {
-//   // Log every 1 second
-//   if (millis() - ota_progress_millis > 1000) {
-//     ota_progress_millis = millis();
-//     Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
-//   }
-// }
-
-// void onOTAEnd(bool success) {
-//   // Log when OTA has finished
-//   if (success) {
-//     Serial.println("OTA update finished successfully!");
-//   } else {
-//     Serial.println("There was an error during OTA update!");
-//   }
-//   // <Add your own code here>
-// }
-  #include <ESPAsyncWebServer.h>
-  #include <AsyncElegantOTA.h>
-
-  AsyncWebServer server(80);
-  const char* PARAM_MESSAGE = "message";
-
-  void notFound(AsyncWebServerRequest *request) {
-      request->send(404, "text/plain", "Not found");
+void task_handle_ota(void* parameters)
+{
+  for(;;)
+  {
+    ArduinoOTA.handle();
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
-
-// void handleOTATask(void* parameters)
-// {
-//   for (;;)
-//   {
-//     ElegantOTA.loop();
-//     vTaskDelay(100 / portTICK_PERIOD_MS);
-//   }
-// }
-
+}
 #endif
 
 void initWiFi() {
@@ -131,101 +86,16 @@ void initWiFi() {
   delay(1000);
 
 #ifdef ENABLE_OTA_UPDATE
-  // // byte mac[6];
-  // // WiFi.macAddress(mac);
-  // // // Start OTA once connected
-  // // Serial.println("Setting up OTA");
-  // // // Port defaults to 3232
-  // // ArduinoOTA.setPort(3232);
-  // // // Hostname defaults to esp3232-[MAC]
-  // // char value[80];
-  // // sprintf(value, "%s-%02x%02x%02x", mdnsName, mac[2], mac[1], mac[0]);
-  // // ArduinoOTA.setHostname(value);
-  // // Serial.print("Hostname: ");
-  // // Serial.println(ArduinoOTA.getHostname());
-  // // // Partition label
-  // // Serial.print("Partition label: ");
-  // // Serial.println(ArduinoOTA.getPartitionLabel());
-  // // // No authentication by default
-  // // if (strlen(otaPassword) != 0) {
-  // //     ArduinoOTA.setPassword(otaPassword);
-  // //     Serial.printf("OTA Password: %s\n\r", otaPassword);
-  // // } else {
-  // //     Serial.printf("\r\nNo OTA password has been set! (insecure)\r\n\r\n");
-  // // }
-  // // ArduinoOTA
-  // //     .onStart([]() {
-  // //         String type;
-  // //         if (ArduinoOTA.getCommand() == U_FLASH)
-  // //             type = "sketch";
-  // //         else // U_SPIFFS
-  // //             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-  // //             type = "filesystem";
-  // //         Serial.println("Start updating " + type);
-  // //         robotBase->forceStop();
-  // //         critERR = "<h1>OTA Has been started</h1>";
-  // //         critERR += "<p>Wait for OTA to finish and reboot, or <a href=\"control?var=reboot&val=0\" title=\"Reboot Now (may interrupt OTA)\">reboot manually</a> to recover</p>";
-  // //     })
-  // //     .onEnd([]() {
-  // //         Serial.println("\r\nEnd");
-  // //     })
-  // //     .onProgress([](unsigned int progress, unsigned int total) {
-  // //         Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  // //     })
-  // //     .onError([](ota_error_t error) {
-  // //         Serial.printf("Error[%u]: ", error);
-  // //         if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-  // //         else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-  // //         else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-  // //         else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-  // //         else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  // //     });
-  // // ArduinoOTA.begin();
-  //   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-  //     request->send(200, "text/plain", "Hi! This is ElegantOTA AsyncDemo.");
-  //   });
+  ArduinoOTA.begin();
 
-  //   ElegantOTA.begin(&server);    // Start ElegantOTA
-  //   // ElegantOTA callbacks
-  //   ElegantOTA.onStart(onOTAStart);
-  //   ElegantOTA.onProgress(onOTAProgress);
-  //   ElegantOTA.onEnd(onOTAEnd);
-
-  //   server.begin();
-  //   Serial.println("HTTP server started");
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "text/plain", "Hello, world");
-    });
-
-    // Send a GET request to <IP>/get?message=<message>
-    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
-        if (request->hasParam(PARAM_MESSAGE)) {
-            message = request->getParam(PARAM_MESSAGE)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
-    });
-
-    // Send a POST request to <IP>/post with a form field message set to <message>
-    server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
-        String message;
-        if (request->hasParam(PARAM_MESSAGE, true)) {
-            message = request->getParam(PARAM_MESSAGE, true)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, POST: " + message);
-    });
-
-    server.onNotFound(notFound);
-
-    AsyncElegantOTA.begin(&server);
-    server.begin();
-
-    delay(1000);
+  xTaskCreate(
+    task_handle_ota,
+    "task_handle_ota",
+    10000,
+    NULL,
+    30,
+    NULL
+  );
 #endif
 }
 
@@ -364,7 +234,7 @@ void performStrategy(void* parameters)
 {
   strategy::perform_strategy(
       motionController,
-      0.0, 
+      strategy::get_waiting_time_s(), 
       saved_trajectory_vector
   );
   Serial.println("Strategy ended");
@@ -551,42 +421,48 @@ void setup()
     robotID = PAMI_ID;
   }
 
-  length_of_saved_traj_float = preferences.getInt("traj_len_float", -1);
-  duration_of_saved_traj = preferences.getFloat("traj_duration", -1);
-  if (length_of_saved_traj_float > 0)
-  {
-    Serial.print("Reading saved traj of length ");
-    Serial.print(length_of_saved_traj_float);
-    Serial.print(", duration ");
-    Serial.println(duration_of_saved_traj);
-    saved_trajectory = new float[length_of_saved_traj_float]();
-    preferences.getBytes("traj_coord", saved_trajectory, length_of_saved_traj_float*4);
-    Serial.print("First float ");
-    Serial.println(saved_trajectory[0]);
-    Serial.print("Last float ");
-    Serial.println(saved_trajectory[length_of_saved_traj_float-1]);
-
-    std::vector<TrajectoryPoint > tp_vec;
-    TrajectoryPoint tp;
-    for (int i = 0; i < length_of_saved_traj_float / 5; i++)
-    {
-      tp.position.x = saved_trajectory[5*i];
-      tp.position.y = saved_trajectory[5*i+1];
-      tp.position.theta = saved_trajectory[5*i+2];
-      tp.linearVelocity = saved_trajectory[5*i+3];
-      tp.angularVelocity = saved_trajectory[5*i+4];
-      tp_vec.push_back(tp);
-    }
-
-    saved_trajectory_vector.clear();
-    std::shared_ptr<Trajectory > traj(new SampledTrajectory(tc, tp_vec, duration_of_saved_traj));
-    saved_trajectory_vector.push_back(traj);
-  }
-
-  xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
-
+  // Init motionController
   motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
   motionController->init(RobotPosition(0.0, 0.0, 0.0));
+
+  length_of_saved_traj_float = preferences.getInt("traj_len_float", -1);
+  duration_of_saved_traj = preferences.getFloat("traj_duration", -1);
+  // if (length_of_saved_traj_float > 0)
+  // {
+  //   Serial.print("Reading saved traj of length ");
+  //   Serial.print(length_of_saved_traj_float);
+  //   Serial.print(", duration ");
+  //   Serial.println(duration_of_saved_traj);
+  //   saved_trajectory = new float[length_of_saved_traj_float]();
+  //   preferences.getBytes("traj_coord", saved_trajectory, length_of_saved_traj_float*4);
+  //   Serial.print("First float ");
+  //   Serial.println(saved_trajectory[0]);
+  //   Serial.print("Last float ");
+  //   Serial.println(saved_trajectory[length_of_saved_traj_float-1]);
+
+  //   std::vector<TrajectoryPoint > tp_vec;
+  //   TrajectoryPoint tp;
+  //   for (int i = 0; i < length_of_saved_traj_float / 5; i++)
+  //   {
+  //     tp.position.x = saved_trajectory[5*i];
+  //     tp.position.y = saved_trajectory[5*i+1];
+  //     tp.position.theta = saved_trajectory[5*i+2];
+  //     tp.linearVelocity = saved_trajectory[5*i+3];
+  //     tp.angularVelocity = saved_trajectory[5*i+4];
+  //     tp_vec.push_back(tp);
+  //   }
+
+  //   saved_trajectory_vector.clear();
+  //   std::shared_ptr<Trajectory > traj(new SampledTrajectory(tc, tp_vec, duration_of_saved_traj));
+  //   saved_trajectory_vector.push_back(traj);
+  // }
+  // else
+  // {
+    Serial.println("Load default trajectory");
+    saved_trajectory_vector = strategy::get_default_trajectory(motionController);
+  // }
+
+  xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
 
   Serial.println("Create robot base");
   robotBase->setup();
@@ -696,48 +572,11 @@ void setup()
 
 #include <MessageReceiver.hpp>
 MessageReceiver messageReceiver;
+MessageReceiverUDP messageReceiverUDP;
 
-void loop()
+
+void task_messageReceiver(void* parameters)
 {
-#ifdef DEBUG_MODE_MATCH
-  TrajectoryConfig tc = motionController->getTrajectoryConfig();
-  RobotPosition curPos(motionController->getCurrentPosition());
-  TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, 300.0));
-  saved_trajectory_vector = tv;
-  match_started = true;
-  match_current_time_s = 85.0f;  
-#endif
-#ifdef DEBUG_MODE_SERVO
-  taskYIELD();
-  for(;;)
-  {
-    // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-    //   Servo::servoWrite(posDegrees);
-    //   // Serial.println(posDegrees);
-    //   delay(20);
-    // }
-    Serial.println("Up");
-    Servo::servoUp();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-    Serial.println("Down");
-    Servo::servoDown();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-  }
-#endif 
-#ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
-  taskYIELD();
-  for (;;)
-  {
-    Serial.println("Moving...");
-    movement_override = true;
-    strategy::make_a_square(motionController);
-    // strategy::go_to_zone_3(motionController);
-
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
-  }
-#endif
-
-  messageReceiver.begin();
   for (;;)
   {
     Serial.println("Standby...");
@@ -800,6 +639,7 @@ void loop()
         Serial.print("Match started, current time ");
         Serial.println(messageReceiver.matchCurrentTime);
         match_started = true;
+        trajectory_was_read = false;
         match_current_time_s = messageReceiver.matchCurrentTime;
       }
       else
@@ -816,4 +656,104 @@ void loop()
       Serial.println("Received error");
     }
   }
+}
+
+void task_messageReceiverUDP(void* parameters)
+{
+  for (;;)
+  {
+    Serial.println("Standby...");
+    MessageType mt = messageReceiverUDP.receive();
+
+    if (mt == MessageType::MATCH_STATE)
+    {
+      Serial.println("Received match state");
+      if (messageReceiverUDP.matchStarted)
+      {
+        Serial.print("Match started, current time ");
+        Serial.println(messageReceiverUDP.matchCurrentTime);
+        match_started = true;
+        trajectory_was_read = false;
+        match_current_time_s = messageReceiverUDP.matchCurrentTime;
+      }
+      else
+      {
+        Serial.println("Match not started");
+        match_started = false;
+        match_current_time_s = 0.0f;
+        trajectory_was_read = false;
+        motionController->clearTrajectories();
+      }
+    }
+    else
+    {
+      Serial.println("Received error");
+    }
+  }
+}
+
+
+void loop()
+{
+#ifdef DEBUG_MODE_MATCH
+  match_started = true;
+  match_current_time_s = 85.0f;  
+#endif
+#ifdef DEBUG_MODE_SERVO
+  taskYIELD();
+  for(;;)
+  {
+    // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
+    //   Servo::servoWrite(posDegrees);
+    //   // Serial.println(posDegrees);
+    //   delay(20);
+    // }
+    Serial.println("Up");
+    Servo::servoUp();
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    Serial.println("Down");
+    Servo::servoDown();
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+  }
+#endif 
+#ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
+  taskYIELD();
+  for (;;)
+  {
+    Serial.println("Moving...");
+    movement_override = true;
+    strategy::make_a_square(motionController);
+    // strategy::go_to_zone_3(motionController);
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+  }
+#endif
+
+  messageReceiver.begin();
+  messageReceiverUDP.begin();
+
+  xTaskCreate(
+    task_messageReceiver,
+    "task_messageReceiver",
+    20000,
+    NULL,
+    40,
+    NULL
+  );
+
+  xTaskCreate(
+    task_messageReceiverUDP,
+    "task_messageReceiverUDP",
+    20000,
+    NULL,
+    40,
+    NULL
+  );
+
+  for(;;)
+  {
+    taskYIELD();
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+  }
+  
 }

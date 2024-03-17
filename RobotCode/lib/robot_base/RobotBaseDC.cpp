@@ -39,14 +39,14 @@
 /////////////////////////////////////////////
 
 #define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM 40.0f
+#define WHEEL_SPACING_MM 42.5f
 
 // give 20% overhead
 #define MAX_SPEED_RPM (MOTOR_RATED_RPM)
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
-#define MAX_WHEEL_ACCELERATION_MM_S 1000.0f
+#define MAX_WHEEL_ACCELERATION_MM_S 400.0f
 
 /////////////////////////////////////////////
 // Wheel PID
