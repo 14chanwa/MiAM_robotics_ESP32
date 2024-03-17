@@ -39,7 +39,12 @@
 /////////////////////////////////////////////
 
 #define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM 42.5f
+
+#if PAMI_ID == 4
+    #define WHEEL_SPACING_MM 42.5f
+#else
+    #define WHEEL_SPACING_MM 41.0f
+#endif
 
 // give 20% overhead
 #define MAX_SPEED_RPM (MOTOR_RATED_RPM)
