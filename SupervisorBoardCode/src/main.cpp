@@ -16,6 +16,7 @@
 #define _ETHERNET_WEBSERVER_LOGLEVEL_       3
 
 #include <WebServer_WT32_ETH01.h>
+#include <TFTScreen.hpp>
 
 // // Select the IP address according to your local network
 // IPAddress myIP(192, 168, 2, 232);
@@ -33,11 +34,33 @@ byte ReplyBuffer[] = "ACK";      // a string to send back
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 
+// Screen
+TFTScreen tftScreen;
+
+void task_update_screen(void* parameters)
+{
+  for(;;)
+  {
+    tftScreen.update();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
 
   while (!Serial);
+
+  tftScreen.init();
+  xTaskCreate(
+    task_update_screen,
+    "task_update_screen",
+    10000,
+    NULL,
+    10,
+    NULL
+  );
 
   // Using this if Serial debugging is not necessary or not using Serial port
   //while (!Serial && (millis() < 3000));
