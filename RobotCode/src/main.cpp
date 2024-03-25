@@ -138,10 +138,12 @@ void logTelemetry(void* parameters)
       // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       teleplot.update("battery_reading", AnalogReadings::get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("tcrt0", AnalogReadings::get_current_tcrt0_reading(), "", 0);
-      teleplot.update("tcrt1", AnalogReadings::get_current_tcrt1_reading(), "", 0);
-      teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
+      // teleplot.update("tcrt0", AnalogReadings::get_current_tcrt0_reading(), "", 0);
+      // teleplot.update("tcrt1", AnalogReadings::get_current_tcrt1_reading(), "", 0);
+      // teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
       // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
+      teleplot.update("leftSwitchPin", AnalogReadings::get_left_switch_value(), "", 0);
+      teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
 
 
       #ifdef USE_DC_MOTORS
