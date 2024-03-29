@@ -31,7 +31,6 @@ namespace I2CHandler
 
     void initOLEDScreen();
     void printOLEDMessage(String message);
-    void task_update_ssd1306(void* parameters);
 
     void update_ssd1306(DisplayInformations* informations);
 };

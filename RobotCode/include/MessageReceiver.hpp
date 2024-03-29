@@ -62,6 +62,4 @@ private:
     int clientSocket;
 };
 
-
-
 #endif

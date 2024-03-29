@@ -1,8 +1,8 @@
-#ifndef _SERVO_HPP
-#define _SERVO_HPP
+#ifndef _SERVO_HANDLER_HPP
+#define _SERVO_HANDLER_HPP
 
 
-namespace Servo
+namespace ServoHandler
 {
     void init();
     void servoWrite(float angle);

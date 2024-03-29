@@ -10,6 +10,7 @@
 #endif
 
 #define SEND_TELEPLOT_UDP
+#define MIAM_BROADCAST_ADDRESS "42.42.0.255"
 // #define SEND_SERIAL
 
 // #define ENABLE_OTA_UPDATE
@@ -19,15 +20,16 @@
 // #define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 /////////////////////////////////////////////
-// Pins
-/////////////////////////////////////////////
-
-#define LED_BUILTIN 2
-
-/////////////////////////////////////////////
 // Motion controller specs
 /////////////////////////////////////////////
 
 #define LOW_LEVEL_LOOP_TIME_MS 10
+
+/////////////////////////////////////////////
+// Match parameters
+/////////////////////////////////////////////
+
+#define MATCH_DURATION_S 100.0f
+#define MATCH_PAMI_START_TIME_S 90.0f
 
 #endif

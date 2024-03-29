@@ -1,6 +1,7 @@
 #include <Arduino.h>
+#include <ServoHandler.hpp>
 
-// Servo
+// ServoHandler
 #define SERVO_PIN 25
 #define SERVO_PWM_CHANNEL 6
 
@@ -35,7 +36,7 @@ void servoWriteMicroseconds(int pulseWidthUs) {
     ledcWrite(SERVO_PWM_CHANNEL, _pulseWidthTicks);
 }
 
-namespace Servo
+namespace ServoHandler
 {
     void init()
     {
@@ -50,12 +51,12 @@ namespace Servo
 
     void servoUp()
     {
-        Servo::servoWrite(SERVO_UP_POSITION);
+        servoWrite(SERVO_UP_POSITION);
     }
 
     void servoDown()
     {
-        Servo::servoWrite(SERVO_DOWN_POSITION);
+        servoWrite(SERVO_DOWN_POSITION);
     }
 }
 
