@@ -1,7 +1,10 @@
 #include <Message.hpp>
 #include <SampledTrajectory.h>
+#include <cmath>
 
 #define MESSAGE_PAYLOAD_START 1
+
+#define TRAJECTORY_SERIALIZATION_DELTAT 0.1
 
 using namespace miam::trajectory;
 
@@ -19,9 +22,20 @@ std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t se
         if (message.size() - MESSAGE_PAYLOAD_START == 1)
         {
             // First byte of payload is configuration
-            return std::make_shared<ConfigurationMessage >(
-                (bool) message.at(MESSAGE_PAYLOAD_START)
-            );
+            if ((bool)message.at(MESSAGE_PAYLOAD_START) == PlayingSide::BLUE_SIDE)
+            {
+                return std::make_shared<ConfigurationMessage >(
+                    PlayingSide::BLUE_SIDE,
+                    senderId
+                );
+            }
+            else if ((bool)message.at(MESSAGE_PAYLOAD_START) == PlayingSide::YELLOW_SIDE)
+            {
+                return std::make_shared<ConfigurationMessage >(
+                    PlayingSide::YELLOW_SIDE,
+                    senderId
+                );
+            }
         }
     }
     else if (message_type == MessageType::MATCH_STATE)
@@ -33,7 +47,8 @@ std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t se
             // Second byte of payload is match time
             return std::make_shared<MatchStateMessage >(
                 (bool) message.at(MESSAGE_PAYLOAD_START),
-                (float) message.at(MESSAGE_PAYLOAD_START + 1)
+                (float) message.at(MESSAGE_PAYLOAD_START + 1),
+                senderId
             );
         }
     }
@@ -71,31 +86,121 @@ std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t se
                 newTrajectory.push_back(traj);
 
                 return std::make_shared<NewTrajectoryMessage >(
-                    newTrajectory
+                    newTrajectory,
+                    senderId
                 );
             }
         }
     }
-    return std::make_shared<ErrorMessage >();
+    else if (message_type == MessageType::PAMI_REPORT)
+    {
+        // Check size of payload
+        if (message.size() - MESSAGE_PAYLOAD_START == 3)
+        {
+            // First byte of payload is match started
+            // Second byte of payload is match time
+            // 3rd byte is side
+            if ((bool)message.at(MESSAGE_PAYLOAD_START+2) == PlayingSide::BLUE_SIDE)
+            {
+                return std::make_shared<PamiReportMessage >(
+                    (bool) message.at(MESSAGE_PAYLOAD_START),
+                    (float) message.at(MESSAGE_PAYLOAD_START + 1),
+                    PlayingSide::BLUE_SIDE,
+                    senderId
+                );
+            }
+            else if ((bool)message.at(MESSAGE_PAYLOAD_START+2) == PlayingSide::YELLOW_SIDE)
+            {
+                // First byte of payload is match started
+                // Second byte of payload is match time
+                return std::make_shared<PamiReportMessage >(
+                    (bool) message.at(MESSAGE_PAYLOAD_START),
+                    (float) message.at(MESSAGE_PAYLOAD_START + 1),
+                    PlayingSide::YELLOW_SIDE,
+                    senderId
+                );
+            }
+        }
+    }
+    return std::make_shared<ErrorMessage >(senderId);
 }
 
 // function definitions
 VecFloat ConfigurationMessage::serialize()
 {
-    return VecFloat();
+    VecFloat res;
+    // First byte is message type
+    res.push_back((float)get_message_type());
+    // Second byte is side
+    res.push_back((float)playingSide_);
+    return res;
 }
 
 VecFloat NewTrajectoryMessage::serialize()
 {
-    return VecFloat();
+    VecFloat res;
+    // First byte is message type
+    res.push_back((float)get_message_type());
+
+    // Serializing the trajectory:
+    // N+1 = Number of points is duration / TRAJECTORY_SERIALIZATION_DELTAT + 1
+    // N = number of time intervals
+    int N = std::ceil(newTrajectory_.getDuration() / TRAJECTORY_SERIALIZATION_DELTAT);
+    int deltat = newTrajectory_.getDuration() / N;
+
+    // Second byte is size of trajectory in number of points
+    res.push_back((float)(N+1));
+    // Third byte is duration
+    res.push_back((float)newTrajectory_.getDuration());
+    // Following bytes are trajectory points
+    for (int i = 0; i < N+1; i++)
+    {
+        TrajectoryPoint pt;
+        if (i < N)
+        {
+            pt = newTrajectory_.getCurrentPoint(deltat * i);
+        } else {
+            pt = newTrajectory_.getEndPoint();
+        }
+        res.push_back((float)pt.position.x);
+        res.push_back((float)pt.position.y);
+        res.push_back((float)pt.position.theta);
+        res.push_back((float)pt.linearVelocity);
+        res.push_back((float)pt.angularVelocity);
+    }
+    return res;
 }
 
 VecFloat MatchStateMessage::serialize()
 {
-    return VecFloat();
+    VecFloat res;
+    // First byte is message type
+    res.push_back((float)get_message_type());
+    // Second byte is match started
+    res.push_back((float)matchStarted_);
+    // Third byte is match time
+    res.push_back((float)matchTime_);
+    return res;
 }
 
 VecFloat ErrorMessage::serialize()
 {
-    return VecFloat();
+    VecFloat res;
+    // First byte is message type
+    res.push_back((float)get_message_type());
+    return res;
+}
+
+VecFloat PamiReportMessage::serialize()
+{
+    VecFloat res;
+    // First byte is message type
+    res.push_back((float)get_message_type());
+    // Second byte is match started
+    res.push_back((float)matchStarted_);
+    // Third byte is match time
+    res.push_back((float)matchTime_);
+    // 4th byte is playing side
+    res.push_back((float)playingSide_);
+    return res;
 }

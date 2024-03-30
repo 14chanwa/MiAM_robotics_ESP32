@@ -24,7 +24,14 @@ enum MessageType
     CONFIGURATION = 0,
     NEW_TRAJECTORY = 1,
     MATCH_STATE = 2,
+    PAMI_REPORT = 10,
     ERROR = 99
+};
+
+enum PlayingSide
+{
+    BLUE_SIDE = 0,
+    YELLOW_SIDE = 1
 };
 
 class Message
@@ -33,18 +40,19 @@ public:
     MessageType get_message_type() { return messageType_; }
     uint8_t get_sender_id() { return senderId_; }
 
-    static std::shared_ptr<Message > parse(VecFloat message, uint8_t senderId = 0);
+    static std::shared_ptr<Message > parse(VecFloat message, uint8_t senderId = 255);
     virtual VecFloat serialize();
 
 private:
     MessageType messageType_;
     uint8_t senderId_;
-    Message(MessageType mt, uint8_t senderId = 0) : messageType_(mt), senderId_(senderId) {};
+    Message(MessageType mt, uint8_t senderId = 255) : messageType_(mt), senderId_(senderId) {};
 
     friend class ConfigurationMessage;
     friend class MatchStateMessage;
     friend class NewTrajectoryMessage;
     friend class ErrorMessage;
+    friend class PamiReportMessage;
 };
 
 /* Specialized messages */
@@ -53,21 +61,21 @@ private:
 class ConfigurationMessage : public Message
 {
 public:
-    ConfigurationMessage(bool isPlayingRightSide) :
-        Message(MessageType::CONFIGURATION),
-        isPlayingRightSide_(isPlayingRightSide) {};
+    ConfigurationMessage(PlayingSide playingSide, uint8_t senderId) :
+        Message(MessageType::CONFIGURATION, senderId),
+        playingSide_(playingSide) {};
     
     VecFloat serialize();
 
-    bool isPlayingRightSide_;
+    PlayingSide playingSide_;
 };
 
 // NEW TRAJECTORY
 class NewTrajectoryMessage : public Message
 {
 public:
-    NewTrajectoryMessage(TrajectoryVector trajectory) :
-        Message(MessageType::NEW_TRAJECTORY),
+    NewTrajectoryMessage(TrajectoryVector trajectory, uint8_t senderId) :
+        Message(MessageType::NEW_TRAJECTORY, senderId),
         newTrajectory_(trajectory) {};
 
     VecFloat serialize();
@@ -79,8 +87,8 @@ public:
 class MatchStateMessage : public Message
 {
 public:
-    MatchStateMessage(bool matchStarted, float matchTime = 0.0) :
-        Message(MessageType::MATCH_STATE),
+    MatchStateMessage(bool matchStarted, float matchTime, uint8_t senderId) :
+        Message(MessageType::MATCH_STATE, senderId),
         matchStarted_(matchStarted),
         matchTime_(matchTime) {};
     
@@ -94,9 +102,30 @@ public:
 class ErrorMessage : public Message
 {
 public:
-    ErrorMessage() : Message(MessageType::ERROR) {};  
+    ErrorMessage(uint8_t senderId) : Message(MessageType::ERROR, senderId) {};  
 
     VecFloat serialize(); 
+};
+
+// PAMI_REPORT
+class PamiReportMessage : public Message
+{
+public:
+    PamiReportMessage(
+        bool matchStarted, 
+        float matchTime, 
+        PlayingSide playingSide, 
+        uint8_t senderId
+    ) : Message(MessageType::PAMI_REPORT, senderId),
+        matchStarted_(matchStarted),
+        matchTime_(matchTime),
+        playingSide_(playingSide) {};
+    
+    VecFloat serialize();
+
+    bool matchStarted_;
+    float matchTime_;
+    PlayingSide playingSide_;
 };
 
 #endif
