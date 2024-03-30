@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <HeartbeatHandler.hpp>
 #include <Strategy.hpp>
+#include <Robot.hpp>
 
 #define LED_SLOW_BLINK_MS 1000
 #define LED_FAST_BLINK_MS 150
@@ -22,18 +23,19 @@ void task_blink_led(void *parameters)
     ledcSetup(LED_PWM_CHANNEL, LED_PWM_FREQUENCY, LED_PWM_RESOLUTION);
     ledcWrite(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);
 
-    MatchState ms;
+    RobotState ms;
     for (;;)
     {
-        ms = get_current_match_state();
-        if (ms == MatchState::WAIT_FOR_CONFIGURATION)
+        ms = Robot::get_current_robot_state();
+        if (ms == RobotState::WAIT_FOR_CONFIGURATION)
         {
             // constant ON
             ledcWrite(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);
+            vTaskDelay(LED_FAST_BLINK_MS / portTICK_PERIOD_MS);
         }
-        else if (ms == MatchState::MATCH_STARTED_WAITING ||
-            ms == MatchState::MATCH_STARTED_ACTION ||
-            ms == MatchState::MATCH_STARTED_FINAL_APPROACH)
+        else if (ms == RobotState::MATCH_STARTED_WAITING ||
+            ms == RobotState::MATCH_STARTED_ACTION ||
+            ms == RobotState::MATCH_STARTED_FINAL_APPROACH)
         {
             // blink fast
             ledcWrite(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);

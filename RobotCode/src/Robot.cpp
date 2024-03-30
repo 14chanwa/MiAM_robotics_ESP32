@@ -196,6 +196,8 @@ Robot::Robot()
     // }
 
     xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
+
+    currentRobotState_ = RobotState::WAIT_FOR_CONFIGURATION;
 }
 
 void Robot::init()
@@ -217,4 +219,9 @@ void Robot::startLowLevelLoop()
         NULL, 
         0 // pin to core 0
     ); 
+}
+
+RobotState Robot::get_current_robot_state()
+{
+    return Robot::getInstance()->currentRobotState_;
 }

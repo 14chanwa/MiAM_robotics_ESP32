@@ -6,21 +6,9 @@
 /////////////////////////////////////////////////////////////////////
 
 TrajectoryVector traj;
-strategy::MatchState _currentMatchState = strategy::MatchState::WAIT_FOR_CONFIGURATION;
 
 namespace strategy
 {
-
-    MatchState get_current_match_state()
-    {
-        return _currentMatchState;
-    }
-
-    void set_current_match_state(MatchState matchState)
-    {
-        _currentMatchState = matchState;
-    }
-
     void go_forward(MotionController *motionController, float distance)
     {
         TrajectoryConfig tc = motionController->getTrajectoryConfig();

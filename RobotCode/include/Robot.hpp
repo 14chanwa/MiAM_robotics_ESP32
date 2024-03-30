@@ -6,6 +6,17 @@
 
 #include <Preferences.h>
 
+enum RobotState
+{
+    WAIT_FOR_CONFIGURATION,
+    WAIT_FOR_MATCH_START,
+    MOVING_SETUP_TRAJECTORY,
+    MATCH_STARTED_WAITING,
+    MATCH_STARTED_ACTION,
+    MATCH_STARTED_FINAL_APPROACH,
+    MATCH_ENDED
+};
+
 class Robot
 {
 private:
@@ -15,7 +26,8 @@ public:
     static Robot* getInstance();
     static void init();
     static void startLowLevelLoop();
-    
+    static RobotState get_current_robot_state();
+
     ///////////////////////////////////////////////////
     // Variables
     ///////////////////////////////////////////////////
@@ -52,6 +64,8 @@ public:
     // Semaphores
     SemaphoreHandle_t xMutex_Serial = NULL;
 
+    // Robot state
+    RobotState currentRobotState_;
 };
 
 #endif

@@ -9,19 +9,6 @@
 
 namespace strategy
 {
-    enum MatchState
-    {
-        WAIT_FOR_CONFIGURATION,
-        WAIT_FOR_MATCH_START,
-        MATCH_STARTED_WAITING,
-        MATCH_STARTED_ACTION,
-        MATCH_STARTED_FINAL_APPROACH,
-        MATCH_ENDED
-    };
-
-    MatchState get_current_match_state();
-    void set_current_match_state(MatchState matchState);
-
     void go_forward(MotionController* motionController, float distance);
 
     void turn_around(MotionController* motionController, float angle);

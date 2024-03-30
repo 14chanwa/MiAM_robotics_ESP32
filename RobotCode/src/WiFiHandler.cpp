@@ -34,7 +34,7 @@ namespace WiFiHandler
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
         Serial.println(WiFi.localIP());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // vTaskDelay(1000 / portTICK_PERIOD_MS);
 
         #ifdef ENABLE_OTA_UPDATE
         ArduinoOTA.begin();
@@ -49,7 +49,7 @@ namespace WiFiHandler
         );
         #endif
 
-        // Register callback in case WiFi disconnects
-        WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+        // // Register callback in case WiFi disconnects
+        // WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     }
 }

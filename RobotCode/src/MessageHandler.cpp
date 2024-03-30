@@ -13,7 +13,7 @@ void task_messageReceiver(void* parameters)
     Robot* robot = Robot::getInstance();
     for (;;)
     {
-        Serial.println("Standby...");
+        Serial.println("TCP receiver standby...");
         MessageType mt = messageReceiver.receive();
 
         if (mt == MessageType::NEW_TRAJECTORY)
@@ -97,7 +97,7 @@ void task_messageReceiverUDP(void* parameters)
     Robot* robot = Robot::getInstance();
     for (;;)
     {
-        Serial.println("Standby...");
+        Serial.println("UDP receiver standby...");
         MessageType mt = messageReceiverUDP.receive();
 
         if (mt == MessageType::MATCH_STATE)
