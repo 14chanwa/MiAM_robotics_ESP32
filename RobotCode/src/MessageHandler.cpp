@@ -139,7 +139,7 @@ namespace MessageHandler{
         xTaskCreate(
             task_messageReceiver,
             "task_messageReceiver",
-            20000,
+            50000,
             NULL,
             40,
             NULL
@@ -148,7 +148,7 @@ namespace MessageHandler{
         xTaskCreate(
             task_messageReceiverUDP,
             "task_messageReceiverUDP",
-            20000,
+            50000,
             NULL,
             40,
             NULL
