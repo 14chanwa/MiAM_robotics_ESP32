@@ -1,5 +1,6 @@
 #include <MessageHandler.hpp>
 #include <MessageReceiver.hpp>
+
 #include <Arduino.h>
 
 #include <Robot.hpp>
@@ -25,46 +26,46 @@ void task_messageReceiver(void* parameters)
             robot->motionController->waitForTrajectoryFinished();
             robot->movement_override = false;
         }
-        else if (mt == MessageType::SET_ID)
-        {
-            Serial.print("Received new id: ");
-            Serial.println(messageReceiver.newID);
-            robot->robotID = messageReceiver.newID;
-            robot->preferences.putInt("id", robot->robotID);
-        }
-        else if (mt == MessageType::NEW_TRAJECTORY_SAVE)
-        {
-        Serial.println("Received trajectory, saving...");
+        // else if (mt == MessageType::SET_ID)
+        // {
+        //     Serial.print("Received new id: ");
+        //     Serial.println(messageReceiver.newID);
+        //     robot->robotID = messageReceiver.newID;
+        //     robot->preferences.putInt("id", robot->robotID);
+        // }
+        // else if (mt == MessageType::NEW_TRAJECTORY_SAVE)
+        // {
+        // Serial.println("Received trajectory, saving...");
 
-        robot->length_of_saved_traj_float = (int)messageReceiver.receivedTrajectory.at(1) * 5;
-        robot->duration_of_saved_traj = (float)messageReceiver.receivedTrajectory.at(2);
+        // robot->length_of_saved_traj_float = (int)messageReceiver.receivedTrajectory.at(1) * 5;
+        // robot->duration_of_saved_traj = (float)messageReceiver.receivedTrajectory.at(2);
 
-        if ((messageReceiver.receivedTrajectory.size() - 3) == robot->length_of_saved_traj_float)
-        {
-            robot->preferences.putInt("traj_len_float", robot->length_of_saved_traj_float);
-            robot->preferences.putFloat("traj_duration", robot->duration_of_saved_traj);
+        // if ((messageReceiver.receivedTrajectory.size() - 3) == robot->length_of_saved_traj_float)
+        // {
+        //     robot->preferences.putInt("traj_len_float", robot->length_of_saved_traj_float);
+        //     robot->preferences.putFloat("traj_duration", robot->duration_of_saved_traj);
 
-            // Ignore first 3 bytes
-            float* tmp = new float[robot->length_of_saved_traj_float]();
-            for (int i = 0; i < robot->length_of_saved_traj_float; i++)
-            {
-                tmp[i] = messageReceiver.receivedTrajectory.at(i+3);
-            }
-            robot->preferences.putBytes("traj_coord", tmp, robot->length_of_saved_traj_float * 4);
-            Serial.print("Saved traj of length ");
-            Serial.println(robot->length_of_saved_traj_float);
+        //     // Ignore first 3 bytes
+        //     float* tmp = new float[robot->length_of_saved_traj_float]();
+        //     for (int i = 0; i < robot->length_of_saved_traj_float; i++)
+        //     {
+        //         tmp[i] = messageReceiver.receivedTrajectory.at(i+3);
+        //     }
+        //     robot->preferences.putBytes("traj_coord", tmp, robot->length_of_saved_traj_float * 4);
+        //     Serial.print("Saved traj of length ");
+        //     Serial.println(robot->length_of_saved_traj_float);
 
-            delete tmp;
-        }
-        else
-        {
-            Serial.println("Not saving: decrepency in sizes");
-            Serial.print("Expected ");
-            Serial.print(robot->length_of_saved_traj_float);
-            Serial.print(" received ");
-            Serial.println(messageReceiver.receivedTrajectory.size() - 3);
-        }
-        }
+        //     delete tmp;
+        // }
+        // else
+        // {
+        //     Serial.println("Not saving: decrepency in sizes");
+        //     Serial.print("Expected ");
+        //     Serial.print(robot->length_of_saved_traj_float);
+        //     Serial.print(" received ");
+        //     Serial.println(messageReceiver.receivedTrajectory.size() - 3);
+        // }
+        // }
         else if (mt == MessageType::MATCH_STATE)
         {
         Serial.println("Received match state");

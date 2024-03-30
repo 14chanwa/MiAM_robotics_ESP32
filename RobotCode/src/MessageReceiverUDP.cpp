@@ -117,43 +117,43 @@ MessageType MessageReceiverUDP::receive()
         
         receivedTrajectory.clear();
     }
-    else if (message_type == 1)
-    {
-        mt = MessageType::SET_ID;
+    // else if (message_type == 1)
+    // {
+    //     mt = MessageType::SET_ID;
 
-        int expected_size = 2;
+    //     int expected_size = 2;
 
-        if (expected_size != receivedTrajectory.size())
-        {
-            Serial.println("Decrepency in message sizes!");
-            Serial.print("Expected ");
-            Serial.print(expected_size);
-            Serial.print(" received ");
-            Serial.println(receivedTrajectory.size());
-            return MessageType::ERROR;
-        }
+    //     if (expected_size != receivedTrajectory.size())
+    //     {
+    //         Serial.println("Decrepency in message sizes!");
+    //         Serial.print("Expected ");
+    //         Serial.print(expected_size);
+    //         Serial.print(" received ");
+    //         Serial.println(receivedTrajectory.size());
+    //         return MessageType::ERROR;
+    //     }
 
-        newID = (int)receivedTrajectory.at(1);
-    }
-    else if (message_type == 2)
-    {
-        mt = MessageType::NEW_TRAJECTORY_SAVE;
+    //     newID = (int)receivedTrajectory.at(1);
+    // }
+    // else if (message_type == 2)
+    // {
+    //     mt = MessageType::NEW_TRAJECTORY_SAVE;
 
-        int size_of_trajectory = receivedTrajectory.at(1);
-        // float duration_of_trajectory = receivedTrajectory.at(2);
+    //     int size_of_trajectory = receivedTrajectory.at(1);
+    //     // float duration_of_trajectory = receivedTrajectory.at(2);
 
-        int expected_size = size_of_trajectory * 5 + 3;
+    //     int expected_size = size_of_trajectory * 5 + 3;
 
-        if (expected_size != receivedTrajectory.size())
-        {
-            Serial.println("Decrepency in message sizes!");
-            Serial.print("Expected ");
-            Serial.print(expected_size);
-            Serial.print(" received ");
-            Serial.println(receivedTrajectory.size());
-            return MessageType::ERROR;
-        }        
-    }
+    //     if (expected_size != receivedTrajectory.size())
+    //     {
+    //         Serial.println("Decrepency in message sizes!");
+    //         Serial.print("Expected ");
+    //         Serial.print(expected_size);
+    //         Serial.print(" received ");
+    //         Serial.println(receivedTrajectory.size());
+    //         return MessageType::ERROR;
+    //     }        
+    // }
     else if (message_type == 3)
     {
         mt = MessageType::MATCH_STATE;

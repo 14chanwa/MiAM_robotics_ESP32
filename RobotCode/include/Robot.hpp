@@ -26,7 +26,9 @@ public:
     static Robot* getInstance();
     static void init();
     static void startLowLevelLoop();
+
     static RobotState get_current_robot_state();
+    static RobotState notify_new_message();
 
     ///////////////////////////////////////////////////
     // Variables
