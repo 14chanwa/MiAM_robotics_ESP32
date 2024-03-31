@@ -32,7 +32,7 @@ void task_update_ssd1306(void* parameters)
         display_informations.id = robot->robotID;
 
         // Update match state
-        display_informations.match_started = robot->match_started;
+        display_informations.match_started = robot->matchStarted();
         display_informations.current_time_s = std::round(robot->match_current_time_s);
 
         // Update display

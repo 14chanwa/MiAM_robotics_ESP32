@@ -5,6 +5,7 @@
 #include <AbstractRobotBase.hpp>
 
 #include <Preferences.h>
+#include <Message.hpp>
 
 enum RobotState
 {
@@ -27,8 +28,11 @@ public:
     static void init();
     static void startLowLevelLoop();
 
-    static RobotState get_current_robot_state();
-    static RobotState notify_new_message();
+    RobotState get_current_robot_state();
+    void update_robot_state();
+    void notify_new_message(std::shared_ptr<Message >  message);
+
+    bool matchStarted();
 
     ///////////////////////////////////////////////////
     // Variables
@@ -45,10 +49,8 @@ public:
     int length_of_saved_traj_float = 0;
     float duration_of_saved_traj = 0.0f;
     float* saved_trajectory;
-
-    bool match_started = false;
     bool trajectory_was_read = false;
-    bool movement_override = false;
+    
     float match_current_time_s = 0.0f;
 
     TrajectoryVector saved_trajectory_vector;
@@ -68,6 +70,10 @@ public:
 
     // Robot state
     RobotState currentRobotState_;
+
+    // Message variables
+    std::shared_ptr<Message > newMessage_ = nullptr;
+    bool newMessageToRead_ = false;
 };
 
 #endif

@@ -68,25 +68,31 @@ namespace strategy
         go_to_point(motionController, targetPosition);
     }
 
-    void perform_strategy(
-        MotionController *motionController,
-        float waiting_time_before_start_s, 
-        TrajectoryVector trajectory_to_objective
-    )
-    {
-        // Wait requested time
-        vTaskDelay(waiting_time_before_start_s * 1000 /  portTICK_PERIOD_MS);
+    // void perform_strategy_travel_to_objective(
+    //     MotionController *motionController,
+    //     float waiting_time_before_start_s, 
+    //     TrajectoryVector trajectory_to_objective
+    // )
+    // {
+    //     // Wait requested time
+    //     vTaskDelay(waiting_time_before_start_s * 1000 /  portTICK_PERIOD_MS);
 
-        // Execute move
-        motionController->resetPosition(trajectory_to_objective.getCurrentPoint(0.0f).position, true, true, true);
-        motionController->setTrajectoryToFollow(trajectory_to_objective);
-        motionController->waitForTrajectoryFinished();
+    //     // Execute move
+    //     motionController->resetPosition(trajectory_to_objective.getCurrentPoint(0.0f).position, true, true, true);
+    //     motionController->setTrajectoryToFollow(trajectory_to_objective);
+    // }
 
-        // touch plant
-        motionController->setSlowApproach(true);
-        go_forward(motionController, 100.0);
-        motionController->setSlowApproach(false);
+    // void perform_strategy_final_approach(
+    //     MotionController *motionController,
+    //     float waiting_time_before_start_s, 
+    //     TrajectoryVector trajectory_to_objective
+    // )
+    // {
+    //     // touch plant
+    //     motionController->setSlowApproach(true);
+    //     go_forward(motionController, 100.0);
+    //     motionController->setSlowApproach(false);
 
-        ServoHandler::servoDown();
-    }
+    //     ServoHandler::servoDown();
+    // }
 }

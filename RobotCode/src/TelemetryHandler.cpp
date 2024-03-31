@@ -45,6 +45,7 @@ void logTelemetry(void* parameters)
       // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
       teleplot.update("leftSwitchPin", AnalogReadings::get_left_switch_value(), "", 0);
       teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
+      teleplot.update("currentRobotState", (int)robot->get_current_robot_state(), "", 0);
 
 
       #ifdef USE_DC_MOTORS

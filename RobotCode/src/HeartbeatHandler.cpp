@@ -24,9 +24,11 @@ void task_blink_led(void *parameters)
     ledcWrite(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);
 
     RobotState ms;
+    Robot* robot = Robot::getInstance();
+
     for (;;)
     {
-        ms = Robot::get_current_robot_state();
+        ms = robot->get_current_robot_state();
         if (ms == RobotState::WAIT_FOR_CONFIGURATION)
         {
             // constant ON

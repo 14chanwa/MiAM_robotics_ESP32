@@ -16,18 +16,18 @@ Robot* Robot::getInstance()
     return &instance;
 }
 
-void performStrategy(void* parameters)
-{
-    Robot* robot = Robot::getInstance();
+// void performStrategy(void* parameters)
+// {
+//     Robot* robot = Robot::getInstance();
 
-    strategy::perform_strategy(
-        robot->motionController,
-        strategy::get_waiting_time_s(), 
-        robot->saved_trajectory_vector
-    );
-    Serial.println("Strategy ended");
-    vTaskDelete( NULL );
-}
+//     strategy::perform_strategy(
+//         robot->motionController,
+//         strategy::get_waiting_time_s(), 
+//         robot->saved_trajectory_vector
+//     );
+//     Serial.println("Strategy ended");
+//     vTaskDelete( NULL );
+// }
 
 void performLowLevel(void* parameters)
 {
@@ -38,49 +38,18 @@ void performLowLevel(void* parameters)
     for(;;)
     {
         timeEndLoop = micros();
+        // Time since function was last called
         robot->dt_period_ms = (timeEndLoop - timeStartLoop) / 1000.0;
         timeStartLoop = timeEndLoop;
 
         // update match time
-        if (robot->match_started)
+        if (robot->matchStarted())
         {
             robot->match_current_time_s += robot->dt_period_ms / 1000;
-
-            // if match started and trajectory was not read, start
-            if (
-                !robot->trajectory_was_read && 
-                robot->match_current_time_s > MATCH_PAMI_START_TIME_S && 
-                robot->match_current_time_s < MATCH_DURATION_S && 
-                robot->motionController->isTrajectoryFinished()
-            )
-            {
-                if (robot->saved_trajectory_vector.size() > 0)
-                {
-                robot->trajectory_was_read = true;
-                Serial.println("Beginning match");
-                // Start the strategy
-                xTaskCreate(
-                    performStrategy,
-                    "performStrategy",
-                    10000,
-                    NULL,
-                    10,
-                    NULL
-                );
-                }
-                else
-                {
-                Serial.println("No trajectory to perform");
-                }
-            }
-
-            if (robot->match_current_time_s > MATCH_DURATION_S)
-            {
-                robot->match_started = false;
-                robot->trajectory_was_read = false;
-                robot->motionController->clearTrajectories();
-            }
         }
+
+        // update match state
+        robot->update_robot_state();
         
         // Serial.println("Update sensors");
         robot->robotBase->updateSensors();
@@ -101,7 +70,7 @@ void performLowLevel(void* parameters)
         robot->target = robot->motionController->computeDrivetrainMotion(
             robot->measurements, 
             robot->dt_period_ms / 1000.0, 
-            robot->match_started || robot->movement_override
+            robot->matchStarted() || robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
         );
 
         // invert kinematics
@@ -118,6 +87,21 @@ void performLowLevel(void* parameters)
         // update motor control
         // Serial.println("Update motor control");
         robot->robotBase->updateControl();
+
+        // handle servo: servo is down iff
+        // * MATCH_STARTED_FINAL_APPROACH and currentTime >= 99s
+        // * MATCH_ENDED
+        if (
+            (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && robot->match_current_time_s >= 99.0f)
+            || robot->currentRobotState_ == RobotState::MATCH_ENDED 
+        )
+        {
+            ServoHandler::servoDown();
+        }
+        else
+        {
+            ServoHandler::servoUp();
+        }
 
         // update sensors
         AnalogReadings::update();
@@ -197,11 +181,18 @@ Robot::Robot()
 
     xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
 
-    currentRobotState_ = RobotState::WAIT_FOR_CONFIGURATION;
+    currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
 }
+
+SemaphoreHandle_t xMutex_newMessage = NULL;
+bool robotWasInit = false;
 
 void Robot::init()
 {
+    if (!robotWasInit)
+    {
+        xMutex_newMessage = xSemaphoreCreateMutex();
+    }
     Robot::getInstance();
     return;
 }
@@ -223,5 +214,216 @@ void Robot::startLowLevelLoop()
 
 RobotState Robot::get_current_robot_state()
 {
-    return Robot::getInstance()->currentRobotState_;
+    return currentRobotState_;
+}
+
+void Robot::update_robot_state()
+{
+    // handle message
+    // read the message (even if it is not going to be handled afterwards)
+    std::shared_ptr<Message > message = nullptr;
+    bool newMessageRead = false;
+    if (xSemaphoreTake(xMutex_newMessage, portMAX_DELAY))
+    {
+        if (newMessageToRead_)
+        {
+            message = newMessage_;
+            newMessageToRead_ = false;
+            newMessageRead = true;
+        }
+        xSemaphoreGive(xMutex_newMessage);
+    }
+
+    // handle transitions
+    // WAIT_FOR_CONFIGURATION
+    if (currentRobotState_ == RobotState::WAIT_FOR_CONFIGURATION)
+    {
+        // WAIT_FOR_MATCH_START
+        if (newMessageRead && message->get_message_type() == MessageType::CONFIGURATION)
+        {
+            ConfigurationMessage* configurationMessage = static_cast<ConfigurationMessage* >(message.get());
+            Serial.println(">> WAIT_FOR_CONFIGURATION -> WAIT_FOR_MATCH_START");
+            // Blue side is left side
+            // So right side is yellow
+            motionController->isPlayingRightSide_ = configurationMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
+            currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+        }
+    }
+
+    // WAIT_FOR_MATCH_START
+    else if (currentRobotState_ == RobotState::WAIT_FOR_MATCH_START)
+    {
+        // MOVING_TRAJECTORY_SETUP
+        if (newMessageRead && message->get_message_type() == MessageType::NEW_TRAJECTORY)
+        {
+            NewTrajectoryMessage* newTrajectoryMessage = static_cast<NewTrajectoryMessage* >(message.get());
+            Serial.println(">> WAIT_FOR_MATCH_START -> MOVING_TRAJECTORY_SETUP");
+            // Reset position
+            motionController->resetPosition(newTrajectoryMessage->newTrajectory_.getCurrentPoint(0).position, true, true, true);
+            // Set new trajectory new trajectory
+            motionController->setTrajectoryToFollow(newTrajectoryMessage->newTrajectory_);
+            // Update state
+            currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
+        }
+        
+        // WAIT_FOR_MATCH_START
+        else if (newMessageRead && message->get_message_type() == MessageType::CONFIGURATION)
+        {
+            ConfigurationMessage* configurationMessage = static_cast<ConfigurationMessage* >(message.get());
+            Serial.println(">> WAIT_FOR_MATCH_START -> WAIT_FOR_MATCH_START");
+            // Blue side is left side
+            // So right side is yellow
+            motionController->isPlayingRightSide_ = configurationMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
+            currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+        }
+
+        // MATCH_STARTED_WAITING
+        else if (newMessageRead && message->get_message_type() == MessageType::MATCH_STATE)
+        {
+            MatchStateMessage* matchStateMessage = static_cast<MatchStateMessage* >(message.get());
+            // Only transition if match started
+            if (matchStateMessage->matchStarted_)
+            {
+                Serial.println(">> WAIT_FOR_MATCH_START -> MATCH_STARTED_WAITING");
+                match_current_time_s = matchStateMessage->matchTime_;
+                currentRobotState_ = RobotState::MATCH_STARTED_WAITING;
+            }
+        }
+    }
+
+    // MOVING_SETUP_TRAJECTORY
+    else if (currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY)
+    {
+        // WAIT_FOR_MATCH_START
+        if (motionController->isTrajectoryFinished())
+        {
+            Serial.println(">> MOVING_SETUP_TRAJECTORY -> WAIT_FOR_MATCH_START");
+            currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+        }
+    }
+
+    // MATCH_STARTED_WAITING
+    else if (currentRobotState_ == RobotState::MATCH_STARTED_WAITING)
+    {
+
+        // MATCH_STARTED_WAITING
+        // and
+        // WAIT_FOR_MATCH_START
+        if (newMessageRead && message->get_message_type() == MessageType::MATCH_STATE)
+        {
+            MatchStateMessage* matchStateMessage = static_cast<MatchStateMessage* >(message.get());
+            // If match started, update time
+            if (matchStateMessage->matchStarted_)
+            {
+                Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_WAITING");
+                match_current_time_s = matchStateMessage->matchTime_;
+                currentRobotState_ = RobotState::MATCH_STARTED_WAITING;
+            }
+            // If match not started, update state
+            else
+            {
+                Serial.println(">> MATCH_STARTED_WAITING -> WAIT_FOR_MATCH_START");
+                currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+            }
+        }
+
+        // MATCH_STARTED_ACTION
+        else if (match_current_time_s >= MATCH_PAMI_START_TIME_S)
+        {
+            Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_ACTION");
+            // Sets travel to objective
+            motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
+            motionController->setTrajectoryToFollow(saved_trajectory_vector);
+            currentRobotState_ = RobotState::MATCH_STARTED_ACTION;
+        }
+    }
+
+    // MATCH_STARTED_ACTION
+    else if (currentRobotState_ == RobotState::MATCH_STARTED_ACTION)
+    {
+        // MATCH_ENDED
+        if (match_current_time_s >= 100.0)
+        {
+            Serial.println(">> MATCH_STARTED_ACTION -> MATCH_ENDED");
+            motionController->clearTrajectories();
+            currentRobotState_ = RobotState::MATCH_ENDED;
+        }
+        
+        // MATCH_STARTED_FINAL_APPROACH
+        // or
+        // MATCH_STARTED_ACTION
+        else if (motionController->isTrajectoryFinished())
+        {
+            if (motionController->wasTrajectoryFollowingSuccessful())
+            {
+                Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_FINAL_APPROACH");
+                // Go 10cm forward
+                float distance = 100.0f;
+                TrajectoryConfig tc = motionController->getTrajectoryConfig();
+                RobotPosition curPos(motionController->getCurrentPosition());
+                TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
+                motionController->setTrajectoryToFollow(tv);
+                currentRobotState_ = RobotState::MATCH_STARTED_FINAL_APPROACH;
+            }
+            else
+            {
+                Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_ACTION");
+                // Attempt straight line + point turn
+                TrajectoryConfig tc = motionController->getTrajectoryConfig();
+                RobotPosition curPos(motionController->getCurrentPosition());
+                // straight line
+                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, saved_trajectory_vector.getEndPoint().position));
+                // point turn
+                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, saved_trajectory_vector.getEndPoint().position.theta));
+                tv.push_back(pt);
+                motionController->setTrajectoryToFollow(tv);
+            }
+        }
+    }
+
+    // MATCH_STARTED_FINAL_APPROACH
+    else if (currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
+    {
+        // MATCH_ENDED
+        if (match_current_time_s >= 100.0)
+        {
+            Serial.println(">> MATCH_STARTED_FINAL_APPROACH -> MATCH_ENDED");
+            motionController->clearTrajectories();
+            currentRobotState_ = RobotState::MATCH_ENDED;
+        }
+    }
+
+    // MATCH_ENDED
+    else if (currentRobotState_ == RobotState::MATCH_ENDED)
+    {
+        if (newMessageRead && message->get_message_type() == MessageType::MATCH_STATE)
+        {
+            MatchStateMessage* matchStateMessage = static_cast<MatchStateMessage* >(message.get());
+            // If match not started, update state
+            if (!matchStateMessage->matchStarted_)
+            {
+                Serial.println(">> MATCH_ENDED -> WAIT_FOR_MATCH_START");
+                currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+            }
+        }
+    }
+}
+
+void Robot::notify_new_message(std::shared_ptr<Message > message)
+{
+    if (xSemaphoreTake(xMutex_newMessage, portMAX_DELAY))
+    {
+        Serial.println("Notifying new message");
+        newMessage_ = message;
+        newMessageToRead_ = true;
+        xSemaphoreGive(xMutex_newMessage);
+    }
+}
+
+
+bool Robot::matchStarted()
+{
+    return currentRobotState_ == RobotState::MATCH_STARTED_WAITING ||
+        currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
+        currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH;
 }

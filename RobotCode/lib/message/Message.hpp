@@ -41,7 +41,7 @@ public:
     uint8_t get_sender_id() { return senderId_; }
 
     static std::shared_ptr<Message > parse(VecFloat message, uint8_t senderId = 255);
-    virtual VecFloat serialize() { };
+    virtual VecFloat serialize() { return VecFloat(); };
 
 private:
     MessageType messageType_;

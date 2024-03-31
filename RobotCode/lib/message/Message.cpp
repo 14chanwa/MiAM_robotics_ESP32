@@ -10,6 +10,11 @@ using namespace miam::trajectory;
 
 std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t senderId)
 {
+    if (message.size() == 0)
+    {
+        return std::make_shared<ErrorMessage >(senderId);;
+    }
+
     // Message type is the first float casted to int
     int message_type = (int)message.at(0);
 
@@ -65,7 +70,7 @@ std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t se
             // Payload size is initial size - header - 2 first floats
             int trajectory_payload_start = MESSAGE_PAYLOAD_START + 2;
 
-            if (expected_size != (message.size() - trajectory_payload_start))
+            if (expected_size == (message.size() - trajectory_payload_start))
             {
                 std::vector<TrajectoryPoint > trajectoryPoints;
 

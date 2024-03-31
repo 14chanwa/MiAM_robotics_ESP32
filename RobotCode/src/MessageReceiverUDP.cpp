@@ -44,7 +44,7 @@ MessageReceiverUDP::~MessageReceiverUDP()
     close(clientSocket); 
 }
 
-MessageType MessageReceiverUDP::receive()
+std::shared_ptr<Message > MessageReceiverUDP::receive()
 {
   
     // // listening to the assigned socket 
@@ -58,8 +58,8 @@ MessageType MessageReceiverUDP::receive()
     int sizeofreceiveddata;
     receivedTrajectory.clear();
     
-    sockaddr_in si_other;
-    unsigned slen=sizeof(sockaddr);
+    // sockaddr_in si_other;
+    // unsigned slen=sizeof(sockaddr);
 
     if((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
     // while((sizeofreceiveddata = recvfrom(clientSocket, buffer, SIZE_OF_BUFFER*4, 0, (sockaddr *)&si_other, &slen)) > 0)
@@ -72,106 +72,7 @@ MessageType MessageReceiverUDP::receive()
         }
     }
 
-    MessageType mt(MessageType::ERROR);
     std::shared_ptr<Message > message(Message::parse(receivedTrajectory));
 
-    if (message->get_message_type() == MessageType::MATCH_STATE)
-    {
-        mt = MessageType::MATCH_STATE;
-
-        std::shared_ptr<MatchStateMessage > casted_ptr = std::static_pointer_cast<MatchStateMessage >(message);
-        matchStarted = casted_ptr->matchStarted_;
-        matchCurrentTime = casted_ptr->matchTime_;
-    }
-
-    
-    // float message_type = receivedTrajectory.at(0);
-    // Serial.print("Received message type ");
-    // Serial.println(message_type);
-
-    // if (message_type == 0)
-    // {
-    //     mt = MessageType::NEW_TRAJECTORY;
-
-    //     int size_of_trajectory = receivedTrajectory.at(1);
-    //     float duration_of_trajectory = receivedTrajectory.at(2);
-
-    //     int expected_size = size_of_trajectory * 5 + 3;
-
-    //     if (expected_size != receivedTrajectory.size())
-    //     {
-    //         Serial.println("Decrepency in message sizes!");
-    //         Serial.print("Expected ");
-    //         Serial.print(expected_size);
-    //         Serial.print(" received ");
-    //         Serial.println(receivedTrajectory.size());
-    //         return MessageType::ERROR;
-    //     }
-    //     std::vector<TrajectoryPoint > trajectoryPoints;
-
-    //     for (int i = 0; i < size_of_trajectory; i++)
-    //     {
-    //         TrajectoryPoint tp;
-    //         tp.position.x = receivedTrajectory.at(3 + 5*i);
-    //         tp.position.y = receivedTrajectory.at(3 + 5*i + 1);
-    //         tp.position.theta = receivedTrajectory.at(3 + 5*i + 2);
-    //         tp.linearVelocity = receivedTrajectory.at(3 + 5*i + 3);
-    //         tp.angularVelocity = receivedTrajectory.at(3 + 5*i + 4);
-    //         trajectoryPoints.push_back(tp);
-    //     }
-
-    //     TrajectoryConfig tc;
-
-    //     std::shared_ptr<SampledTrajectory > traj(new SampledTrajectory(tc, trajectoryPoints, duration_of_trajectory));
-
-    //     targetTrajectory.clear();
-    //     targetTrajectory.push_back(traj);
-        
-    //     receivedTrajectory.clear();
-    // }
-    // // else if (message_type == 1)
-    // // {
-    // //     mt = MessageType::SET_ID;
-
-    // //     int expected_size = 2;
-
-    // //     if (expected_size != receivedTrajectory.size())
-    // //     {
-    // //         Serial.println("Decrepency in message sizes!");
-    // //         Serial.print("Expected ");
-    // //         Serial.print(expected_size);
-    // //         Serial.print(" received ");
-    // //         Serial.println(receivedTrajectory.size());
-    // //         return MessageType::ERROR;
-    // //     }
-
-    // //     newID = (int)receivedTrajectory.at(1);
-    // // }
-    // // else if (message_type == 2)
-    // // {
-    // //     mt = MessageType::NEW_TRAJECTORY_SAVE;
-
-    // //     int size_of_trajectory = receivedTrajectory.at(1);
-    // //     // float duration_of_trajectory = receivedTrajectory.at(2);
-
-    // //     int expected_size = size_of_trajectory * 5 + 3;
-
-    // //     if (expected_size != receivedTrajectory.size())
-    // //     {
-    // //         Serial.println("Decrepency in message sizes!");
-    // //         Serial.print("Expected ");
-    // //         Serial.print(expected_size);
-    // //         Serial.print(" received ");
-    // //         Serial.println(receivedTrajectory.size());
-    // //         return MessageType::ERROR;
-    // //     }        
-    // // }
-    // else if (message_type == 3)
-    // {
-    //     mt = MessageType::MATCH_STATE;
-    //     matchStarted = (bool)receivedTrajectory.at(1);
-    //     matchCurrentTime = (float)receivedTrajectory.at(2);
-    // }
-
-    return mt;
+    return message;
 };

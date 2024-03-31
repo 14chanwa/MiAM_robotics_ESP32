@@ -15,19 +15,13 @@ public:
     ~MessageReceiver();
     void begin();
     
-    MessageType receive();
-
-    std::vector<float > receivedTrajectory;
-    TrajectoryVector targetTrajectory;
-    int newID;
-
-    bool matchStarted;
-    float matchCurrentTime;
+    std::shared_ptr<Message > receive();
 
 private:
     float* buffer; 
     int serverSocket;
     int clientSocket;
+    std::vector<float > receivedTrajectory;
 };
 
 
@@ -39,19 +33,13 @@ public:
     ~MessageReceiverUDP();
     void begin();
     
-    MessageType receive();
-
-    std::vector<float > receivedTrajectory;
-    TrajectoryVector targetTrajectory;
-    int newID;
-
-    bool matchStarted;
-    float matchCurrentTime;
+    std::shared_ptr<Message > receive();
 
 private:
     float* buffer; 
     int serverSocket;
     int clientSocket;
+    std::vector<float > receivedTrajectory;
 };
 
 #endif
