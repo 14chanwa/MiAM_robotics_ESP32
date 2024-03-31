@@ -49,14 +49,14 @@ void logTelemetry(void* parameters)
 
 
       #ifdef USE_DC_MOTORS
-      teleplot.update("rightWheelCurrentSpeed", robotBase->getRightWheel()->currentSpeed_);
-      teleplot.update("rightWheelTargetSpeed", robotBase->getRightWheel()->targetSpeed_);
-      teleplot.update("leftWheelCurrentSpeed", robotBase->getLeftWheel()->currentSpeed_);
-      teleplot.update("leftWheelTargetSpeed", robotBase->getLeftWheel()->targetSpeed_);
-      teleplot.update("rightBasePWM", static_cast<RobotWheelDC*>(robotBase->getRightWheel())->basePWMTarget_);
-      teleplot.update("leftBasePWM", static_cast<RobotWheelDC*>(robotBase->getLeftWheel())->basePWMTarget_);
-      teleplot.update("rightNewPWM", static_cast<RobotWheelDC*>(robotBase->getRightWheel())->newPWMTarget_);
-      teleplot.update("leftNewPWM", static_cast<RobotWheelDC*>(robotBase->getLeftWheel())->newPWMTarget_);
+      teleplot.update("rightWheelCurrentSpeed", robot->robotBase->getRightWheel()->currentSpeed_);
+      teleplot.update("rightWheelTargetSpeed", robot->robotBase->getRightWheel()->targetSpeed_);
+      teleplot.update("leftWheelCurrentSpeed", robot->robotBase->getLeftWheel()->currentSpeed_);
+      teleplot.update("leftWheelTargetSpeed", robot->robotBase->getLeftWheel()->targetSpeed_);
+      teleplot.update("rightBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->basePWMTarget_);
+      teleplot.update("leftBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->basePWMTarget_);
+      teleplot.update("rightNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->newPWMTarget_);
+      teleplot.update("leftNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->newPWMTarget_);
       #endif
 
 
