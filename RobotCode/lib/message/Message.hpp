@@ -13,7 +13,7 @@ Messages from SCD to PAMI can be of categories:
 - alternative travel trajectory: replanified trajectory to objective 
 
 Messages from PAMI to SCD can be of categories:
-- match state message
+- pami report message
 */
 
 using namespace miam::trajectory;
@@ -41,7 +41,7 @@ public:
     uint8_t get_sender_id() { return senderId_; }
 
     static std::shared_ptr<Message > parse(VecFloat message, uint8_t senderId = 255);
-    virtual VecFloat serialize();
+    virtual VecFloat serialize() { };
 
 private:
     MessageType messageType_;
@@ -61,7 +61,7 @@ private:
 class ConfigurationMessage : public Message
 {
 public:
-    ConfigurationMessage(PlayingSide playingSide, uint8_t senderId) :
+    ConfigurationMessage(PlayingSide playingSide, uint8_t senderId = 255) :
         Message(MessageType::CONFIGURATION, senderId),
         playingSide_(playingSide) {};
     
@@ -74,7 +74,7 @@ public:
 class NewTrajectoryMessage : public Message
 {
 public:
-    NewTrajectoryMessage(TrajectoryVector trajectory, uint8_t senderId) :
+    NewTrajectoryMessage(TrajectoryVector trajectory, uint8_t senderId = 255) :
         Message(MessageType::NEW_TRAJECTORY, senderId),
         newTrajectory_(trajectory) {};
 
@@ -87,7 +87,7 @@ public:
 class MatchStateMessage : public Message
 {
 public:
-    MatchStateMessage(bool matchStarted, float matchTime, uint8_t senderId) :
+    MatchStateMessage(bool matchStarted, float matchTime, uint8_t senderId = 255) :
         Message(MessageType::MATCH_STATE, senderId),
         matchStarted_(matchStarted),
         matchTime_(matchTime) {};
@@ -102,7 +102,7 @@ public:
 class ErrorMessage : public Message
 {
 public:
-    ErrorMessage(uint8_t senderId) : Message(MessageType::ERROR, senderId) {};  
+    ErrorMessage(uint8_t senderId = 255) : Message(MessageType::ERROR, senderId) {};  
 
     VecFloat serialize(); 
 };
@@ -115,7 +115,7 @@ public:
         bool matchStarted, 
         float matchTime, 
         PlayingSide playingSide, 
-        uint8_t senderId
+        uint8_t senderId = 255
     ) : Message(MessageType::PAMI_REPORT, senderId),
         matchStarted_(matchStarted),
         matchTime_(matchTime),
