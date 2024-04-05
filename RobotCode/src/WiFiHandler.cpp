@@ -3,10 +3,6 @@
 #include <parameters.hpp>
 
 #include <esp_wifi.h>
-#include <Robot.hpp>
-
-// message type, id of sender, 3 other floats = 5*4 char
-#define MAX_SIZE_OF_PAMI_REPORT 50
 
  #ifdef ENABLE_OTA_UPDATE
 #include <ArduinoOTA.h>
@@ -20,39 +16,6 @@ for(;;)
 }
 }
 #endif
-
-void task_report_broadcast(void* parameters)
-{
-    Robot* robot = Robot::getInstance();
-    char* buffer = new char[MAX_SIZE_OF_PAMI_REPORT];
-    uint sizeOfMessage;
-
-    for(;;)
-    {
-        PamiReportMessage report = robot->get_pami_report();
-        VecFloat serialized_report = report.serialize();
-        if (serialized_report.size() * 4 <= MAX_SIZE_OF_PAMI_REPORT)
-        {
-            for (uint i=0; i<serialized_report.size(); i++)
-            {
-                buffer[i*4] = serialized_report.at(i);
-            }
-            sizeOfMessage = serialized_report.size() * 4;
-    
-            bool success = WiFiHandler::sendTCPMessage(
-                buffer,
-                sizeOfMessage,
-                MIAM_SCD_ADDRESS,
-                MIAM_SCD_PORT
-            );
-            if (!success)
-            {
-                Serial.println("Failed to send report tp SCD");
-            }
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-    }
-}
 
 void WiFiStationDisconntask_handle_otaected(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("Disconnected from WiFi access point");
@@ -130,26 +93,13 @@ namespace WiFiHandler
     bool sendTCPMessage(char* message, uint message_size, IPAddress ip_addr, uint port)
     {
         // Connect to client
-        if (!wifiClient.connected())
+        if (wifiClient.connect(ip_addr, port))
         {
-            wifiClient.connect(ip_addr, port);
             size_t sizeOfSentMessage = wifiClient.write_P(message, message_size);
             wifiClient.stop();
             if (sizeOfSentMessage == message_size)
                 return true;
         }
         return false; 
-    }
-
-    void startReportBroadcast()
-    {
-        xTaskCreate(
-            task_report_broadcast,
-            "task_report_broadcast",
-            20000,
-            NULL,
-            30,
-            NULL
-        );
     }
 }

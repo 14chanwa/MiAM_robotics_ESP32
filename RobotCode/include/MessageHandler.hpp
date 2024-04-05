@@ -5,7 +5,8 @@
 
 namespace MessageHandler
 {
-    void start();
+    void startListening();
+    void startReportBroadcast();
 };
 
 #endif

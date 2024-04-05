@@ -98,17 +98,9 @@ void setup()
   }
 #endif
 
-  WiFiHandler::startReportBroadcast();
-
-  MessageHandler::start();
-
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  MessageHandler::startListening();
+  MessageHandler::startReportBroadcast();
 }
-
-/////////////////////////////////////////////////////////////////////
-// Receiver loop
-/////////////////////////////////////////////////////////////////////
-
 
 void loop()
 {
