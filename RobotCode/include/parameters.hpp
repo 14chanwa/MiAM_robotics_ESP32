@@ -22,6 +22,8 @@
 
 #define SEND_TELEPLOT_UDP
 #define MIAM_BROADCAST_ADDRESS "42.42.0.255"
+#define MIAM_SCD_ADDRESS IPAddress(42, 42, 0, 10)
+#define MIAM_SCD_PORT 778
 // #define SEND_SERIAL
 
 // #define ENABLE_OTA_UPDATE

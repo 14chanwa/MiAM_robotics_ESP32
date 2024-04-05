@@ -33,6 +33,8 @@ class RobotBaseStepper : public AbstractRobotBase
         void updateControl();
         void updateSensors();
 
+        void setBlockWheels(bool blockWheels);
+
         // unsigned long getStepIntervalRight();
         // unsigned long getStepIntervalLeft();
 

@@ -3,20 +3,10 @@
 
 #include <MotionController.hpp>
 #include <AbstractRobotBase.hpp>
+#include <RobotState.hpp>
 
 #include <Preferences.h>
 #include <Message.hpp>
-
-enum RobotState
-{
-    WAIT_FOR_CONFIGURATION,
-    WAIT_FOR_MATCH_START,
-    MOVING_SETUP_TRAJECTORY,
-    MATCH_STARTED_WAITING,
-    MATCH_STARTED_ACTION,
-    MATCH_STARTED_FINAL_APPROACH,
-    MATCH_ENDED
-};
 
 class Robot
 {
@@ -29,6 +19,7 @@ public:
     static void startLowLevelLoop();
 
     RobotState get_current_robot_state();
+    PamiReportMessage get_pami_report();
     void update_robot_state();
     void notify_new_message(std::shared_ptr<Message >  message);
 

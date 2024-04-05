@@ -562,4 +562,11 @@ void RobotBaseStepper::forceStop()
     leftStepper->forceStop();
     rightStepper->forceStop();
 }
+
+void RobotBaseStepper::setBlockWheels(bool blockWheels)
+{
+    // Block wheels = not disable steppers when step done
+    leftStepper->setAutoEnable(!blockWheels);
+    rightStepper->setAutoEnable(!blockWheels);
+}
 #endif

@@ -5,6 +5,7 @@
 #include <DrivetrainKinematics.h>
 #include <RobotParameters.hpp>
 #include <PID.h>
+#include <RobotState.hpp>
 
 
 namespace side{
@@ -20,6 +21,9 @@ typedef struct {
     Vector2 motorSpeed; ///<< Measured motor speed, in rad/s
     // std::deque<DetectedRobot> lidarDetection; ///< Robots detected by the lidar.
     float vlx_range_detection_mm;
+    bool left_switch_level;
+    bool right_switch_level;
+    RobotState currentRobotState;
 } DrivetrainMeasurements;
 
 

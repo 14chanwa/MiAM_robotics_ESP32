@@ -10,6 +10,8 @@
 
 #include <Strategy.hpp>
 
+#define SLOW_APPROACH_WHEEL_VELOCITY 75.0
+
 Robot* Robot::getInstance() 
 {
     static Robot instance;
@@ -56,6 +58,9 @@ void performLowLevel(void* parameters)
         // Serial.println("Get measurements");
         robot->measurements = robot->robotBase->getMeasurements();
         robot->measurements.vlx_range_detection_mm = I2CHandler::get_current_vl53l0x();
+        robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
+        robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
+        robot->measurements.currentRobotState = robot->get_current_robot_state();
 
         // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
         if (robot->motionController->isPlayingRightSide_)
@@ -346,6 +351,9 @@ void Robot::update_robot_state()
         {
             Serial.println(">> MATCH_STARTED_ACTION -> MATCH_ENDED");
             motionController->clearTrajectories();
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
+#endif
             currentRobotState_ = RobotState::MATCH_ENDED;
         }
         
@@ -360,6 +368,8 @@ void Robot::update_robot_state()
                 // Go 10cm forward
                 float distance = 100.0f;
                 TrajectoryConfig tc = motionController->getTrajectoryConfig();
+                // Movement should be very slow
+                tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
                 RobotPosition curPos(motionController->getCurrentPosition());
                 TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
                 motionController->setTrajectoryToFollow(tv);
@@ -389,6 +399,9 @@ void Robot::update_robot_state()
         {
             Serial.println(">> MATCH_STARTED_FINAL_APPROACH -> MATCH_ENDED");
             motionController->clearTrajectories();
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
+#endif
             currentRobotState_ = RobotState::MATCH_ENDED;
         }
     }
@@ -403,6 +416,9 @@ void Robot::update_robot_state()
             if (!matchStateMessage->matchStarted_)
             {
                 Serial.println(">> MATCH_ENDED -> WAIT_FOR_MATCH_START");
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(false);
+#endif
                 currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
             }
         }
@@ -426,4 +442,20 @@ bool Robot::matchStarted()
     return currentRobotState_ == RobotState::MATCH_STARTED_WAITING ||
         currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
         currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH;
+}
+
+PamiReportMessage Robot::get_pami_report()
+{
+    RobotState state = get_current_robot_state();
+    bool matchStarted = state == RobotState::MATCH_STARTED_WAITING ||
+        state == RobotState::MATCH_STARTED_ACTION ||
+        state == RobotState::MATCH_STARTED_FINAL_APPROACH;
+    return(
+        PamiReportMessage(
+            matchStarted, 
+            match_current_time_s, 
+            motionController->isPlayingRightSide_ ? PlayingSide::BLUE_SIDE : PlayingSide::YELLOW_SIDE, 
+            PAMI_ID
+        )
+    );
 }

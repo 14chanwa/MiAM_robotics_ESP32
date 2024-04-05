@@ -76,8 +76,8 @@ class MotionController
         /// * speed is very slow
         /// * vlx is not taken into account
         /// * move is stopped when contact is made
-        void setSlowApproach(bool enabled);
-        bool isSlowApproach();
+        // void setSlowApproach(bool enabled);
+        // bool isSlowApproach();
         TrajectoryConfig getTrajectoryConfig();
 
 
@@ -173,6 +173,6 @@ class MotionController
                                                         bool const &hasMatchStarted);
       
 
-        bool slowApproach_ = false;
+        // bool slowApproach_ = false;
 };
 #endif

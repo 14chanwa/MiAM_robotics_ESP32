@@ -14,8 +14,6 @@
 #define ROTATION_KD 0.0f
 #define ROTATION_KI 0.0f
 
-#define SLOW_APPROACH_WHEEL_VELOCITY 75.0
-
 MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters) : 
                                         currentPosition_(),
                                         newTrajectories_(),
@@ -23,8 +21,8 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
                                         wasTrajectoryFollowingSuccessful_(true),
                                         curvilinearAbscissa_(0.0),
                                         xMutex_Serial_(xMutex_Serial),
-                                        parameters_(parameters),
-                                        slowApproach_(false)
+                                        parameters_(parameters)//,
+                                        // slowApproach_(false)
 {
     kinematics_ = DrivetrainKinematics(parameters_.wheelRadius,
                                        parameters_.wheelSpacing,
@@ -116,16 +114,37 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     DrivetrainTarget target;
 
     // If the PAMI is performing a slow approach, ignore slowdown coefficient
-    if (isSlowApproach())
+    /// Enables or disables slow approach :
+    /// * speed is very slow
+    /// * vlx is not taken into account
+    /// * move is stopped when contact is made with BOTH switches
+    if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
     {
-        slowDownCoeff_ = 1.0;
-        clampedSlowDownCoeff_ = 1.0;
+        if (measurements.left_switch_level && measurements.right_switch_level)
+        {
+            slowDownCoeff_ = 0.0;
+            clampedSlowDownCoeff_ = 0.0;
+        }
+        else
+        {
+            slowDownCoeff_ = 1.0;
+            clampedSlowDownCoeff_ = 1.0;
+        }
     }
     else
     {
-        // Compute slowdown
-        slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
-        clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
+        /// * move is stopped when contact is made with at least ONE OF the switches
+        if (measurements.left_switch_level || measurements.right_switch_level)
+        {
+            slowDownCoeff_ = 0.0;
+            clampedSlowDownCoeff_ = 0.0;
+        }
+        else
+        {
+            // Compute slowdown
+            slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
+            clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
+        }
     }
 
     changeMotionControllerState();
@@ -541,15 +560,15 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     return false;
 }
 
-void MotionController::setSlowApproach(bool enabled)
-{
-    slowApproach_ = enabled;
-}
+// void MotionController::setSlowApproach(bool enabled)
+// {
+//     slowApproach_ = enabled;
+// }
 
-bool MotionController::isSlowApproach()
-{
-    return slowApproach_;
-}
+// bool MotionController::isSlowApproach()
+// {
+//     return slowApproach_;
+// }
 
 TrajectoryConfig MotionController::getTrajectoryConfig()
 {
@@ -557,10 +576,5 @@ TrajectoryConfig MotionController::getTrajectoryConfig()
     tc.maxWheelVelocity = getParameters().maxWheelSpeed * 0.9;
     tc.maxWheelAcceleration = getParameters().maxWheelAcceleration * 0.9;
     tc.robotWheelSpacing = getParameters().wheelSpacing;
-
-    if (isSlowApproach())
-    {
-        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-    }
     return tc;
 }
