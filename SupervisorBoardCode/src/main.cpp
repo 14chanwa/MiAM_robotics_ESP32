@@ -17,6 +17,12 @@
 
 #include <WebServer_WT32_ETH01.h>
 #include <TFTScreen.hpp>
+#include <esp_wifi.h>
+#include <ArduinoOTA.h>
+
+#define SET_SIDE_PIN 39
+#define FUNCTION_PIN 36
+#define START_SWITCH_PIN 35
 
 // // Select the IP address according to your local network
 // IPAddress myIP(192, 168, 2, 232);
@@ -41,21 +47,76 @@ void task_update_screen(void* parameters)
 {
   for(;;)
   {
-    tftScreen.update();
+    tftScreen.update(ETH.localIP());
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
+// Read buttons with hysteresis
+bool set_side_pin_state = LOW;
+bool function_pin_state = LOW;
+unsigned long debounceDelay = 200;
+unsigned long last_set_side_change = 0;
+unsigned long last_function_change = 0;
+
+void task_read_pins(void* parameters)
+{
+  pinMode(SET_SIDE_PIN, INPUT);
+  pinMode(FUNCTION_PIN, INPUT);
+  unsigned long currentTime;
+  for(;;)
+  {
+    currentTime = millis();
+    bool new_set_side_pin_state = digitalRead(SET_SIDE_PIN);
+    bool new_function_pin_state = digitalRead(FUNCTION_PIN);
+    if (currentTime - last_set_side_change > debounceDelay && set_side_pin_state != new_set_side_pin_state)
+    {
+      set_side_pin_state = new_set_side_pin_state;
+      last_set_side_change = currentTime;
+      Serial.print("SET_SIDE_PIN value: ");
+      Serial.println(set_side_pin_state);
+    }
+    if (currentTime - last_function_change > debounceDelay && function_pin_state != new_function_pin_state)
+    {
+      function_pin_state = new_function_pin_state;
+      last_function_change = currentTime;
+      Serial.print("FUNCTION_PIN value: ");
+      Serial.println(function_pin_state);
+    }
+    vTaskDelay(5 / portTICK_PERIOD_MS);
+  }
+}
+
+void task_handle_ota(void* parameters)
+{
+  for (;;)
+  {
+    ArduinoOTA.handle();  
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+  }
+  
+}
+
 void setup()
 {
-  Serial.begin(115200);
+  // Disable WiFi (don't need it)
+  WiFi.mode(WIFI_OFF);
 
-  while (!Serial);
+  Serial.begin(115200);
 
   tftScreen.init();
   xTaskCreate(
     task_update_screen,
     "task_update_screen",
+    10000,
+    NULL,
+    10,
+    NULL
+  );
+
+  xTaskCreate(
+    task_read_pins,
+    "task_read_pins",
     10000,
     NULL,
     10,
@@ -83,6 +144,45 @@ void setup()
 
   WT32_ETH01_waitForConnect();
 
+  xTaskCreate(
+    task_handle_ota,
+    "task_handle_ota",
+    10000,
+    NULL,
+    10,
+    NULL
+  );
+
+  ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+
+  ArduinoOTA.begin();
+
+
+
   Serial.println(F("\nStarting connection to server..."));
   // if you get a connection, report back via serial:
   Udp.begin(localPort);
@@ -90,6 +190,7 @@ void setup()
   Serial.print(F("Listening on port "));
   Serial.println(localPort);
 }
+
 
 void loop()
 {
