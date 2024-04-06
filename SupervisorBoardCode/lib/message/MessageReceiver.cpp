@@ -71,6 +71,8 @@ MessageReceiver::~MessageReceiver()
 
 std::shared_ptr<Message > MessageReceiver::receive()
 {
+    std::shared_ptr<Message > message = nullptr;
+
 #ifdef USE_WIFICLIENT_API
     while (client.connected()) {            // loop while the client's connected
 
@@ -87,44 +89,46 @@ std::shared_ptr<Message > MessageReceiver::receive()
     int clientSocket 
         = accept(serverSocket, (struct sockaddr *)&client_addr, &sin_size); 
 
-    Serial.print("Client socket: ");
-    Serial.println(clientSocket);
-    Serial.print("Accepted connection from: ");
-    Serial.println(inet_ntoa(client_addr.sin_addr));
-    Serial.print("Sender ID is: ");
-    unsigned char *ip = (unsigned char*)&(client_addr.sin_addr);
-    uint8_t senderId = ip[3];
-    Serial.println(senderId);
-
-    // recieving data 
-    int sizeofreceiveddata;
-    receivedTrajectory.clear();
-
-    while((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
+    if (clientSocket >= 0)
     {
-        for (int i = 0; i < sizeofreceiveddata / 4; i++)
-        {
-            float f = buffer[i];
-            receivedTrajectory.push_back(f);
-        }
-    }
+        Serial.print("Client socket: ");
+        Serial.println(clientSocket);
+        Serial.print("Accepted connection from: ");
+        Serial.println(inet_ntoa(client_addr.sin_addr));
+        Serial.print("Sender ID is: ");
+        unsigned char *ip = (unsigned char*)&(client_addr.sin_addr);
+        uint8_t senderId = ip[3];
+        Serial.println(senderId);
 
-    // end the connection to the client
-    close(clientSocket);
+        // recieving data 
+        int sizeofreceiveddata;
+        receivedTrajectory.clear();
+
+        while((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
+        {
+            for (int i = 0; i < sizeofreceiveddata / 4; i++)
+            {
+                float f = buffer[i];
+                receivedTrajectory.push_back(f);
+            }
+        }
+
+        // end the connection to the client
+        close(clientSocket);
 #endif
 
-    // parse the message
-    Serial.print("Message length: ");
-    Serial.println(receivedTrajectory.size());
-    for (auto f : receivedTrajectory)
-    {
-        Serial.print(f);
-        Serial.print(" ");
+        // parse the message
+        Serial.print("Message length: ");
+        Serial.println(receivedTrajectory.size());
+        for (auto f : receivedTrajectory)
+        {
+            Serial.print(f);
+            Serial.print(" ");
+        }
+        Serial.println();
+        message = Message::parse(receivedTrajectory, senderId);
+
     }
-    Serial.println();
-
-    std::shared_ptr<Message > message(Message::parse(receivedTrajectory, senderId));
-
+    
     return message;
-
 };

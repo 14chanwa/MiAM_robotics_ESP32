@@ -21,9 +21,12 @@ void task_messageReceiver(void* parameters)
     {
         Serial.println(">> TCP receiver standby...");
         std::shared_ptr<Message > message = messageReceiver.receive();
-        Serial.println("TCP received message");
-        // robot->notify_new_message(message);
-        TFTScreen::registerMessage(message);
+        if (message != nullptr)
+        {
+            Serial.println("TCP received message");
+            // robot->notify_new_message(message);
+            TFTScreen::registerMessage(message);
+        }
     }
 }
 
@@ -34,9 +37,12 @@ void task_messageReceiverUDP(void* parameters)
     {
         Serial.println(">> UDP receiver standby...");
         std::shared_ptr<Message > message = messageReceiverUDP.receive();
-        Serial.println("UDP received message");
-        // robot->notify_new_message(message);
-        TFTScreen::registerMessage(message);
+        if (message != nullptr)
+        {
+            Serial.println("UDP received message");
+            // robot->notify_new_message(message);
+            TFTScreen::registerMessage(message);
+        }
     }
 }
 
@@ -86,22 +92,24 @@ namespace MessageHandler{
         messageReceiver.begin();
         messageReceiverUDP.begin();
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             task_messageReceiver,
             "task_messageReceiver",
             50000,
             NULL,
             40,
-            NULL
+            NULL,
+            1
         );
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             task_messageReceiverUDP,
             "task_messageReceiverUDP",
             50000,
             NULL,
             40,
-            NULL
+            NULL,
+            1
         );
     }
 

@@ -1,49 +1,26 @@
-/****************************************************************************************************************************
-  UDPSendReceive.ino - Simple Arduino web server sample for ESP8266/ESP32 AT-command shield
-
-  For Ethernet shields using WT32_ETH01 (ESP32 + LAN8720)
-
-  WebServer_WT32_ETH01 is a library for the Ethernet LAN8720 in WT32_ETH01 to run WebServer
-
-  Based on and modified from ESP8266 https://github.com/esp8266/Arduino/releases
-  Built by Khoi Hoang https://github.com/khoih-prog/WebServer_WT32_ETH01
-  Licensed under MIT license
- *****************************************************************************************************************************/
-
-#define DEBUG_ETHERNET_WEBSERVER_PORT       Serial
-
-// Debug Level from 0 to 4
-#define _ETHERNET_WEBSERVER_LOGLEVEL_       3
-
 #include <WebServer_WT32_ETH01.h>
 #include <TFTScreen.hpp>
 #include <esp_wifi.h>
 #include <ArduinoOTA.h>
 
 #include <MessageHandler.hpp>
+#include <Button.hpp>
+#include <Match.hpp>
 
-#define SET_SIDE_PIN 39
-#define FUNCTION_PIN 36
+#define SET_SIDE_PIN 36
+#define FUNCTION_PIN 39
 #define START_SWITCH_PIN 35
-
-// // Select the IP address according to your local network
-// IPAddress myIP(192, 168, 2, 232);
-// IPAddress myGW(192, 168, 2, 1);
-// IPAddress mySN(255, 255, 255, 0);
-
-// Google DNS Server IP
-IPAddress myDNS(8, 8, 8, 8);
-
-unsigned int localPort = 779;    //10002;  // local port to listen on
-
-char packetBuffer[255];          // buffer to hold incoming packet
-byte ReplyBuffer[] = "ACK";      // a string to send back
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 
 // Screen
 TFTScreen tftScreen;
+
+// Read buttons with hysteresis
+Button set_side_button(SET_SIDE_PIN);
+Button function_button(FUNCTION_PIN);
+Button start_switch_button(START_SWITCH_PIN);
 
 void task_update_screen(void* parameters)
 {
@@ -54,37 +31,18 @@ void task_update_screen(void* parameters)
   }
 }
 
-// Read buttons with hysteresis
-bool set_side_pin_state = LOW;
-bool function_pin_state = LOW;
-unsigned long debounceDelay = 200;
-unsigned long last_set_side_change = 0;
-unsigned long last_function_change = 0;
 
 void task_read_pins(void* parameters)
 {
-  pinMode(SET_SIDE_PIN, INPUT);
-  pinMode(FUNCTION_PIN, INPUT);
-  unsigned long currentTime;
+  set_side_button.init();
+  function_button.init();
+  start_switch_button.init();
+  
   for(;;)
   {
-    currentTime = millis();
-    bool new_set_side_pin_state = digitalRead(SET_SIDE_PIN);
-    bool new_function_pin_state = digitalRead(FUNCTION_PIN);
-    if (currentTime - last_set_side_change > debounceDelay && set_side_pin_state != new_set_side_pin_state)
-    {
-      set_side_pin_state = new_set_side_pin_state;
-      last_set_side_change = currentTime;
-      Serial.print("SET_SIDE_PIN value: ");
-      Serial.println(set_side_pin_state);
-    }
-    if (currentTime - last_function_change > debounceDelay && function_pin_state != new_function_pin_state)
-    {
-      function_pin_state = new_function_pin_state;
-      last_function_change = currentTime;
-      Serial.print("FUNCTION_PIN value: ");
-      Serial.println(function_pin_state);
-    }
+    set_side_button.update();
+    function_button.update();
+    start_switch_button.update();
     vTaskDelay(5 / portTICK_PERIOD_MS);
   }
 }
@@ -107,22 +65,24 @@ void setup()
   Serial.begin(115200);
 
   tftScreen.init();
-  xTaskCreate(
+  xTaskCreatePinnedToCore(
     task_update_screen,
     "task_update_screen",
     10000,
     NULL,
     10,
-    NULL
+    NULL,
+    0
   );
 
-  xTaskCreate(
+  xTaskCreatePinnedToCore(
     task_read_pins,
     "task_read_pins",
     10000,
     NULL,
     10,
-    NULL
+    NULL,
+    1
   );
 
   // Using this if Serial debugging is not necessary or not using Serial port
@@ -146,13 +106,14 @@ void setup()
 
   WT32_ETH01_waitForConnect();
 
-  xTaskCreate(
+  xTaskCreatePinnedToCore(
     task_handle_ota,
     "task_handle_ota",
     10000,
     NULL,
     10,
-    NULL
+    NULL,
+    0
   );
 
   ArduinoOTA
@@ -183,50 +144,40 @@ void setup()
 
   ArduinoOTA.begin();
 
-
-
   MessageHandler::startListening();
-
-  // Serial.println(F("\nStarting connection to server..."));
-  // // if you get a connection, report back via serial:
-  // Udp.begin(localPort);
-
-  // Serial.print(F("Listening on port "));
-  // Serial.println(localPort);
 }
 
 
 void loop()
 {
-  // // if there's data available, read a packet
-  // int packetSize = Udp.parsePacket();
+  // Check buttons
+  ButtonEvent buttonEvent;
 
-  // if (packetSize)
-  // {
-  //   Serial.print(F("Received packet of size "));
-  //   Serial.println(packetSize);
-  //   Serial.print(F("From "));
-  //   IPAddress remoteIp = Udp.remoteIP();
-  //   Serial.print(remoteIp);
-  //   Serial.print(F(", port "));
-  //   Serial.println(Udp.remotePort());
+  // Set side button triggers messages
+  buttonEvent = set_side_button.getEvent();
+  if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+  {
+    // Send color
+  }
 
-  //   // read the packet into packetBufffer
-  //   int len = Udp.read(packetBuffer, 255);
+  // Function button starts match
+  // TODO
+  buttonEvent = function_button.getEvent();
+  if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+  {
+    if (Match::getMatchStarted())
+    {
+      Match::stopMatch();
+    }
+    else
+    {
+      Match::startMatch();
+    }
+  }
 
-  //   if (len > 0)
-  //   {
-  //     packetBuffer[len] = 0;
-  //   }
+  // Switch button starts match
+  buttonEvent = start_switch_button.getEvent();
 
-  //   Serial.println(F("Contents:"));
-  //   Serial.println(packetBuffer);
-
-  //   // send a reply, to the IP address and port that sent us the packet we received
-  //   Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-  //   Udp.write(ReplyBuffer, sizeof(ReplyBuffer));
-  //   Udp.endPacket();
-  // }
-  taskYIELD();
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  // Update match time
+  vTaskDelay(2 / portTICK_PERIOD_MS);
 }

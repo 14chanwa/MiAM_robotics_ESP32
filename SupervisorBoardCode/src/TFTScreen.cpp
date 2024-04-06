@@ -3,6 +3,7 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
 #include <vector>
+#include <Match.hpp>
 
 #define TFT_CS 17
 #define TFT_RST 5
@@ -40,6 +41,16 @@ void TFTScreen::update(IPAddress localIP)
     {
         drawPAMI(TFTScreen::readPAMIMessage(i), i);
     }
+
+    // Update match time
+    tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+    tft.setCursor(250, 120);
+    tft.print("      ");
+    tft.setCursor(250, 120);
+    if (Match::getMatchStarted())
+        tft.print(Match::getMatchTimeSeconds());
+    else
+        tft.print("Wait..");
 
     // Update seconds count
     tft.setCursor(180, 230);
