@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 
+// #define DEBUG
+#define USE_TIMEOUT
 
 // #define USE_WIFICLIENT_API
 
@@ -43,14 +45,16 @@ void MessageReceiver::begin()
     serverAddress.sin_family = AF_INET; 
     serverAddress.sin_port = htons(778); 
     serverAddress.sin_addr.s_addr = INADDR_ANY; 
-  
+
+#ifdef USE_TIMEOUT
     struct timeval timeout;      
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 50000;
     
     if (setsockopt (serverSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                 sizeof timeout) < 0)
         Serial.println("setsockopt failed");
+#endif
 
     // binding socket. 
     bind(serverSocket, (struct sockaddr*)&serverAddress, 
@@ -91,14 +95,16 @@ std::shared_ptr<Message > MessageReceiver::receive()
 
     if (clientSocket >= 0)
     {
+        unsigned char *ip = (unsigned char*)&(client_addr.sin_addr);
+        uint8_t senderId = ip[3];
+#ifdef DEBUG
         Serial.print("Client socket: ");
         Serial.println(clientSocket);
         Serial.print("Accepted connection from: ");
         Serial.println(inet_ntoa(client_addr.sin_addr));
         Serial.print("Sender ID is: ");
-        unsigned char *ip = (unsigned char*)&(client_addr.sin_addr);
-        uint8_t senderId = ip[3];
         Serial.println(senderId);
+#endif
 
         // recieving data 
         int sizeofreceiveddata;
@@ -116,7 +122,7 @@ std::shared_ptr<Message > MessageReceiver::receive()
         // end the connection to the client
         close(clientSocket);
 #endif
-
+#ifdef DEBUG
         // parse the message
         Serial.print("Message length: ");
         Serial.println(receivedTrajectory.size());
@@ -126,6 +132,7 @@ std::shared_ptr<Message > MessageReceiver::receive()
             Serial.print(" ");
         }
         Serial.println();
+#endif
         message = Message::parse(receivedTrajectory, senderId);
 
     }

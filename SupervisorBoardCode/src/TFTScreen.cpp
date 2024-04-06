@@ -15,6 +15,8 @@
 
 #define PAMI_TIMEOUT 2000
 
+// #define DEBUG_TFT_SCREEN
+
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 void TFTScreen::init()
@@ -65,9 +67,11 @@ void TFTScreen::update(IPAddress localIP)
     tft.setCursor(10, 220);
     tft.print(localIP);
 
+#ifdef DEBUG_TFT_SCREEN
     tft.setCursor(10, 210);
     tft.print("Last received message at time: ");
     tft.print(TFTScreen::readLastMessageTime());
+#endif
 }
 
 #define PAMI_RECT_XSIZE 100
@@ -136,17 +140,21 @@ std::vector<PamiReportMessage > pamiReportMessage({default_message, default_mess
 
 void TFTScreen::registerMessage(std::shared_ptr<Message > message)
 {
+    uint8_t senderID = message->get_sender_id();
+#ifdef DEBUG_TFT_SCREEN
     // lastMillisRegisterMessage = millis();
     Serial.print("Received message from: ");
     Serial.println(message->get_sender_id());
-    uint8_t senderID = message->get_sender_id();
     Serial.print("Message type is ");
     Serial.print(message->get_message_type());
     Serial.print(" expected ");
     Serial.println(MessageType::PAMI_REPORT);
+#endif
     if (message->get_message_type() == MessageType::PAMI_REPORT && senderID-10 >= 1 && senderID-10 <= 5)
     {
+#ifdef DEBUG_TFT_SCREEN
         Serial.println("Registering message");
+#endif
         PamiReportMessage newMessage = *static_cast<PamiReportMessage* >(message.get());
         pamiReportMessage[senderID-10-1] = newMessage;
         lastMillisRegisterMessage[senderID-10-1] = millis();

@@ -1,4 +1,4 @@
-#include <WebServer_WT32_ETH01.h>
+
 #include <TFTScreen.hpp>
 #include <esp_wifi.h>
 #include <ArduinoOTA.h>
@@ -7,12 +7,17 @@
 #include <Button.hpp>
 #include <Match.hpp>
 
+#define USE_WIFI
+
+#ifdef USE_WIFI
+#include <WiFiHandler.hpp>
+#else
+#include <WebServer_WT32_ETH01.h>
+#endif
+
 #define SET_SIDE_PIN 36
 #define FUNCTION_PIN 39
 #define START_SWITCH_PIN 35
-
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP Udp;
 
 // Screen
 TFTScreen tftScreen;
@@ -26,7 +31,11 @@ void task_update_screen(void* parameters)
 {
   for(;;)
   {
+#ifdef USE_WIFI
+    tftScreen.update(WiFi.localIP());
+#else
     tftScreen.update(ETH.localIP());
+#endif
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -59,9 +68,6 @@ void task_handle_ota(void* parameters)
 
 void setup()
 {
-  // Disable WiFi (don't need it)
-  WiFi.mode(WIFI_OFF);
-
   Serial.begin(115200);
 
   tftScreen.init();
@@ -72,7 +78,7 @@ void setup()
     NULL,
     10,
     NULL,
-    0
+    1
   );
 
   xTaskCreatePinnedToCore(
@@ -85,26 +91,16 @@ void setup()
     1
   );
 
-  // Using this if Serial debugging is not necessary or not using Serial port
-  //while (!Serial && (millis() < 3000));
-
-  Serial.print("\nStarting UDPSendReceive on " + String(ARDUINO_BOARD));
-  Serial.println(" with " + String(SHIELD_TYPE));
-  Serial.println(WEBSERVER_WT32_ETH01_VERSION);
-
-  // To be called before ETH.begin()
+#ifdef USE_WIFI
+  WiFiHandler::initWiFi();
+#else
+  // Disable WiFi (don't need it)
+  WiFi.mode(WIFI_OFF);
+   // To be called before ETH.begin()
   WT32_ETH01_onEvent();
-
-  //bool begin(uint8_t phy_addr=ETH_PHY_ADDR, int power=ETH_PHY_POWER, int mdc=ETH_PHY_MDC, int mdio=ETH_PHY_MDIO,
-  //           eth_phy_type_t type=ETH_PHY_TYPE, eth_clock_mode_t clk_mode=ETH_CLK_MODE);
-  //ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_PHY_TYPE, ETH_CLK_MODE);
   ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER);
-
-  // // Static IP, leave without this line to get IP via DHCP
-  // //bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = 0, IPAddress dns2 = 0);
-  // ETH.config(myIP, myGW, mySN, myDNS);
-
   WT32_ETH01_waitForConnect();
+#endif
 
   xTaskCreatePinnedToCore(
     task_handle_ota,
@@ -113,7 +109,7 @@ void setup()
     NULL,
     10,
     NULL,
-    0
+    1
   );
 
   ArduinoOTA

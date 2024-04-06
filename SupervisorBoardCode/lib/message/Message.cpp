@@ -2,6 +2,11 @@
 #include <SampledTrajectory.h>
 #include <cmath>
 
+#define DEBUG_MESSAGE
+#ifdef DEBUG_MESSAGE
+#include <Arduino.h>
+#endif
+
 #define MESSAGE_PAYLOAD_START 1
 
 #define TRAJECTORY_SERIALIZATION_DELTAT 0.1
@@ -127,6 +132,10 @@ std::shared_ptr<Message > Message::parse(std::vector<float > message, uint8_t se
             }
         }
     }
+#ifdef DEBUG_MESSAGE
+    Serial.print("Parsed error from ");
+    Serial.println(senderId);
+#endif
     return std::make_shared<ErrorMessage >(senderId);
 }
 

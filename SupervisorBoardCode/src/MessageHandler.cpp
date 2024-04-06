@@ -19,11 +19,11 @@ void task_messageReceiver(void* parameters)
     // Robot* robot = Robot::getInstance();
     for (;;)
     {
-        Serial.println(">> TCP receiver standby...");
+        // Serial.println(">> TCP receiver standby...");
         std::shared_ptr<Message > message = messageReceiver.receive();
         if (message != nullptr)
         {
-            Serial.println("TCP received message");
+            // Serial.println("TCP received message");
             // robot->notify_new_message(message);
             TFTScreen::registerMessage(message);
         }
@@ -35,11 +35,11 @@ void task_messageReceiverUDP(void* parameters)
     // Robot* robot = Robot::getInstance();
     for (;;)
     {
-        Serial.println(">> UDP receiver standby...");
+        // Serial.println(">> UDP receiver standby...");
         std::shared_ptr<Message > message = messageReceiverUDP.receive();
         if (message != nullptr)
         {
-            Serial.println("UDP received message");
+            // Serial.println("UDP received message");
             // robot->notify_new_message(message);
             TFTScreen::registerMessage(message);
         }

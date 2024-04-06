@@ -1,6 +1,6 @@
 #include <WiFiHandler.hpp>
 #include <secret.hpp>
-#include <parameters.hpp>
+#include <secret.hpp>
 
 #include <esp_wifi.h>
 
@@ -9,7 +9,9 @@
 #include <unistd.h> 
 
 #define USE_WIFI_CLIENT_API
-#define USE_TIMEOUT
+
+// Set MAC address manually for router to allocate static IPs
+#define WIFI_MAC_ADDRESS {0xAA, 0xAB, 0xAC, 0xAD, 0x00, 0x10}
 
  #ifdef ENABLE_OTA_UPDATE
 #include <ArduinoOTA.h>
@@ -102,11 +104,6 @@ namespace WiFiHandler
     bool sendTCPMessage(char* message, uint message_size, IPAddress ip_addr, uint port)
     {
 #ifdef USE_WIFI_CLIENT_API
-
-    #ifdef USE_TIMEOUT
-        wifiClient.setTimeout(1);
-    #endif
-
         // Connect to client
         if (wifiClient.connect(ip_addr, port))
         {
