@@ -41,7 +41,7 @@ void task_messageReceiverUDP(void* parameters)
 void task_report_broadcast(void* parameters)
 {
     Robot* robot = Robot::getInstance();
-    char* buffer = new char[MAX_SIZE_OF_PAMI_REPORT];
+    float* buffer = new float[MAX_SIZE_OF_PAMI_REPORT/4];
     uint sizeOfMessage;
 
     for(;;)
@@ -52,19 +52,23 @@ void task_report_broadcast(void* parameters)
         {
             for (uint i=0; i<serialized_report.size(); i++)
             {
-                buffer[i*4] = serialized_report.at(i);
+                buffer[i] = serialized_report.at(i);
             }
             sizeOfMessage = serialized_report.size() * 4;
     
             bool success = WiFiHandler::sendTCPMessage(
-                buffer,
+                (char*)buffer,
                 sizeOfMessage,
                 MIAM_SCD_ADDRESS,
                 MIAM_SCD_PORT
             );
             if (!success)
             {
-                Serial.println("Failed to send report tp SCD");
+                Serial.println("Failed to send report to SCD");
+            }
+            else
+            {
+                Serial.println("Sent report SCD");
             }
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);

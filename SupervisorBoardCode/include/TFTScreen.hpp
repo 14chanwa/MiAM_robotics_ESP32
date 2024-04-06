@@ -9,7 +9,11 @@ class TFTScreen
 public:
     void init();
     void update(IPAddress localIP);
-    void drawPAMI(PamiReportMessage pamiReport);
+    void drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID);
+
+    static void registerMessage(std::shared_ptr<Message > message);
+    static PamiReportMessage readPAMIMessage(uint8_t pamiID);
+    static long readLastMessageTime();
 };
 
 #endif

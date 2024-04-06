@@ -2,6 +2,7 @@
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
+#include <vector>
 
 #define TFT_CS 17
 #define TFT_RST 5
@@ -10,6 +11,8 @@
 
 #define TFT_HEIGHT 320
 #define TFT_WIDTH 240
+
+#define PAMI_TIMEOUT 2000
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
@@ -32,19 +35,11 @@ void TFTScreen::init()
 
 void TFTScreen::update(IPAddress localIP)
 {
-    // Update PAMIs
-    PamiReportMessage pami_1(
-        false, 
-        0.0, 
-        PlayingSide::BLUE_SIDE, 
-        1);
-    PamiReportMessage pami_2(
-        false, 
-        0.0, 
-        PlayingSide::YELLOW_SIDE, 
-        2);
-    drawPAMI(pami_1);
-    drawPAMI(pami_2);
+
+    for (uint8_t i=1; i<=5; i++)
+    {
+        drawPAMI(TFTScreen::readPAMIMessage(i), i);
+    }
 
     // Update seconds count
     tft.setCursor(180, 230);
@@ -52,24 +47,32 @@ void TFTScreen::update(IPAddress localIP)
     tft.print(millis() / 1000);
     tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
     tft.print(" seconds.");
-    tft.setCursor(10, 220);
 
     // Update local IP
+    tft.setCursor(10, 220);
+    tft.print("               ");
+    tft.setCursor(10, 220);
     tft.print(localIP);
+
+    tft.setCursor(10, 210);
+    tft.print("Last received message at time: ");
+    tft.print(TFTScreen::readLastMessageTime());
 }
 
 #define PAMI_RECT_XSIZE 100
 #define PAMI_RECT_YSIZE 100
 
-void TFTScreen::drawPAMI(PamiReportMessage pamiReport)
+void TFTScreen::drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID)
 {
+    // pamiID is the desired PAMI, id is the id read in the message
+
     // Grid
     // 1 2 3
     // 4 5
-    uint8_t id = pamiReport.get_sender_id();
+
     uint8_t gridX;
     uint8_t gridY;
-    switch (id)
+    switch (pamiID)
     {
         case 1:
             gridX = 0;
@@ -88,13 +91,24 @@ void TFTScreen::drawPAMI(PamiReportMessage pamiReport)
             gridY = 1;
             break;
         case 5:
-            gridX = 0;
-            gridY = 2;
+            gridX = 1;
+            gridY = 1;
             break;
         default:
             return;
     };
-         
+    
+    // Drawing color is black if the message is invalid
+    uint16_t drawingColor;
+    uint8_t id = pamiReport.get_sender_id()-10;
+    if (id >= 1 && id <= 5)
+    {
+        drawingColor = (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? ST77XX_BLUE : ST77XX_YELLOW);
+    }
+    else
+    {
+        drawingColor = ST77XX_BLACK;
+    }
     
     tft.fillRect(
         gridX * (PAMI_RECT_XSIZE + 10), 
@@ -102,5 +116,48 @@ void TFTScreen::drawPAMI(PamiReportMessage pamiReport)
         PAMI_RECT_XSIZE, 
         PAMI_RECT_YSIZE,
         // (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? (uint16_t) strtol(0x7ED1E6, NULL, 16) : (uint16_t) strtol(OxFFF27A, NULL, 16)));
-        (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? ST77XX_BLUE : ST77XX_YELLOW));
+        drawingColor);
+}
+
+long lastMillisRegisterMessage[5] = {0, 0, 0, 0, 0};
+PamiReportMessage default_message = PamiReportMessage(false, 0, PlayingSide::BLUE_SIDE, 255);
+std::vector<PamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message});
+
+void TFTScreen::registerMessage(std::shared_ptr<Message > message)
+{
+    // lastMillisRegisterMessage = millis();
+    Serial.print("Received message from: ");
+    Serial.println(message->get_sender_id());
+    uint8_t senderID = message->get_sender_id();
+    Serial.print("Message type is ");
+    Serial.print(message->get_message_type());
+    Serial.print(" expected ");
+    Serial.println(MessageType::PAMI_REPORT);
+    if (message->get_message_type() == MessageType::PAMI_REPORT && senderID-10 >= 1 && senderID-10 <= 5)
+    {
+        Serial.println("Registering message");
+        PamiReportMessage newMessage = *static_cast<PamiReportMessage* >(message.get());
+        pamiReportMessage[senderID-10-1] = newMessage;
+        lastMillisRegisterMessage[senderID-10-1] = millis();
+    }
+}
+
+PamiReportMessage TFTScreen::readPAMIMessage(uint8_t pamiID)
+{
+    if (pamiID >= 1 && pamiID <= 5)
+    {
+        if (millis() - lastMillisRegisterMessage[pamiID-1] <= PAMI_TIMEOUT)
+        {
+            return pamiReportMessage[pamiID-1];
+        }
+    }
+    return default_message;
+}
+
+long TFTScreen::readLastMessageTime()
+{
+    long maxValue = lastMillisRegisterMessage[0];
+    for (char i = 1; i<5; i++)
+        maxValue = std::max(maxValue, lastMillisRegisterMessage[i]);
+    return maxValue;
 }

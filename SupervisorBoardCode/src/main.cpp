@@ -20,6 +20,8 @@
 #include <esp_wifi.h>
 #include <ArduinoOTA.h>
 
+#include <MessageHandler.hpp>
+
 #define SET_SIDE_PIN 39
 #define FUNCTION_PIN 36
 #define START_SWITCH_PIN 35
@@ -183,44 +185,48 @@ void setup()
 
 
 
-  Serial.println(F("\nStarting connection to server..."));
-  // if you get a connection, report back via serial:
-  Udp.begin(localPort);
+  MessageHandler::startListening();
 
-  Serial.print(F("Listening on port "));
-  Serial.println(localPort);
+  // Serial.println(F("\nStarting connection to server..."));
+  // // if you get a connection, report back via serial:
+  // Udp.begin(localPort);
+
+  // Serial.print(F("Listening on port "));
+  // Serial.println(localPort);
 }
 
 
 void loop()
 {
-  // if there's data available, read a packet
-  int packetSize = Udp.parsePacket();
+  // // if there's data available, read a packet
+  // int packetSize = Udp.parsePacket();
 
-  if (packetSize)
-  {
-    Serial.print(F("Received packet of size "));
-    Serial.println(packetSize);
-    Serial.print(F("From "));
-    IPAddress remoteIp = Udp.remoteIP();
-    Serial.print(remoteIp);
-    Serial.print(F(", port "));
-    Serial.println(Udp.remotePort());
+  // if (packetSize)
+  // {
+  //   Serial.print(F("Received packet of size "));
+  //   Serial.println(packetSize);
+  //   Serial.print(F("From "));
+  //   IPAddress remoteIp = Udp.remoteIP();
+  //   Serial.print(remoteIp);
+  //   Serial.print(F(", port "));
+  //   Serial.println(Udp.remotePort());
 
-    // read the packet into packetBufffer
-    int len = Udp.read(packetBuffer, 255);
+  //   // read the packet into packetBufffer
+  //   int len = Udp.read(packetBuffer, 255);
 
-    if (len > 0)
-    {
-      packetBuffer[len] = 0;
-    }
+  //   if (len > 0)
+  //   {
+  //     packetBuffer[len] = 0;
+  //   }
 
-    Serial.println(F("Contents:"));
-    Serial.println(packetBuffer);
+  //   Serial.println(F("Contents:"));
+  //   Serial.println(packetBuffer);
 
-    // send a reply, to the IP address and port that sent us the packet we received
-    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-    Udp.write(ReplyBuffer, sizeof(ReplyBuffer));
-    Udp.endPacket();
-  }
+  //   // send a reply, to the IP address and port that sent us the packet we received
+  //   Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+  //   Udp.write(ReplyBuffer, sizeof(ReplyBuffer));
+  //   Udp.endPacket();
+  // }
+  taskYIELD();
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
