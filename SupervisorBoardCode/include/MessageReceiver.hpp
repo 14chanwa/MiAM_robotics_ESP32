@@ -17,8 +17,11 @@ public:
     
     std::shared_ptr<Message > receive();
 
+    // static void stopReceiving();
+
 private:
-    float* buffer; 
+    char* buffer; 
+    char* sendBuffer;
     int serverSocket;
     int clientSocket;
     std::vector<float > receivedTrajectory;

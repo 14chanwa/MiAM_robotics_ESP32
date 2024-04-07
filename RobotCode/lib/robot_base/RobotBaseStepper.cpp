@@ -568,5 +568,13 @@ void RobotBaseStepper::setBlockWheels(bool blockWheels)
     // Block wheels = not disable steppers when step done
     leftStepper->setAutoEnable(!blockWheels);
     rightStepper->setAutoEnable(!blockWheels);
+    if (blockWheels)
+    {
+        digitalWrite(NOT_ENABLE, LOW);
+    }
+    else
+    {
+        digitalWrite(NOT_ENABLE, HIGH);
+    }
 }
 #endif

@@ -2,6 +2,7 @@
 #include <MessageReceiver.hpp>
 // #include <WiFiHandler.hpp>
 #include <TFTScreen.hpp>
+#include <PAMIStates.hpp>
 
 #include <Arduino.h>
 
@@ -25,7 +26,7 @@ void task_messageReceiver(void* parameters)
         {
             // Serial.println("TCP received message");
             // robot->notify_new_message(message);
-            TFTScreen::registerMessage(message);
+            PAMIStates::registerMessage(message);
         }
     }
 }
@@ -41,7 +42,7 @@ void task_messageReceiverUDP(void* parameters)
         {
             // Serial.println("UDP received message");
             // robot->notify_new_message(message);
-            TFTScreen::registerMessage(message);
+            PAMIStates::registerMessage(message);
         }
     }
 }
@@ -90,7 +91,7 @@ namespace MessageHandler{
     void startListening()
     {
         messageReceiver.begin();
-        messageReceiverUDP.begin();
+        // messageReceiverUDP.begin();
 
         xTaskCreatePinnedToCore(
             task_messageReceiver,
@@ -102,15 +103,15 @@ namespace MessageHandler{
             1
         );
 
-        xTaskCreatePinnedToCore(
-            task_messageReceiverUDP,
-            "task_messageReceiverUDP",
-            50000,
-            NULL,
-            40,
-            NULL,
-            1
-        );
+        // xTaskCreatePinnedToCore(
+        //     task_messageReceiverUDP,
+        //     "task_messageReceiverUDP",
+        //     50000,
+        //     NULL,
+        //     40,
+        //     NULL,
+        //     1
+        // );
     }
 
     void startReportBroadcast()

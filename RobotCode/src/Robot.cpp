@@ -45,7 +45,7 @@ void performLowLevel(void* parameters)
         timeStartLoop = timeEndLoop;
 
         // update match time
-        if (robot->matchStarted())
+        if (robot->matchStarted() && robot->match_current_time_s < 100.0)
         {
             robot->match_current_time_s += robot->dt_period_ms / 1000;
         }
@@ -75,7 +75,7 @@ void performLowLevel(void* parameters)
         robot->target = robot->motionController->computeDrivetrainMotion(
             robot->measurements, 
             robot->dt_period_ms / 1000.0, 
-            robot->matchStarted() || robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
+            (robot->matchStarted() && robot->currentRobotState_ != RobotState::MATCH_ENDED) || robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
         );
 
         // invert kinematics
@@ -336,6 +336,9 @@ void Robot::update_robot_state()
         else if (match_current_time_s >= MATCH_PAMI_START_TIME_S)
         {
             Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_ACTION");
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
+#endif
             // Sets travel to objective
             motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
             motionController->setTrajectoryToFollow(saved_trajectory_vector);
@@ -399,9 +402,6 @@ void Robot::update_robot_state()
         {
             Serial.println(">> MATCH_STARTED_FINAL_APPROACH -> MATCH_ENDED");
             motionController->clearTrajectories();
-#ifdef USE_STEPPER_MOTORS
-            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
-#endif
             currentRobotState_ = RobotState::MATCH_ENDED;
         }
     }
@@ -441,7 +441,8 @@ bool Robot::matchStarted()
 {
     return currentRobotState_ == RobotState::MATCH_STARTED_WAITING ||
         currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
-        currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH;
+        currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH ||
+        currentRobotState_ == RobotState::MATCH_ENDED;
 }
 
 PamiReportMessage Robot::get_pami_report()
@@ -454,7 +455,7 @@ PamiReportMessage Robot::get_pami_report()
         PamiReportMessage(
             matchStarted, 
             match_current_time_s, 
-            motionController->isPlayingRightSide_ ? PlayingSide::BLUE_SIDE : PlayingSide::YELLOW_SIDE, 
+            motionController->isPlayingRightSide_ ? PlayingSide::YELLOW_SIDE : PlayingSide::BLUE_SIDE, 
             PAMI_ID
         )
     );

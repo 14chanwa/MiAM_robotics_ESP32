@@ -4,11 +4,12 @@
 
 long matchTimeStarted = 0;
 bool matchStarted = false;
+PlayingSide currentPlayingSide = PlayingSide::BLUE_SIDE;
 
-void Match::startMatch()
+void Match::startMatch(float currentMatchTime)
 {
     Serial.println(">>>>>>>>>>> Start match <<<<<<<<<<<");
-    matchTimeStarted = millis();
+    matchTimeStarted = millis() - (long)(currentMatchTime*1000);
     matchStarted = true;
 }
 
@@ -27,4 +28,14 @@ bool Match::getMatchStarted()
 float Match::getMatchTimeSeconds()
 {
     return (millis() - matchTimeStarted) / 1000.0f;
+}
+
+void Match::setSide(PlayingSide playingSide)
+{
+    currentPlayingSide = playingSide;
+}
+
+PlayingSide Match::getSide()
+{
+    return currentPlayingSide;
 }

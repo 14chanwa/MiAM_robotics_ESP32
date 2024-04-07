@@ -6,6 +6,7 @@
 #include <MessageHandler.hpp>
 #include <Button.hpp>
 #include <Match.hpp>
+#include <MessageReceiver.hpp>
 
 #define USE_WIFI
 
@@ -36,10 +37,9 @@ void task_update_screen(void* parameters)
 #else
     tftScreen.update(ETH.localIP());
 #endif
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
   }
 }
-
 
 void task_read_pins(void* parameters)
 {
@@ -66,6 +66,50 @@ void task_handle_ota(void* parameters)
   
 }
 
+void task_monitor_buttons(void* parameters)
+{
+  for (;;)
+  {
+    // Check buttons
+    ButtonEvent buttonEvent;
+
+    // Set side button triggers messages
+    buttonEvent = set_side_button.getEvent();
+    if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+    {
+      // Change color
+      if (Match::getSide() == PlayingSide::BLUE_SIDE)
+      {
+        Match::setSide(PlayingSide::YELLOW_SIDE);
+      }
+      else
+      {
+        Match::setSide(PlayingSide::BLUE_SIDE);
+      }
+    }
+
+    // Function button starts match
+    // TODO
+    buttonEvent = function_button.getEvent();
+    if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+    {
+      if (Match::getMatchStarted())
+      {
+        Match::stopMatch();
+      }
+      else
+      {
+        Match::startMatch(85.0);
+      }
+    }
+
+    // Switch button starts match
+    buttonEvent = start_switch_button.getEvent();
+
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -78,7 +122,7 @@ void setup()
     NULL,
     10,
     NULL,
-    1
+    0
   );
 
   xTaskCreatePinnedToCore(
@@ -86,9 +130,20 @@ void setup()
     "task_read_pins",
     10000,
     NULL,
-    10,
+    90,
     NULL,
-    1
+    0
+  );
+
+
+  xTaskCreatePinnedToCore(
+    task_monitor_buttons,
+    "task_monitor_buttons",
+    10000,
+    NULL,
+    90,
+    NULL,
+    0
   );
 
 #ifdef USE_WIFI
@@ -109,12 +164,13 @@ void setup()
     NULL,
     10,
     NULL,
-    1
+    0
   );
 
   ArduinoOTA
     .onStart([]() {
       String type;
+      // MessageReceiver::stopReceiving();
       if (ArduinoOTA.getCommand() == U_FLASH)
         type = "sketch";
       else // U_SPIFFS
@@ -146,34 +202,5 @@ void setup()
 
 void loop()
 {
-  // Check buttons
-  ButtonEvent buttonEvent;
-
-  // Set side button triggers messages
-  buttonEvent = set_side_button.getEvent();
-  if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
-  {
-    // Send color
-  }
-
-  // Function button starts match
-  // TODO
-  buttonEvent = function_button.getEvent();
-  if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
-  {
-    if (Match::getMatchStarted())
-    {
-      Match::stopMatch();
-    }
-    else
-    {
-      Match::startMatch();
-    }
-  }
-
-  // Switch button starts match
-  buttonEvent = start_switch_button.getEvent();
-
-  // Update match time
-  vTaskDelay(2 / portTICK_PERIOD_MS);
+  taskYIELD();
 }
