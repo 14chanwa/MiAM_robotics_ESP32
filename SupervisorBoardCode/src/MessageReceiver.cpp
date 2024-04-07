@@ -15,7 +15,7 @@
 
 
 #define SIZE_OF_BUFFER 512
-// bool stopReceiving_ = false;
+bool stopReceiving_ = false;
 
 MessageReceiver::MessageReceiver(){
 #ifdef USE_WIFICLIENT_API
@@ -73,11 +73,11 @@ std::shared_ptr<Message> MessageReceiver::receive()
 
     std::shared_ptr<Message> message = nullptr;
 
-    // if (stopReceiving_)
-    // {
-    //     vTaskDelay(10000 / portTICK_PERIOD_MS);
-    //     return message;
-    // }
+    if (stopReceiving_)
+    {
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        return message;
+    }
     WiFiClient client = server->available();
     client.setTimeout(1);
 
@@ -95,25 +95,18 @@ std::shared_ptr<Message> MessageReceiver::receive()
 #endif
         // receive data
         receivedTrajectory.clear();
-        while (client.connected())
+
+        while (client.connected() && client.available())
         {
-            if (client.available())
-            {
-                Serial.println(">>>> Client is available: ");
-                int len = client.read((uint8_t *)buffer, SIZE_OF_BUFFER);
+            int len = client.read((uint8_t *)buffer, SIZE_OF_BUFFER);
 #ifdef DEBUG
-                Serial.print("Received message size: ");
-                Serial.println(len);
+            Serial.print("Received message size: ");
+            Serial.println(len);
 #endif
-                for (int i = 0; i < len / 4; i++)
-                {
-                    float f = ((float *)buffer)[i];
-                    receivedTrajectory.push_back(f);
-                }
-            }
-            else
+            for (int i = 0; i < len / 4; i++)
             {
-                client.stop();
+                float f = ((float *)buffer)[i];
+                receivedTrajectory.push_back(f);
             }
         }
         message = Message::parse(receivedTrajectory, senderId);
@@ -156,26 +149,31 @@ std::shared_ptr<Message> MessageReceiver::receive()
         }
 
         int sizeToWrite = serializedMessage.size() * 4;
-        WiFiClient client2;
 
-        if (client2.connect(remoteIP, 778))
+        // If client is still connected, send reply
+        if (client.connected())
         {
+#ifdef DEBUG
             Serial.print("Connected to: ");
             Serial.println(remoteIP);
-            
-            int sizeOfSentMessage = client2.write_P(sendBuffer, sizeToWrite);
+#endif
+            int sizeOfSentMessage = client.write_P(sendBuffer, sizeToWrite);
+#ifdef DEBUG
             Serial.print("Sent message size: ");
             Serial.print(sizeOfSentMessage);
             Serial.print(" expected ");
             Serial.println(sizeToWrite);
+#endif
 
             // Close connection
-            client2.stop();
+            client.stop();
         }
+#ifdef DEBUG
         else
         {
             Serial.println("Could not reply");
         }
+#endif
     }
 #else
     sockaddr_in client_addr;
@@ -229,7 +227,7 @@ std::shared_ptr<Message> MessageReceiver::receive()
     return message;
 };
 
-// void MessageReceiver::stopReceiving()
-// {
-//     stopReceiving_ = true;
-// }
+void MessageReceiver::stopReceiving()
+{
+    stopReceiving_ = true;
+}

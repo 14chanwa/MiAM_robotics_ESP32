@@ -98,7 +98,7 @@ void setup()
   }
 #endif
 
-  MessageHandler::startListening();
+  // MessageHandler::startListening();
   MessageHandler::startReportBroadcast();
 }
 

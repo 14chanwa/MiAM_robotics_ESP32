@@ -75,7 +75,9 @@ void performLowLevel(void* parameters)
         robot->target = robot->motionController->computeDrivetrainMotion(
             robot->measurements, 
             robot->dt_period_ms / 1000.0, 
-            (robot->matchStarted() && robot->currentRobotState_ != RobotState::MATCH_ENDED) || robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
+            robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
+                robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH ||
+                robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
         );
 
         // invert kinematics
@@ -450,7 +452,8 @@ PamiReportMessage Robot::get_pami_report()
     RobotState state = get_current_robot_state();
     bool matchStarted = state == RobotState::MATCH_STARTED_WAITING ||
         state == RobotState::MATCH_STARTED_ACTION ||
-        state == RobotState::MATCH_STARTED_FINAL_APPROACH;
+        state == RobotState::MATCH_STARTED_FINAL_APPROACH ||
+        state == RobotState::MATCH_ENDED;
     return(
         PamiReportMessage(
             matchStarted, 

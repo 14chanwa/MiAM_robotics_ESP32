@@ -13,7 +13,7 @@
 #define MAX_SIZE_OF_PAMI_REPORT 50
 
 MessageReceiver messageReceiver;
-MessageReceiverUDP messageReceiverUDP;
+// MessageReceiverUDP messageReceiverUDP;
 
 void task_messageReceiver(void* parameters)
 {

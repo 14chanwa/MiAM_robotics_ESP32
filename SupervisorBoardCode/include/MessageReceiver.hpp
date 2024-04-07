@@ -24,7 +24,7 @@ public:
     
     std::shared_ptr<Message > receive();
 
-    // static void stopReceiving();
+    static void stopReceiving();
 
 private:
     char* buffer; 
@@ -40,21 +40,21 @@ private:
 };
 
 
-class MessageReceiverUDP
-{
+// class MessageReceiverUDP
+// {
 
-public:
-    MessageReceiverUDP();
-    ~MessageReceiverUDP();
-    void begin();
+// public:
+//     MessageReceiverUDP();
+//     ~MessageReceiverUDP();
+//     void begin();
     
-    std::shared_ptr<Message > receive();
+//     std::shared_ptr<Message > receive();
 
-private:
-    float* buffer; 
-    int serverSocket;
-    int clientSocket;
-    std::vector<float > receivedTrajectory;
-};
+// private:
+//     float* buffer; 
+//     int serverSocket;
+//     int clientSocket;
+//     std::vector<float > receivedTrajectory;
+// };
 
 #endif

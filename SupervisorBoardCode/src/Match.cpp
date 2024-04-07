@@ -22,12 +22,12 @@ void Match::stopMatch()
 
 bool Match::getMatchStarted()
 {
-    return matchStarted && Match::getMatchTimeSeconds() < 100.0f;
+    return matchStarted;
 }
 
 float Match::getMatchTimeSeconds()
 {
-    return (millis() - matchTimeStarted) / 1000.0f;
+    return std::min((millis() - matchTimeStarted) / 1000.0f, 100.0f);
 }
 
 void Match::setSide(PlayingSide playingSide)

@@ -32,9 +32,9 @@ void WiFiStationDisconntask_handle_otaected(WiFiEvent_t event, WiFiEventInfo_t i
   WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
 }
 
-#ifdef USE_WIFI_CLIENT_API
-WiFiClient wifiClient;
-#endif
+// #ifdef USE_WIFI_CLIENT_API
+// WiFiClient wifiClient;
+// #endif
 
 namespace WiFiHandler
 {
@@ -99,54 +99,54 @@ namespace WiFiHandler
     }
 
 
-    bool sendTCPMessage(char* message, uint message_size, IPAddress ip_addr, uint port)
-    {
-#ifdef USE_WIFI_CLIENT_API
+//     bool sendTCPMessage(char* message, uint message_size, IPAddress ip_addr, uint port)
+//     {
+// #ifdef USE_WIFI_CLIENT_API
 
-    #ifdef USE_TIMEOUT
-        wifiClient.setTimeout(1);
-    #endif
+//     #ifdef USE_TIMEOUT
+//         wifiClient.setTimeout(1);
+//     #endif
 
-        // Connect to client
-        if (wifiClient.connect(ip_addr, port))
-        {
-            size_t sizeOfSentMessage = wifiClient.write_P(message, message_size);
-            wifiClient.stop();
-            if (sizeOfSentMessage == message_size)
-                return true;
-        }
-        return false; 
-#else
-        // creating socket 
-        int clientSocket = socket(AF_INET, SOCK_STREAM, 0); 
+//         // Connect to client
+//         if (wifiClient.connect(ip_addr, port))
+//         {
+//             size_t sizeOfSentMessage = wifiClient.write_P(message, message_size);
+//             wifiClient.stop();
+//             if (sizeOfSentMessage == message_size)
+//                 return true;
+//         }
+//         return false; 
+// #else
+//         // creating socket 
+//         int clientSocket = socket(AF_INET, SOCK_STREAM, 0); 
   
-        // Serial.print("Address: ");
-        // Serial.println(ip_addr.toString().c_str());
+//         // Serial.print("Address: ");
+//         // Serial.println(ip_addr.toString().c_str());
 
-        // specifying the address 
-        sockaddr_in serverAddress; 
-        serverAddress.sin_family = AF_INET; 
-        serverAddress.sin_port = htons(port); 
-        serverAddress.sin_addr.s_addr = inet_addr(ip_addr.toString().c_str());
+//         // specifying the address 
+//         sockaddr_in serverAddress; 
+//         serverAddress.sin_family = AF_INET; 
+//         serverAddress.sin_port = htons(port); 
+//         serverAddress.sin_addr.s_addr = inet_addr(ip_addr.toString().c_str());
 
-        // connect to server
-        if (connect(clientSocket, (struct sockaddr*)&serverAddress, 
-            sizeof(serverAddress)))
-        {
-            // Serial.println("Connected");
-            // sending data 
-            size_t sizeOfSentMessage = send(clientSocket, message, message_size, 0); 
+//         // connect to server
+//         if (connect(clientSocket, (struct sockaddr*)&serverAddress, 
+//             sizeof(serverAddress)))
+//         {
+//             // Serial.println("Connected");
+//             // sending data 
+//             size_t sizeOfSentMessage = send(clientSocket, message, message_size, 0); 
 
-            if (sizeOfSentMessage == message_size)
-            {
-                return true;
-            }
+//             if (sizeOfSentMessage == message_size)
+//             {
+//                 return true;
+//             }
             
-            // closing socket 
-            close(clientSocket);            
-        }
+//             // closing socket 
+//             close(clientSocket);            
+//         }
 
-        return false;
-#endif
-    }
+//         return false;
+// #endif
+//     }
 }

@@ -162,7 +162,7 @@ void setup()
     "task_handle_ota",
     10000,
     NULL,
-    10,
+    30,
     NULL,
     0
   );
@@ -170,7 +170,7 @@ void setup()
   ArduinoOTA
     .onStart([]() {
       String type;
-      // MessageReceiver::stopReceiving();
+      MessageReceiver::stopReceiving();
       if (ArduinoOTA.getCommand() == U_FLASH)
         type = "sketch";
       else // U_SPIFFS
