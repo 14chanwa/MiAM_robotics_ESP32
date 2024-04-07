@@ -4,6 +4,13 @@
 #include <Utilities.h>
 #include <Message.hpp>
 
+#define USE_WIFICLIENT_API
+
+#ifdef USE_WIFICLIENT_API
+#include <WiFi.h>
+#endif
+
+
 using namespace miam::trajectory;
 
 
@@ -22,8 +29,13 @@ public:
 private:
     char* buffer; 
     char* sendBuffer;
+#ifdef USE_WIFICLIENT_API
+    WiFiServer* server;
+#else
     int serverSocket;
     int clientSocket;
+#endif
+
     std::vector<float > receivedTrajectory;
 };
 

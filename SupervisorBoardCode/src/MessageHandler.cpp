@@ -31,21 +31,21 @@ void task_messageReceiver(void* parameters)
     }
 }
 
-void task_messageReceiverUDP(void* parameters)
-{
-    // Robot* robot = Robot::getInstance();
-    for (;;)
-    {
-        // Serial.println(">> UDP receiver standby...");
-        std::shared_ptr<Message > message = messageReceiverUDP.receive();
-        if (message != nullptr)
-        {
-            // Serial.println("UDP received message");
-            // robot->notify_new_message(message);
-            PAMIStates::registerMessage(message);
-        }
-    }
-}
+// void task_messageReceiverUDP(void* parameters)
+// {
+//     // Robot* robot = Robot::getInstance();
+//     for (;;)
+//     {
+//         // Serial.println(">> UDP receiver standby...");
+//         std::shared_ptr<Message > message = messageReceiverUDP.receive();
+//         if (message != nullptr)
+//         {
+//             // Serial.println("UDP received message");
+//             // robot->notify_new_message(message);
+//             PAMIStates::registerMessage(message);
+//         }
+//     }
+// }
 
 
 // void task_report_broadcast(void* parameters)
@@ -96,7 +96,7 @@ namespace MessageHandler{
         xTaskCreatePinnedToCore(
             task_messageReceiver,
             "task_messageReceiver",
-            50000,
+            100000,
             NULL,
             40,
             NULL,

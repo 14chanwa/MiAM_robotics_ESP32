@@ -203,4 +203,5 @@ void setup()
 void loop()
 {
   taskYIELD();
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
 }
