@@ -43,8 +43,7 @@ void task_report_broadcast(void *parameters)
 {
     Robot *robot = Robot::getInstance();
     float *buffer = new float[MAX_SIZE_OF_PAMI_REPORT / 4];
-    uint sizeOfMessage;
-    VecFloat receivedTrajectory;
+    int sizeOfMessage = 0;
 
     wifiClient.setTimeout(1);
 
@@ -60,22 +59,17 @@ void task_report_broadcast(void *parameters)
         }
 
         PamiReportMessage report = robot->get_pami_report();
-        VecFloat serialized_report = report.serialize();
+        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
 
-        for (uint i = 0; i < serialized_report.size(); i++)
-        {
-            buffer[i] = serialized_report.at(i);
-        }
-        sizeOfMessage = serialized_report.size() * 4;
 
         bool success = false;
 
         // Connect to client
         if (wifiClient.connect(MIAM_SCD_ADDRESS, MIAM_SCD_PORT))
         {
-            size_t sizeOfSentMessage = wifiClient.write_P((char *)buffer, sizeOfMessage);
+            size_t sizeOfSentMessage = wifiClient.write_P((char *)buffer, sizeOfMessage * 4);
 
-            if (sizeOfSentMessage == sizeOfMessage)
+            if (sizeOfSentMessage == sizeOfMessage*4)
                 success = true;
 
             if (!success)
@@ -84,30 +78,24 @@ void task_report_broadcast(void *parameters)
                 Serial.println("Sent report SCD");
 
             // Wait for reply
-            receivedTrajectory.clear();
 
             while (wifiClient.connected() && !wifiClient.available())
             {
                 vTaskDelay(10 / portTICK_PERIOD_MS);
             }
-
+            
+            int len = 0;
             if (wifiClient.available())
             {
-                int len = wifiClient.read((uint8_t *)buffer, MAX_SIZE_OF_PAMI_REPORT);
+                len = wifiClient.read((uint8_t *)buffer, MAX_SIZE_OF_PAMI_REPORT);
 
                 Serial.print("Received message size: ");
                 Serial.println(len);
-
-                for (int i = 0; i < len / 4; i++)
-                {
-                    float f = ((float *)buffer)[i];
-                    receivedTrajectory.push_back(f);
-                }
             }
 
             wifiClient.stop();
 
-            std::shared_ptr<Message> message = Message::parse(receivedTrajectory, 10);
+            std::shared_ptr<Message> message = Message::parse(buffer, len/4, 10);
             robot->notify_new_message(message);
         }
 

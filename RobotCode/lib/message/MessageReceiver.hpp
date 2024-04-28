@@ -18,28 +18,9 @@ public:
     std::shared_ptr<Message > receive();
 
 private:
-    float* buffer; 
+    char* buffer; 
     int serverSocket;
     int clientSocket;
-    std::vector<float > receivedTrajectory;
-};
-
-
-class MessageReceiverUDP
-{
-
-public:
-    MessageReceiverUDP();
-    ~MessageReceiverUDP();
-    void begin();
-    
-    std::shared_ptr<Message > receive();
-
-private:
-    float* buffer; 
-    int serverSocket;
-    int clientSocket;
-    std::vector<float > receivedTrajectory;
 };
 
 #endif

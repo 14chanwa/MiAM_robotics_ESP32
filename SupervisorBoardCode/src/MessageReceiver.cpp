@@ -93,31 +93,24 @@ std::shared_ptr<Message> MessageReceiver::receive()
         Serial.print(">>>> Client is connected: ");
         Serial.println(client.remoteIP());
 #endif
-        // receive data
-        receivedTrajectory.clear();
-
+        int len = 0;
         while (client.connected() && client.available())
         {
-            int len = client.read((uint8_t *)buffer, SIZE_OF_BUFFER);
+            len += client.read((uint8_t *)&(buffer[len]), SIZE_OF_BUFFER-len);
 #ifdef DEBUG
             Serial.print("Received message size: ");
             Serial.println(len);
 #endif
-            for (int i = 0; i < len / 4; i++)
-            {
-                float f = ((float *)buffer)[i];
-                receivedTrajectory.push_back(f);
-            }
         }
-        message = Message::parse(receivedTrajectory, senderId);
+        message = Message::parse((float*) buffer, len/4, senderId);
 
         // Then send a command
-        VecFloat serializedMessage;
+        int sizeToWrite = 0;
         if (Match::getMatchStarted())
         {
             // send a match state message
             MatchStateMessage newMessage = MatchStateMessage(true, Match::getMatchTimeSeconds(), 10);
-            serializedMessage = newMessage.serialize();
+            sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
         }
         else
         {
@@ -133,22 +126,15 @@ std::shared_ptr<Message> MessageReceiver::receive()
             {
                 // need to stop the pami: send a matchState
                 MatchStateMessage newMessage = MatchStateMessage(false, 0.0, 10);
-                serializedMessage = newMessage.serialize();
+                sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
             }
             else
             {
                 // send a configuration message
                 ConfigurationMessage newMessage = ConfigurationMessage(Match::getSide(), 10);
-                serializedMessage = newMessage.serialize();
+                sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
             }
         }
-
-        for (uint i = 0; i < serializedMessage.size(); i++)
-        {
-            ((float *)sendBuffer)[i] = serializedMessage[i];
-        }
-
-        int sizeToWrite = serializedMessage.size() * 4;
 
         // If client is still connected, send reply
         if (client.connected())
@@ -157,7 +143,7 @@ std::shared_ptr<Message> MessageReceiver::receive()
             Serial.print("Connected to: ");
             Serial.println(remoteIP);
 #endif
-            int sizeOfSentMessage = client.write_P(sendBuffer, sizeToWrite);
+            int sizeOfSentMessage = client.write_P(sendBuffer, sizeToWrite*4);
 #ifdef DEBUG
             Serial.print("Sent message size: ");
             Serial.print(sizeOfSentMessage);

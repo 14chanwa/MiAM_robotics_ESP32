@@ -16,7 +16,7 @@ MessageReceiver::MessageReceiver()
 
 void MessageReceiver::begin()
 {
-    buffer = new float[SIZE_OF_BUFFER*4]();
+    buffer = new char[SIZE_OF_BUFFER]();
 
     // creating socket 
     serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
@@ -60,15 +60,11 @@ std::shared_ptr<Message > MessageReceiver::receive()
 
     // recieving data 
     int sizeofreceiveddata;
-    receivedTrajectory.clear();
 
-    while((sizeofreceiveddata = recv(clientSocket, buffer, SIZE_OF_BUFFER*4, 0)) > 0)
+    int len = 0;
+    while((sizeofreceiveddata = recv(clientSocket, (uint8_t *)&(buffer[len]), SIZE_OF_BUFFER-len, 0)) > 0)
     {
-        for (int i = 0; i < sizeofreceiveddata / 4; i++)
-        {
-            float f = buffer[i];
-            receivedTrajectory.push_back(f);
-        }
+        len += sizeofreceiveddata;
     }
 
     // end the connection to the client
@@ -76,8 +72,8 @@ std::shared_ptr<Message > MessageReceiver::receive()
 
     // parse the message
     Serial.print("Message length: ");
-    Serial.println(receivedTrajectory.size());
-    std::shared_ptr<Message > message(Message::parse(receivedTrajectory, senderId));
+    Serial.println(len);
+    std::shared_ptr<Message > message(Message::parse((float *) buffer, len/4, senderId));
 
     return message;
 };
