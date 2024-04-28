@@ -105,6 +105,14 @@ void task_monitor_buttons(void* parameters)
 
     // Switch button starts match
     buttonEvent = start_switch_button.getEvent();
+    if (buttonEvent == ButtonEvent::NEW_STATE_HIGH)
+    {
+        Match::startMatch(0.0);
+    }
+    else if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+    {
+        Match::stopMatch();
+    }
 
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }

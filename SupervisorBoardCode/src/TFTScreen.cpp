@@ -44,12 +44,13 @@ void TFTScreen::update(IPAddress localIP)
     }
 
     // Update match time
+    tft.setTextSize(2);
     tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
-    tft.setCursor(250, 120);
+    tft.setCursor(230, 120);
     if (Match::getMatchStarted())
     {
         tft.print("      ");
-        tft.setCursor(250, 120);
+        tft.setCursor(230, 120);
         tft.print(Match::getMatchTimeSeconds());
     }
     else
@@ -58,19 +59,22 @@ void TFTScreen::update(IPAddress localIP)
     }
 
     // Update current side
-    tft.setCursor(250, 135);
+    tft.setCursor(230, 150);
     if (Match::getSide() == PlayingSide::BLUE_SIDE)
     {
+        tft.setTextSize(2);
         tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
         tft.print("BLUE  ");
     }
     else
     {
+        tft.setTextSize(2);
         tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
         tft.print("YELLOW");
     }
 
     // Update seconds count
+    tft.setTextSize(1);
     tft.setCursor(180, 230);
     tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
     tft.print(millis() / 1000);

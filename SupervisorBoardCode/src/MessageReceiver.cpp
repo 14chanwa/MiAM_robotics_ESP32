@@ -148,7 +148,7 @@ std::shared_ptr<Message> MessageReceiver::receive()
             Serial.print("Sent message size: ");
             Serial.print(sizeOfSentMessage);
             Serial.print(" expected ");
-            Serial.println(sizeToWrite);
+            Serial.println(sizeToWrite*4);
 #endif
 
             // Close connection
