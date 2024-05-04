@@ -8,6 +8,8 @@
 #include <Match.hpp>
 #include <MessageReceiver.hpp>
 
+#include <ServoHandler.hpp>
+
 #define USE_WIFI
 // #define USE_ARDUINO_OTA
 
@@ -133,7 +135,7 @@ void task_monitor_buttons(void* parameters)
     buttonEvent = start_switch_button.getEvent();
     if (buttonEvent == ButtonEvent::NEW_STATE_HIGH)
     {
-        Match::startMatch(0.0);
+        Match::startMatch(0.0f);
     }
     else if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
     {
@@ -142,6 +144,36 @@ void task_monitor_buttons(void* parameters)
 
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }
+}
+
+void task_handle_servo(void* parameters)
+{
+    ServoHandler::init();
+    bool state = false;
+    for (;;)
+    {
+      if (Match::getMatchStarted() &&
+        Match::getMatchTimeSeconds() >= 90 && 
+        Match::getMatchTimeSeconds() < 100)
+        {
+          if (state)
+          {
+            ServoHandler::servoUp();
+            Serial.println("Servo down");
+          }
+          else
+          {
+            ServoHandler::servoDown();
+            Serial.println("Servo up");
+          }
+          state = !state;
+        }
+        else
+        {
+          ServoHandler::servoUp();
+        }
+      vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
 }
 
 void setup()
@@ -176,6 +208,16 @@ void setup()
     10000,
     NULL,
     90,
+    NULL,
+    0
+  );
+
+  xTaskCreatePinnedToCore(
+    task_handle_servo,
+    "task_handle_servo",
+    10000,
+    NULL,
+    30,
     NULL,
     0
   );

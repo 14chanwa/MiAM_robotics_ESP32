@@ -2,7 +2,7 @@
 #include <ServoHandler.hpp>
 
 // ServoHandler
-#define SERVO_PIN 25
+#define SERVO_PIN 4
 #define SERVO_PWM_CHANNEL 6
 
 #define SERVO_UP_POSITION 10

@@ -8,6 +8,9 @@
 #include <Preferences.h>
 #include <Message.hpp>
 
+#include <SampledTrajectory.h>
+using namespace miam::trajectory;
+
 class Robot
 {
 private:
@@ -44,7 +47,7 @@ public:
     
     float match_current_time_s = 0.0f;
 
-    TrajectoryVector saved_trajectory_vector;
+    std::shared_ptr<SampledTrajectory > match_trajectory;
 
     // Motion controller
     MotionController* motionController;

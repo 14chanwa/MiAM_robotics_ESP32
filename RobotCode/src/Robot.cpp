@@ -10,6 +10,8 @@
 
 #include <Strategy.hpp>
 
+using namespace miam::trajectory;
+
 #define SLOW_APPROACH_WHEEL_VELOCITY 75.0
 
 Robot* Robot::getInstance() 
@@ -183,7 +185,20 @@ Robot::Robot()
     // else
     // {
         Serial.println("Load default trajectory");
-        saved_trajectory_vector = strategy::get_default_trajectory(motionController);
+        TrajectoryVector saved_trajectory_vector = strategy::get_default_trajectory(motionController);
+        // Transform into SampledTrajectory
+        float duration = saved_trajectory_vector.getDuration();
+        std::vector<TrajectoryPoint> points;
+        float currentTime = 0.0;
+        points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
+        while (currentTime < duration)
+        {
+            currentTime = std::min(currentTime + 0.1f, duration);
+            points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
+        }
+
+        TrajectoryConfig tc = motionController->getTrajectoryConfig();
+        match_trajectory = std::make_shared<SampledTrajectory >(tc, points, duration);
     // }
 
     xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
@@ -350,8 +365,10 @@ void Robot::update_robot_state()
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
 #endif
             // Sets travel to objective
-            motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
-            motionController->setTrajectoryToFollow(saved_trajectory_vector);
+            motionController->resetPosition(match_trajectory->getCurrentPoint(0.0f).position, true, true, true);
+            TrajectoryVector tv;
+            tv.push_back(match_trajectory);
+            motionController->setTrajectoryToFollow(tv);
             currentRobotState_ = RobotState::MATCH_STARTED_ACTION;
         }
     }
@@ -395,9 +412,9 @@ void Robot::update_robot_state()
                 TrajectoryConfig tc = motionController->getTrajectoryConfig();
                 RobotPosition curPos(motionController->getCurrentPosition());
                 // straight line
-                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, saved_trajectory_vector.getEndPoint().position));
+                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, match_trajectory->getEndPoint().position));
                 // point turn
-                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, saved_trajectory_vector.getEndPoint().position.theta));
+                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, match_trajectory->getEndPoint().position.theta));
                 tv.push_back(pt);
                 motionController->setTrajectoryToFollow(tv);
             }
