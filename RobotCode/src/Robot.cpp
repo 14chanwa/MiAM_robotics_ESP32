@@ -82,14 +82,6 @@ void performLowLevel(void* parameters)
                 robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
         );
 
-        // invert kinematics
-        if (robot->motionController->isPlayingRightSide_)
-        {
-            float leftSpeed = robot->target.motorSpeed[side::LEFT];
-            robot->target.motorSpeed[side::LEFT] = robot->target.motorSpeed[side::RIGHT];
-            robot->target.motorSpeed[side::RIGHT] = leftSpeed;
-        }
-
         // Serial.println("Set base speed");
         robot->robotBase->setBaseSpeed(robot->target);
 
