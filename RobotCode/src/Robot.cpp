@@ -358,7 +358,7 @@ void Robot::update_robot_state()
         }
 
         // MATCH_STARTED_ACTION
-        else if (match_current_time_s >= MATCH_PAMI_START_TIME_S)
+        else if (match_current_time_s >= MATCH_PAMI_START_TIME_S + strategy::get_waiting_time_s())
         {
             Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_ACTION");
 #ifdef USE_STEPPER_MOTORS
