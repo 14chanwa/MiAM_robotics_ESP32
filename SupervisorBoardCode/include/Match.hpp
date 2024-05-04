@@ -11,6 +11,9 @@ namespace Match
     bool getMatchStarted();
     float getMatchTimeSeconds();
 
+    bool getStopMotors();
+    void setStopMotors(bool value);
+
     void setSide(PlayingSide playingSide);
     PlayingSide getSide();
 }

@@ -29,13 +29,14 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
     if (message_type == MessageType::CONFIGURATION)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 1)
+        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 2)
         {
             // First byte of payload is configuration
             if ((bool)message[MESSAGE_PAYLOAD_START] == PlayingSide::BLUE_SIDE)
             {
                 return std::make_shared<ConfigurationMessage >(
                     PlayingSide::BLUE_SIDE,
+                    (bool) message[MESSAGE_PAYLOAD_START + 1],
                     senderId
                 );
             }
@@ -43,6 +44,7 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
             {
                 return std::make_shared<ConfigurationMessage >(
                     PlayingSide::YELLOW_SIDE,
+                    (bool) message[MESSAGE_PAYLOAD_START + 1],
                     senderId
                 );
             }
@@ -145,13 +147,15 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
 int  ConfigurationMessage::serialize(float* results, int maxsize)
 {
     // Total size in floats is header size =3
-    if (maxsize < 2) return -1;
+    if (maxsize < 3) return -1;
 
     int current_index = 0;
     // First byte is message type
     results[current_index++] = (float)get_message_type();
     // Second byte is side
     results[current_index++] = (float)playingSide_;
+    // Third byte is stop motors
+    results[current_index++] = (float)stopMotors_;
     return current_index;
 }
 

@@ -114,19 +114,19 @@ void task_monitor_buttons(void* parameters)
       }
     }
 
-    // Function button starts match
-    // TODO
+    // Function button toggles pami motor lock
     buttonEvent = function_button.getEvent();
     if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
     {
-      if (Match::getMatchStarted())
-      {
-        Match::stopMatch();
-      }
-      else
-      {
-        Match::startMatch(85.0);
-      }
+      // if (Match::getMatchStarted())
+      // {
+      //   Match::stopMatch();
+      // }
+      // else
+      // {
+      //   Match::startMatch(85.0);
+      // }
+      Match::setStopMotors(!Match::getStopMotors());
     }
 
     // Switch button starts match

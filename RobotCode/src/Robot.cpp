@@ -253,6 +253,10 @@ void Robot::update_robot_state()
             // Blue side is left side
             // So right side is yellow
             motionController->isPlayingRightSide_ = configurationMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
+            // Stop motors?
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(configurationMessage->stopMotors_);
+#endif
             currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
         }
     }
@@ -281,6 +285,10 @@ void Robot::update_robot_state()
             // Blue side is left side
             // So right side is yellow
             motionController->isPlayingRightSide_ = configurationMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
+            // Stop motors?
+#ifdef USE_STEPPER_MOTORS
+            static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(configurationMessage->stopMotors_);
+#endif
             currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
         }
 

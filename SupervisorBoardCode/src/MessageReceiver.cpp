@@ -139,7 +139,7 @@ std::shared_ptr<Message> MessageReceiver::receive()
             else
             {
                 // send a configuration message
-                ConfigurationMessage newMessage = ConfigurationMessage(Match::getSide(), 10);
+                ConfigurationMessage newMessage = ConfigurationMessage(Match::getSide(), Match::getStopMotors(), 10);
                 sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
             }
         }

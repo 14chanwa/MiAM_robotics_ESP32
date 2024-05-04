@@ -5,6 +5,7 @@
 long matchTimeStarted = 0;
 bool matchStarted = false;
 PlayingSide currentPlayingSide = PlayingSide::BLUE_SIDE;
+bool stopMotors = false;
 
 void Match::startMatch(float currentMatchTime)
 {
@@ -38,4 +39,14 @@ void Match::setSide(PlayingSide playingSide)
 PlayingSide Match::getSide()
 {
     return currentPlayingSide;
+}
+
+bool Match::getStopMotors()
+{
+    return stopMotors;
+}
+
+void Match::setStopMotors(bool value)
+{
+    stopMotors = value;
 }

@@ -96,6 +96,19 @@ void TFTScreen::update(IPAddress localIP)
     tft.print("Last received message at time: ");
     tft.print(PAMIStates::readLastMessageTime());
 #endif
+
+    // PAMI motor lock
+    tft.setTextSize(1);
+    tft.setCursor(230, 180);
+    if (Match::getStopMotors())
+    {
+        tft.print("Motors LOCKED");
+    }
+    else
+    {
+        tft.print("             ");
+    }
+
 }
 
 #define PAMI_RECT_XSIZE 100

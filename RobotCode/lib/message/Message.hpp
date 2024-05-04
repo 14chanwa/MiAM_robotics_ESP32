@@ -59,13 +59,15 @@ private:
 class ConfigurationMessage : public Message
 {
 public:
-    ConfigurationMessage(PlayingSide playingSide, uint8_t senderId = 255) :
+    ConfigurationMessage(PlayingSide playingSide, bool stopMotors, uint8_t senderId = 255) :
         Message(MessageType::CONFIGURATION, senderId),
-        playingSide_(playingSide) {};
+        playingSide_(playingSide),
+        stopMotors_(stopMotors) {};
     
     int serialize(float* results, int maxsize);
 
     PlayingSide playingSide_;
+    bool stopMotors_;
 };
 
 // NEW TRAJECTORY
