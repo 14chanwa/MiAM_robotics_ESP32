@@ -105,7 +105,7 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
     else if (message_type == MessageType::PAMI_REPORT)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 3)
+        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 4)
         {
             // First byte of payload is match started
             // Second byte of payload is match time
@@ -116,6 +116,7 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
                     (bool) message[MESSAGE_PAYLOAD_START],
                     (float) message[MESSAGE_PAYLOAD_START + 1],
                     PlayingSide::BLUE_SIDE,
+                    message[MESSAGE_PAYLOAD_START + 3],
                     senderId
                 );
             }
@@ -127,6 +128,7 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
                     (bool) message[MESSAGE_PAYLOAD_START],
                     (float) message[MESSAGE_PAYLOAD_START + 1],
                     PlayingSide::YELLOW_SIDE,
+                    message[MESSAGE_PAYLOAD_START + 3],
                     senderId
                 );
             }
@@ -219,7 +221,7 @@ int ErrorMessage::serialize(float* results, int maxsize)
 int PamiReportMessage::serialize(float* results, int maxsize)
 {
     // Total size in floats is header size =4
-    if (maxsize < 4) return -1;
+    if (maxsize < 5) return -1;
 
     int current_index = 0;
     // First byte is message type
@@ -230,5 +232,7 @@ int PamiReportMessage::serialize(float* results, int maxsize)
     results[current_index++] = (float)matchTime_;
     // 4th byte is playing side
     results[current_index++] = (float)playingSide_;
+    // 5th byte is battery reading
+    results[current_index++] = (float)batteryReading_;
     return current_index;
 }

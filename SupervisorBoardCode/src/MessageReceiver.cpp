@@ -94,6 +94,14 @@ std::shared_ptr<Message> MessageReceiver::receive()
         Serial.println(client.remoteIP());
 #endif
         int len = 0;
+        // Wait for client sending message
+        // timeout = 50ms
+        long startTime = millis();
+        while (millis() - startTime < 50 && client.connected() && !client.available())
+        {
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+        // Read message
         while (client.connected() && client.available())
         {
             len += client.read((uint8_t *)&(buffer[len]), SIZE_OF_BUFFER-len);

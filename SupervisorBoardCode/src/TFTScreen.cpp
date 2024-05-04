@@ -156,4 +156,14 @@ void TFTScreen::drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID)
         PAMI_RECT_YSIZE,
         // (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? (uint16_t) strtol(0x7ED1E6, NULL, 16) : (uint16_t) strtol(OxFFF27A, NULL, 16)));
         drawingColor);
+
+    if (id >= 1 && id <= 5)
+    {
+        // battery reading
+        tft.setTextSize(1);
+        tft.setTextColor(ST77XX_BLACK, drawingColor);
+        tft.setCursor( gridX * (PAMI_RECT_XSIZE + 10) + 10, 
+            gridY * (PAMI_RECT_YSIZE + 10) + 10);
+        tft.print(pamiReport.batteryReading_);
+    }
 }

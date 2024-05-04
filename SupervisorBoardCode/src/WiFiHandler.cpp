@@ -10,9 +10,6 @@
 
 #define USE_WIFI_CLIENT_API
 
-// Set MAC address manually for router to allocate static IPs
-#define WIFI_MAC_ADDRESS {0xAA, 0xAB, 0xAC, 0xAD, 0x00, 0x10}
-
  #ifdef ENABLE_OTA_UPDATE
 #include <ArduinoOTA.h>
 

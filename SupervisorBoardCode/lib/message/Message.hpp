@@ -113,17 +113,20 @@ public:
         bool matchStarted, 
         float matchTime, 
         PlayingSide playingSide, 
+        float batteryReading,
         uint8_t senderId = 255
     ) : Message(MessageType::PAMI_REPORT, senderId),
         matchStarted_(matchStarted),
         matchTime_(matchTime),
-        playingSide_(playingSide) {};
+        playingSide_(playingSide),
+        batteryReading_(batteryReading) {};
     
     int serialize(float* results, int maxsize);
 
     bool matchStarted_;
     float matchTime_;
     PlayingSide playingSide_;
+    float batteryReading_;
 };
 
 #endif

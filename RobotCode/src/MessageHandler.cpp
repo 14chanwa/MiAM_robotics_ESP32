@@ -97,9 +97,15 @@ void task_report_broadcast(void *parameters)
 
             std::shared_ptr<Message> message = Message::parse(buffer, len/4, 10);
             robot->notify_new_message(message);
+
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }
+        else
+        {
+            // Use a different delay to try to not query at the same time as other PAMI
+            vTaskDelay(347 / portTICK_PERIOD_MS);
         }
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 

@@ -459,6 +459,7 @@ PamiReportMessage Robot::get_pami_report()
             matchStarted, 
             match_current_time_s, 
             motionController->isPlayingRightSide_ ? PlayingSide::YELLOW_SIDE : PlayingSide::BLUE_SIDE, 
+            AnalogReadings::get_current_battery_reading(),
             PAMI_ID
         )
     );
