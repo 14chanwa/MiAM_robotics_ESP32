@@ -356,10 +356,23 @@ void Robot::update_robot_state()
 #ifdef USE_STEPPER_MOTORS
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
 #endif
-            // Sets travel to objective
-            motionController->resetPosition(match_trajectory->getCurrentPoint(0.0f).position, true, true, true);
+
             TrajectoryVector tv;
-            tv.push_back(match_trajectory);
+
+            // Query alternative if road is blocked
+            // get measurement
+            if (I2CHandler::get_smoothed_vl53l0x() <= 600.0f)
+            {
+                tv.clear();
+                tv = strategy::get_alternative_trajectory(motionController);
+            }
+            else
+            {
+                // Sets travel to objective
+                motionController->resetPosition(match_trajectory->getCurrentPoint(0.0f).position, true, true, true);
+                tv.push_back(match_trajectory);
+            }
+
             motionController->setTrajectoryToFollow(tv);
             currentRobotState_ = RobotState::MATCH_STARTED_ACTION;
         }

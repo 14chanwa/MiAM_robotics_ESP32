@@ -1,6 +1,7 @@
 #include <AnalogReadings.hpp>
 #include <Arduino.h>
 #include <parameters.hpp>
+#include <ADCReading.hpp>
 
 /////////////////////////////////////////////
 // Resistor values
@@ -8,9 +9,6 @@
 
 #define RESISTOR_R1 100000.0f
 #define RESISTOR_R2 10000.0f
-
-// Moving average for battery reading
-#define FILTER_LEN 5
 
 #define BAT_READING 36
 
@@ -23,46 +21,9 @@
 #define LEFT_SWITCH_PIN 33
 #define RIGHT_SWITCH_PIN 5
 
-int AN_Pot1_Raw = 0;
-
-class ADCReading
-{
-public:
-    uint32_t AN_Pot1_Buffer[FILTER_LEN] = {0};
-    int AN_Pot1_i = 0;
-    uint32_t readADC_Avg(int ADC_Raw);
-    bool MA_inited = false;
-};
-
 /////////////////////////////////////////////
 // Functions
 /////////////////////////////////////////////
-
-uint32_t ADCReading::readADC_Avg(int ADC_Raw)
-{
-
-    if (!MA_inited)
-    {
-        for (int i = 0; i < FILTER_LEN; i++)
-            AN_Pot1_Buffer[i] = ADC_Raw;
-
-        MA_inited = true;
-    }
-
-    int i = 0;
-    uint32_t Sum = 0;
-
-    AN_Pot1_Buffer[AN_Pot1_i++] = ADC_Raw;
-    if (AN_Pot1_i == FILTER_LEN)
-    {
-        AN_Pot1_i = 0;
-    }
-    for (i = 0; i < FILTER_LEN; i++)
-    {
-        Sum += AN_Pot1_Buffer[i];
-    }
-    return (Sum / FILTER_LEN);
-}
 
 ADCReading battery_reading;
 ADCReading tcrt0_reading;
@@ -116,7 +77,7 @@ namespace AnalogReadings
 
     void update()
     {
-        AN_Pot1_Raw = analogReadMilliVolts(BAT_READING);
+        int AN_Pot1_Raw = analogReadMilliVolts(BAT_READING);
         // batReading_unfiltered = AN_Pot1_Raw * (RESISTOR_R1 + RESISTOR_R2) / R2 / 1000.0;
         batReading = battery_reading.readADC_Avg(AN_Pot1_Raw) * (RESISTOR_R1 + RESISTOR_R2) / RESISTOR_R2 / 1000.0;
         // batReading = battery_reading.readADC_Avg(AN_Pot1_Raw) / 1000.0;

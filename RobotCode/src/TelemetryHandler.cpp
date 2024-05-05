@@ -24,39 +24,39 @@ void logTelemetry(void* parameters)
 
     #ifdef SEND_TELEPLOT_UDP
 
-      // teleplot.update("currentPosition.x", motionController->currentPosition_.x);
-      // teleplot.update("currentPosition.y", motionController->currentPosition_.y);
-      RobotPosition curPos = robot->motionController->getCurrentPosition();
-      teleplot.update2D("currentPosition", curPos.x, curPos.y);
-      teleplot.update("currentPosition.theta", curPos.theta);
-      // teleplot.update("targetPosition.x", motionController->targetPoint.position.x);
-      // teleplot.update("targetPosition.y", motionController->targetPoint.position.y);
-      teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
-      teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
-      teleplot.update("targetPoint.linear", robot->motionController->targetPoint.linearVelocity);
-      teleplot.update("targetPoint.angular", robot->motionController->targetPoint.angularVelocity);
-      teleplot.update("clampedSlowDownCoeff_", robot->motionController->clampedSlowDownCoeff_);
-      // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
-      // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
-      teleplot.update("battery_reading", AnalogReadings::get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
-      // teleplot.update("tcrt0", AnalogReadings::get_current_tcrt0_reading(), "", 0);
-      // teleplot.update("tcrt1", AnalogReadings::get_current_tcrt1_reading(), "", 0);
-      // teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
-      // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
-      teleplot.update("leftSwitchPin", AnalogReadings::get_left_switch_value(), "", 0);
-      teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
-      teleplot.update("currentRobotState", (int)robot->get_current_robot_state(), "", 0);
+      // // teleplot.update("currentPosition.x", motionController->currentPosition_.x);
+      // // teleplot.update("currentPosition.y", motionController->currentPosition_.y);
+      // RobotPosition curPos = robot->motionController->getCurrentPosition();
+      // teleplot.update2D("currentPosition", curPos.x, curPos.y);
+      // teleplot.update("currentPosition.theta", curPos.theta);
+      // // teleplot.update("targetPosition.x", motionController->targetPoint.position.x);
+      // // teleplot.update("targetPosition.y", motionController->targetPoint.position.y);
+      // teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
+      // teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
+      // teleplot.update("targetPoint.linear", robot->motionController->targetPoint.linearVelocity);
+      // teleplot.update("targetPoint.angular", robot->motionController->targetPoint.angularVelocity);
+      // teleplot.update("clampedSlowDownCoeff_", robot->motionController->clampedSlowDownCoeff_);
+      // // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
+      // teleplot.update("battery_reading", AnalogReadings::get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);
+      // // teleplot.update("tcrt0", AnalogReadings::get_current_tcrt0_reading(), "", 0);
+      // // teleplot.update("tcrt1", AnalogReadings::get_current_tcrt1_reading(), "", 0);
+      // // teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
+      // // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
+      // teleplot.update("leftSwitchPin", AnalogReadings::get_left_switch_value(), "", 0);
+      // teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
+      // teleplot.update("currentRobotState", (int)robot->get_current_robot_state(), "", 0);
 
 
       #ifdef USE_DC_MOTORS
-      teleplot.update("rightWheelCurrentSpeed", robot->robotBase->getRightWheel()->currentSpeed_);
-      teleplot.update("rightWheelTargetSpeed", robot->robotBase->getRightWheel()->targetSpeed_);
-      teleplot.update("leftWheelCurrentSpeed", robot->robotBase->getLeftWheel()->currentSpeed_);
-      teleplot.update("leftWheelTargetSpeed", robot->robotBase->getLeftWheel()->targetSpeed_);
-      teleplot.update("rightBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->basePWMTarget_);
-      teleplot.update("leftBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->basePWMTarget_);
-      teleplot.update("rightNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->newPWMTarget_);
-      teleplot.update("leftNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->newPWMTarget_);
+      // teleplot.update("rightWheelCurrentSpeed", robot->robotBase->getRightWheel()->currentSpeed_);
+      // teleplot.update("rightWheelTargetSpeed", robot->robotBase->getRightWheel()->targetSpeed_);
+      // teleplot.update("leftWheelCurrentSpeed", robot->robotBase->getLeftWheel()->currentSpeed_);
+      // teleplot.update("leftWheelTargetSpeed", robot->robotBase->getLeftWheel()->targetSpeed_);
+      // teleplot.update("rightBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->basePWMTarget_);
+      // teleplot.update("leftBasePWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->basePWMTarget_);
+      // teleplot.update("rightNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getRightWheel())->newPWMTarget_);
+      // teleplot.update("leftNewPWM", static_cast<RobotWheelDC*>(robot->robotBase->getLeftWheel())->newPWMTarget_);
       #endif
 
 
@@ -87,6 +87,7 @@ void logTelemetry(void* parameters)
       #endif
 
       teleplot.update("vlx_ranging_data_mm", I2CHandler::get_current_vl53l0x());
+      teleplot.update("vlx_ranging_data_smoothed_mm", I2CHandler::get_smoothed_vl53l0x());
 
     #else
     #ifdef SEND_SERIAL

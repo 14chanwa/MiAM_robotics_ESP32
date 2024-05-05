@@ -130,9 +130,11 @@ namespace strategy
 
 #elif PAMI_ID == 5
 
+        // Option 1
+
         startPosition = RobotPosition(1440.0, 1925.0, -M_PI_2);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(2700, 950, 0);
+        targetPosition = RobotPosition(2635, 1145, 0);
         
         positions.clear();
         positions.push_back(startPosition);
@@ -161,4 +163,45 @@ namespace strategy
     return res;
 
     };
+
+    TrajectoryVector get_alternative_trajectory(MotionController* motionController)
+    {
+        RobotPosition startPosition;
+        RobotPosition targetPosition;
+
+        TrajectoryVector res;
+
+        TrajectoryVector tv;
+        std::vector<RobotPosition > positions;
+        TrajectoryConfig tc = motionController->getTrajectoryConfig();
+        
+#if PAMI_ID == 5
+
+        // Option 2
+
+        startPosition = RobotPosition(1440.0, 1925.0, -M_PI_2);
+        motionController->resetPosition(startPosition, true, true, true);
+        targetPosition = RobotPosition(2635, 1145, 0);
+        
+        positions.clear();
+        positions.push_back(startPosition);
+
+        RobotPosition tmp = targetPosition;
+
+        // straight line towards bottom
+        tmp = RobotPosition(1437.0, 1728.0, 0.0);
+        positions.push_back(tmp);
+        tmp = RobotPosition(2120.0, 1487.0, 0.0);
+        positions.push_back(tmp);
+        positions.push_back(targetPosition);
+        
+        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
+        res.insert(res.end(), tv.begin(), tv.end());
+
+#else
+        res = strategy::get_default_trajectory(motionController);
+
+#endif
+        return res;
+    }
 }

@@ -27,6 +27,7 @@ namespace I2CHandler
 
     void init_vl53l0x();
     uint16_t get_current_vl53l0x();
+    uint16_t get_smoothed_vl53l0x();
     void update_vl53l0x();
 
     void initOLEDScreen();
