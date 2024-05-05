@@ -40,7 +40,6 @@ namespace ServoHandler
 {
     void init()
     {
-        pinMode(SERVO_PIN, OUTPUT);
         ledcSetup(SERVO_PWM_CHANNEL, DEFAULT_FREQUENCY, TIMER_RESOLUTION);
         ledcAttachPin(SERVO_PIN, SERVO_PWM_CHANNEL);
     }

@@ -67,6 +67,8 @@ float MotionController::getCurvilinearAbscissa()
 void MotionController::resetPosition(miam::RobotPosition const &resetPosition, bool const &resetX, bool const &resetY, bool const &resetTheta)
 {
     setCurrentPosition(resetPosition);
+    PIDAngular_.resetIntegral();
+    PIDLinear_.resetIntegral();
 }
 
 bool MotionController::setTrajectoryToFollow(TrajectoryVector const &trajectories)

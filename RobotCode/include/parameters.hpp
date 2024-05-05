@@ -1,7 +1,7 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-#define PAMI_ID 2
+#define PAMI_ID 5
 
 #if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
     #define USE_STEPPER_MOTORS
@@ -20,7 +20,7 @@
 // #define WIFI_PRIMARY_DNS IPAddress(42, 42, 0, 1)
 // #define WIFI_SECONDARY_DNS IPAddress(0, 0, 0, 0)
 
-#define SEND_TELEPLOT_UDP
+// #define SEND_TELEPLOT_UDP
 #define MIAM_BROADCAST_ADDRESS "42.42.0.255"
 #define MIAM_SCD_ADDRESS IPAddress(42, 42, 0, 10)
 #define MIAM_SCD_PORT 778

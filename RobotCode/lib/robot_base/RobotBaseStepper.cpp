@@ -19,7 +19,7 @@
 // Motor & encoder specs
 /////////////////////////////////////////////
 
-#define MOTOR_RATED_RPM 140.0f //120.0f // 30.0f
+#define MOTOR_RATED_RPM 160.0f //120.0f // 30.0f
 #define MOTOR_MICROSTEPS 16.0f
 #define MOTOR_STEPS_PER_REVOLUTION (400.0f * MOTOR_MICROSTEPS)
 
@@ -39,7 +39,7 @@
 #define MAX_SPEED_STEP_S (rad_s_to_step_s(MAX_SPEED_RAD_S))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
-#define MAX_WHEEL_ACCELERATION_MM_S 200.0f
+#define MAX_WHEEL_ACCELERATION_MM_S 400.0f
 
 // very high value so the motor instantly accelerates
 // acceleration constraints are taken into account by high level planner

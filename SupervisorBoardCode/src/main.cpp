@@ -135,7 +135,7 @@ void task_monitor_buttons(void* parameters)
     buttonEvent = start_switch_button.getEvent();
     if (buttonEvent == ButtonEvent::NEW_STATE_HIGH)
     {
-        Match::startMatch(0.0f);
+        Match::startMatch(85.0f);
     }
     else if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
     {
@@ -168,9 +168,13 @@ void task_handle_servo(void* parameters)
           }
           state = !state;
         }
+        else if (Match::getMatchStarted() && Match::getMatchTimeSeconds() >= 100)
+        {
+            ServoHandler::servoUp();
+        }
         else
         {
-          ServoHandler::servoUp();
+          ServoHandler::servoFolded();
         }
       vTaskDelay(500 / portTICK_PERIOD_MS);
     }

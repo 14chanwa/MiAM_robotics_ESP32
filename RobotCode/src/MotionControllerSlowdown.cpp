@@ -1,5 +1,6 @@
 #include <MotionController.hpp>
 #include <Utilities.h>
+#include <Strategy.hpp>
 
 #define MIN_RANGE 100
 #define MAX_RANGE 300
@@ -35,6 +36,14 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
     )
     {
         coeff = std::max(coeff, 0.75f);
+    }
+
+    // if (mirrored) point is in the end zone, continue
+    if (
+        strategy::position_in_end_zone(coordinates_of_detected_point)
+    )
+    {
+        coeff = std::max(coeff, 0.25f);
     }
 
     return coeff;

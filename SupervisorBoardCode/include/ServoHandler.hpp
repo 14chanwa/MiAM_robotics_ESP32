@@ -8,6 +8,7 @@ namespace ServoHandler
     void servoWrite(float angle);
     void servoUp();
     void servoDown();
+    void servoFolded();
 }
 
 #endif

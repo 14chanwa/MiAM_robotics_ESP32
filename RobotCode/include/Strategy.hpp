@@ -28,6 +28,8 @@ namespace strategy
     TrajectoryVector get_default_trajectory(MotionController* motionController);
 
     float get_waiting_time_s();
+    
+    bool position_in_end_zone(RobotPosition position);
 }
 
 

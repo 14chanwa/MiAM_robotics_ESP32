@@ -12,6 +12,18 @@ namespace strategy
         #endif
     };
 
+    bool position_in_end_zone(RobotPosition position)
+    {
+        #if PAMI_ID == 4
+        // Bottom left blue corner
+        return position.x <= 450 && position.y <= 450;
+        #elif PAMI_ID == 5
+        return position.x >= 2550 && position.y >= 760 && position.y <= 1200; 
+        #else
+        return false;
+        #endif
+    }
+
     TrajectoryVector get_default_trajectory(MotionController* motionController)
     {
         RobotPosition startPosition;

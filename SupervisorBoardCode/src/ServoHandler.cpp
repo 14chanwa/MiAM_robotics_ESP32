@@ -5,8 +5,9 @@
 #define SERVO_PIN 4
 #define SERVO_PWM_CHANNEL 6
 
-#define SERVO_UP_POSITION 10
-#define SERVO_DOWN_POSITION 100
+#define SERVO_UP_POSITION 0
+#define SERVO_DOWN_POSITION 60
+#define SERVO_FOLDED_POSITION 180
 
 const int TIMER_RESOLUTION = std::min(16, SOC_LEDC_TIMER_BIT_WIDE_NUM);
 const int PERIOD_TICKS = (1 << TIMER_RESOLUTION) - 1;
@@ -58,6 +59,11 @@ namespace ServoHandler
     void servoDown()
     {
         servoWrite(SERVO_DOWN_POSITION);
+    }
+
+    void servoFolded()
+    {
+        servoWrite(SERVO_FOLDED_POSITION);
     }
 }
 
