@@ -47,7 +47,7 @@ public:
     
     float match_current_time_s = 0.0f;
 
-    std::shared_ptr<SampledTrajectory > match_trajectory;
+    TrajectoryVector saved_trajectory_vector;
 
     // Motion controller
     MotionController* motionController;

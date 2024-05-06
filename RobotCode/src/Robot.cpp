@@ -12,7 +12,6 @@
 
 using namespace miam::trajectory;
 
-#define SLOW_APPROACH_WHEEL_VELOCITY 75.0
 
 Robot* Robot::getInstance() 
 {
@@ -177,20 +176,20 @@ Robot::Robot()
     // else
     // {
         Serial.println("Load default trajectory");
-        TrajectoryVector saved_trajectory_vector = strategy::get_default_trajectory(motionController);
-        // Transform into SampledTrajectory
-        float duration = saved_trajectory_vector.getDuration();
-        std::vector<TrajectoryPoint> points;
-        float currentTime = 0.0;
-        points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
-        while (currentTime < duration)
-        {
-            currentTime = std::min(currentTime + 0.1f, duration);
-            points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
-        }
+        saved_trajectory_vector = strategy::get_default_trajectory(motionController);
+        // // Transform into SampledTrajectory
+        // float duration = saved_trajectory_vector.getDuration();
+        // std::vector<TrajectoryPoint> points;
+        // float currentTime = 0.0;
+        // points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
+        // while (currentTime < duration)
+        // {
+        //     currentTime = std::min(currentTime + 0.1f, duration);
+        //     points.push_back(saved_trajectory_vector.getCurrentPoint(currentTime));
+        // }
 
-        TrajectoryConfig tc = motionController->getTrajectoryConfig();
-        match_trajectory = std::make_shared<SampledTrajectory >(tc, points, duration);
+        // TrajectoryConfig tc = motionController->getTrajectoryConfig();
+        // match_trajectory = std::make_shared<SampledTrajectory >(tc, points, duration);
     // }
 
     xMutex_Serial = xSemaphoreCreateMutex();  // crete a mutex object
@@ -369,8 +368,8 @@ void Robot::update_robot_state()
             else
             {
                 // Sets travel to objective
-                motionController->resetPosition(match_trajectory->getCurrentPoint(0.0f).position, true, true, true);
-                tv.push_back(match_trajectory);
+                motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
+                tv = saved_trajectory_vector;
             }
 
             motionController->setTrajectoryToFollow(tv);
@@ -400,13 +399,7 @@ void Robot::update_robot_state()
             if (motionController->wasTrajectoryFollowingSuccessful())
             {
                 Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_FINAL_APPROACH");
-                // Go 10cm forward
-                float distance = 100.0f;
-                TrajectoryConfig tc = motionController->getTrajectoryConfig();
-                // Movement should be very slow
-                tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-                RobotPosition curPos(motionController->getCurrentPosition());
-                TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
+                TrajectoryVector tv = strategy::get_final_action_trajectory(motionController);
                 motionController->setTrajectoryToFollow(tv);
                 currentRobotState_ = RobotState::MATCH_STARTED_FINAL_APPROACH;
             }
@@ -417,9 +410,9 @@ void Robot::update_robot_state()
                 TrajectoryConfig tc = motionController->getTrajectoryConfig();
                 RobotPosition curPos(motionController->getCurrentPosition());
                 // straight line
-                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, match_trajectory->getEndPoint().position));
+                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, saved_trajectory_vector.getEndPoint().position));
                 // point turn
-                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, match_trajectory->getEndPoint().position.theta));
+                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, saved_trajectory_vector.getEndPoint().position.theta));
                 tv.push_back(pt);
                 motionController->setTrajectoryToFollow(tv);
             }

@@ -1,12 +1,17 @@
 #include <Strategy.hpp>
 #include <parameters.hpp>
 
+#define SLOW_APPROACH_WHEEL_VELOCITY 75.0f
+#define FINAL_TRAJECTORY_DISTANCE_CM 100.0f
+
 namespace strategy
 {
     float get_waiting_time_s()
     {
         #if PAMI_ID == 2
             return 3.0;
+        #elif PAMI_ID == 5
+            return 2.0;
         #else
             return 0.0;
         #endif
@@ -14,7 +19,13 @@ namespace strategy
 
     bool position_in_end_zone(RobotPosition position)
     {
-        #if PAMI_ID == 4
+        #if PAMI_ID == 1
+        // Top left jardiniere
+        return position.x <= 150 && position.y >= 1200 && position.y <= 1600; 
+        #elif PAMI_ID == 3
+        // top left blue corner
+        return position.x <= 450 && position.y >= 1550;
+        #elif PAMI_ID == 4
         // Bottom left blue corner
         return position.x <= 450 && position.y <= 450;
         #elif PAMI_ID == 5
@@ -39,7 +50,7 @@ namespace strategy
 
         startPosition = RobotPosition(1230.0, 1925.0, -M_PI_2);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(80.0, 1375.0, M_PI);
+        targetPosition = RobotPosition(80.0, 1450.0, M_PI);
         
 
         positions.clear();
@@ -49,14 +60,14 @@ namespace strategy
 
         // straight line towards bottom
         tmp = startPosition;
-        tmp.y -= 300;
+        tmp.y -= 200;
         positions.push_back(tmp);
-        tmp = targetPosition;
-        tmp.x += 50.0;
+        tmp.x = 600;
+        tmp.y = 1450.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
-        tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
+        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
 #elif PAMI_ID == 2
@@ -84,7 +95,7 @@ namespace strategy
 
         startPosition = RobotPosition(1120.0, 1962.5, M_PI);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(243.0, 1781.0, M_PI);
+        targetPosition = RobotPosition(243.0, 1731.0, M_PI);
 
         positions.clear();
         positions.push_back(startPosition);
@@ -145,10 +156,10 @@ namespace strategy
         tmp = startPosition;
         tmp.y -= 400;
         positions.push_back(tmp);
-        tmp = RobotPosition(1597.0, 1013.0, 0.0);
+        tmp = targetPosition;
+        tmp.x -= 200;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
-        
         tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
@@ -193,6 +204,9 @@ namespace strategy
         positions.push_back(tmp);
         tmp = RobotPosition(2120.0, 1487.0, 0.0);
         positions.push_back(tmp);
+        tmp = targetPosition;
+        tmp.x -= 200;
+        positions.push_back(tmp);
         positions.push_back(targetPosition);
         
         tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
@@ -203,5 +217,17 @@ namespace strategy
 
 #endif
         return res;
+    }
+
+
+    TrajectoryVector get_final_action_trajectory(MotionController* motionController)
+    {
+        // Go forward
+        float distance = FINAL_TRAJECTORY_DISTANCE_CM;
+        TrajectoryConfig tc = motionController->getTrajectoryConfig();
+        // Movement should be very slow
+        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
+        RobotPosition curPos(motionController->getCurrentPosition());
+        return computeTrajectoryStraightLine(tc, curPos, distance);
     }
 }

@@ -27,6 +27,7 @@ namespace strategy
 
     TrajectoryVector get_default_trajectory(MotionController* motionController);
     TrajectoryVector get_alternative_trajectory(MotionController* motionController);
+    TrajectoryVector get_final_action_trajectory(MotionController* motionController);
 
     float get_waiting_time_s();
 
