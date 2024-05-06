@@ -15,10 +15,23 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
 
     float coeff = 1.0f;
 
+    // if going backwards, do not slow down
+    if (!currentTrajectories_.empty() && 
+        (
+            // back
+            currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity < 0.0f ||
+            // point turn
+            std::abs(currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity) < 1e-3
+        )
+    )
+    {
+        return 1.0f;
+    }
+
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
 #if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = 0.25f;
+        coeff = 0.35f;
 #else
         coeff = 0.0f;
 #endif
@@ -27,7 +40,7 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
     {
         coeff = (vlx_range_detection_mm - MIN_RANGE) / (MAX_RANGE - MIN_RANGE);
 #if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = std::max(coeff, 0.25f);
+        coeff = std::max(coeff, 0.35f);
 #endif
     }
 
@@ -51,7 +64,7 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
         strategy::position_in_end_zone(coordinates_of_detected_point)
     )
     {
-        coeff = std::max(coeff, 0.25f);
+        coeff = std::max(coeff, 0.35f);
     }
 
     return coeff;

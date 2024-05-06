@@ -1,5 +1,6 @@
 #include <MotionController.hpp>
 #include <parameters.hpp>
+#include <PointTurn.h>
 
 // #define DEBUG_MOTIONCONTROLLER_CPP
 
@@ -13,6 +14,10 @@
 #define ROTATION_KP 0.5f
 #define ROTATION_KD 0.0f
 #define ROTATION_KI 0.0f
+
+#define AVOIDANCE_SLOWDOWN_THRESHOLD 0.40f
+
+using namespace miam::trajectory;
 
 MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters) : 
                                         currentPosition_(),
@@ -152,10 +157,77 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             if (enableAvoidance && 
                 !currentTrajectories_.empty() && 
                 !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
-                clampedSlowDownCoeff_ < 0.26f)
+                clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD)
             {
-                // TODO try to replanify
-                // TODO
+                // try to replanify
+                // first trajectory to follow will be avoidance trajectory 
+                TrajectoryConfig tc = getTrajectoryConfig();
+                RobotPosition currentPosition(getCurrentPosition());
+                // target position after avoidance
+                RobotPosition targetPosition(currentTrajectories_.front()->getEndPoint().position);
+
+                // if front trajectory is very long (more than 2 seconds), then split it and keep it
+                if (currentTrajectories_.front()->getDuration() - curvilinearAbscissa_ > 5.0)
+                {
+                    currentTrajectories_.front()->replanify(curvilinearAbscissa_ + 3.0f);
+                    targetPosition = currentTrajectories_.front()->getCurrentPoint(0.0f).position;
+                }
+                // else remove it
+                else
+                {
+                    currentTrajectories_.erase(currentTrajectories_.begin());
+                }
+
+                TrajectoryVector res;
+
+                // First go back 5 cm if obstacle is too close
+                TrajectoryVector avoidanceTrajectory;
+                RobotPosition avoidancePositionAfterGoingBack = getCurrentPosition();
+                if (measurements.vlx_range_detection_mm < 30.0)
+                {
+                    avoidanceTrajectory = computeTrajectoryStraightLine(tc, currentPosition, -30);
+                    avoidancePositionAfterGoingBack =  avoidanceTrajectory.getEndPoint().position;
+                    res.insert(res.end(), avoidanceTrajectory.begin(), avoidanceTrajectory.end());
+
+                    // then do an arc circle around obstacle, towards avoidance end
+                    std::shared_ptr<Trajectory > pointTurnTowardsLeft(
+                        std::make_shared<PointTurn >(
+                            tc, 
+                            avoidancePositionAfterGoingBack, 
+                            avoidancePositionAfterGoingBack.theta - M_PI_2)
+                    );
+                    res.push_back(pointTurnTowardsLeft);
+                    avoidancePositionAfterGoingBack = res.back()->getEndPoint().position;
+                }
+
+                // Finally, go around
+                RobotPosition avoidancePoint = avoidancePositionAfterGoingBack;
+                avoidancePoint.x += 200.0f * std::cos(avoidancePoint.theta - M_PI_4);
+                avoidancePoint.y += 200.0f * std::sin(avoidancePoint.theta - M_PI_4);
+                std::vector<RobotPosition > positions;
+                positions.push_back(avoidancePositionAfterGoingBack);
+                positions.push_back(avoidancePoint);
+                positions.push_back(targetPosition);
+                TrajectoryVector followingAvoidanceTrajectory = computeTrajectoryRoundedCorner(tc, positions, 100.0f);
+
+                res.insert(res.end(), followingAvoidanceTrajectory.begin(), followingAvoidanceTrajectory.end());
+
+                // disable avoidance for the avoidance trajectories
+                for (auto traj : res)
+                {
+                    traj->isAvoidanceTrajectory_ = true;
+                }
+
+                // insert remaining trajectories
+                res.insert(res.end(), currentTrajectories_.begin(), currentTrajectories_.end());
+
+                // clear
+                currentTrajectories_.clear();
+                currentTrajectories_.insert(currentTrajectories_.end(), res.begin(), res.end());
+                curvilinearAbscissa_ = 0.0f;
+                slowDownCoeff_ = 1.0f;
+                clampedSlowDownCoeff_ = 1.0f;
+
             }
         }
     }
