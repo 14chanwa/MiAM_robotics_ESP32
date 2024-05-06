@@ -329,157 +329,27 @@ int8_t applyTargetToStepper(int target, FastAccelStepper* stepper, StepperState&
 }
 
 
-void RobotBaseStepper::updateControl() 
+void RobotBaseStepper::updateControl(bool motorEnabled) 
 {
     currentTime_ = micros();
     if (timeLowLevel_ > 0)
     {
-        // dt_ms_ = (currentTime_ - timeLowLevel_) / 1000.0; // in ms
-        // // error_left_ = currentSpeed_left_ - targetSpeed_left_; // in rad/s
-        // // error_right_ = currentSpeed_right_ - targetSpeed_right_; // in rad/s
-
-        // // correction_left_ = motorPID_left->computeValue(error_left_, dt_ms_);
-        // // correction_right_ = motorPID_right->computeValue(error_right_, dt_ms_);
-
-        // // convert from rad/s to 0-255
-        // baseTarget_left_ = rad_s_to_step_s(targetSpeed_left_);
-        // baseTarget_left_ = constrain(baseTarget_left_, -MAX_SPEED_STEP_S, MAX_SPEED_STEP_S);
-        // // newTarget_left_ = round(baseTarget_left_ + correction_left_);
-        // // newTarget_left_ = (newTarget_left_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_left_), _maxSpeed);
-        // newTarget_left_ = baseTarget_left_;
-
-        // baseTarget_right_ = rad_s_to_step_s(targetSpeed_right_);
-        // baseTarget_right_ = constrain(baseTarget_right_, -MAX_SPEED_STEP_S, MAX_SPEED_STEP_S);
-        // // newTarget_right_ = round(baseTarget_right_ + correction_right_);
-        // // newTarget_right_ = (newTarget_right_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_right_),_maxSpeed);
-        // newTarget_right_ = baseTarget_right_;
-
-        baseTarget_left_ = rad_s_to_step_s(targetSpeed_left_);
-        baseTarget_right_ = rad_s_to_step_s(targetSpeed_right_);
-
-        // if (std::abs(baseTarget_left_*1000) > 0 && std::abs(baseTarget_left_*1000) <= (1000LL * TICKS_PER_S / 0xffffffff + 1))
-        // {
-        //     baseTarget_left_ = (baseTarget_left_ > 0 ? 1 : -1) * ((1000LL * TICKS_PER_S / 0xffffffff + 1) + 1);
-        // }
-
-        // if (std::abs(baseTarget_right_*1000) > 0 && std::abs(baseTarget_right_*1000) <= (1000LL * TICKS_PER_S / 0xffffffff + 1))
-        // {
-        //     baseTarget_right_ = (baseTarget_right_ > 0 ? 1 : -1) * ((1000LL * TICKS_PER_S / 0xffffffff + 1) + 1);
-        // }
-
-        // leftStepperResult_ = leftStepper->setSpeedInHz((uint32_t)std::abs(baseTarget_left_));
-        // rightStepperResult_ = rightStepper->setSpeedInHz((uint32_t)std::abs(baseTarget_right_));
-
-        leftStepperResult_ = applyTargetToStepper(baseTarget_left_, leftStepper, leftStepperState, true, lastQueueWasDesyncLeft, std::abs(currentSpeed_left_ - targetSpeed_left_) > 0.25);
-        rightStepperResult_ = applyTargetToStepper(baseTarget_right_, rightStepper, rightStepperState, false, lastQueueWasDesyncRight, std::abs(currentSpeed_right_ - targetSpeed_right_) > 0.25);
-
-        // // // leftStepper->setSpeedInMilliHz((uint32_t)std::abs(newTarget_left_*1000));
-        // // if(leftStepper->isRunning() && leftStepperResult_ < 0 && !leftStepper->isStopping()) 
-        // // {
-        // //     // Serial.println("Failed apply left speed");
-        // //     leftStepper->forceStopAndNewPosition(0);
-        // //     leftStepperState = STOP;
-        // // } 
-        // // else 
-        // {
-        //     if (std::abs(baseTarget_left_) < 1e-6) {
-
-        //     }
-        //     if (!leftStepper->isStopping() && leftStepperState != STOP) 
-        //     {
-        //         leftStepper->forceStopAndNewPosition(0);
-        //         leftStepperState = STOP;
-        //     }
-        //     else if (baseTarget_left_ > 0) 
-        //     {
-        //         // if (leftStepperState != FORWARD) 
-        //         if (leftStepperState != FORWARD && leftStepper->runForward() == 0) 
-        //         {
-        //             // digitalWrite(DIR_1, HIGH);
-        //             // leftStepper->runForward();
-        //             leftStepperState = FORWARD;
-        //         }
-        //         // leftStepper->keepRunning();
-        //         leftStepper->applySpeedAcceleration();
-        //     }
-        //     else if (baseTarget_left_ < 0)
-        //     {
-        //         // if (leftStepperState != BACKWARD) 
-        //         if (leftStepperState != BACKWARD && leftStepper->runBackward() == 0) 
-        //         {
-        //             // digitalWrite(DIR_1, LOW);
-        //             // leftStepper->runForward();
-        //             leftStepperState = BACKWARD;
-        //         }
-        //         // leftStepper->keepRunning();
-        //         leftStepper->applySpeedAcceleration();
-        //     }
-        // }
-        // // leftStepper->applySpeedAcceleration();
-
-        // // // rightStepper->setSpeedInMilliHz((uint32_t)std::abs(newTarget_right_*1000));
-        // // if(rightStepper->isRunning() && rightStepperResult_ < 0 && !rightStepper->isStopping()) 
-        // // {
-        // //     // Serial.println("Failed apply right speed");
-        // //     rightStepper->forceStopAndNewPosition(0);
-        // //     rightStepperState = STOP;
-        // // } 
-        // // else 
-        // {
-        //     if (std::abs(baseTarget_right_) < 1e-6 && !rightStepper->isStopping() && rightStepperState != STOP) 
-        //     {
-        //         rightStepper->forceStopAndNewPosition(0);
-        //         rightStepperState = STOP;
-        //     }
-        //     else if (baseTarget_right_ > 0) 
-        //     {
-        //         // if (rightStepperState != FORWARD) 
-        //         if (rightStepperState != FORWARD && rightStepper->runForward() == 0) 
-        //         {
-        //             // digitalWrite(DIR_2, HIGH);
-        //             // rightStepper->runForward();
-        //             rightStepperState = FORWARD;
-        //         }
-        //         // rightStepper->keepRunning();
-        //         rightStepper->applySpeedAcceleration();
-        //     }
-        //     else if (baseTarget_right_ < 0)
-        //     {
-        //         // if (rightStepperState != BACKWARD) 
-        //         if (rightStepperState != BACKWARD && rightStepper->runBackward() == 0) 
-        //         {
-        //             // digitalWrite(DIR_2, LOW);
-        //             // rightStepper->runForward();
-        //             rightStepperState = BACKWARD;
-        //         }
-        //         // rightStepper->keepRunning();
-        //         rightStepper->applySpeedAcceleration();
-        //     }
-        // }
-
-        // rightStepper->applySpeedAcceleration();
-
+        // case motors should not move
+        if (!motorEnabled)
+        {
+            baseTarget_left_ = rad_s_to_step_s(0.0f);
+            baseTarget_right_ = rad_s_to_step_s(0.0f);
+            leftStepperResult_ = applyTargetToStepper(baseTarget_left_, leftStepper, leftStepperState, true, lastQueueWasDesyncLeft, std::abs(currentSpeed_left_ - targetSpeed_left_) > 0.25);
+            rightStepperResult_ = applyTargetToStepper(baseTarget_right_, rightStepper, rightStepperState, false, lastQueueWasDesyncRight, std::abs(currentSpeed_right_ - targetSpeed_right_) > 0.25);
+        }
+        else
+        {
+            baseTarget_left_ = rad_s_to_step_s(targetSpeed_left_);
+            baseTarget_right_ = rad_s_to_step_s(targetSpeed_right_);
+            leftStepperResult_ = applyTargetToStepper(baseTarget_left_, leftStepper, leftStepperState, true, lastQueueWasDesyncLeft, std::abs(currentSpeed_left_ - targetSpeed_left_) > 0.25);
+            rightStepperResult_ = applyTargetToStepper(baseTarget_right_, rightStepper, rightStepperState, false, lastQueueWasDesyncRight, std::abs(currentSpeed_right_ - targetSpeed_right_) > 0.25);
+        }
         
-
-        
-
-        // // set step interval and direction
-        // if (newTarget_left_ == 0.0)
-        //     _stepInterval_left = 0;
-        // else
-        // {
-        //     _stepInterval_left = fabs(1000000.0f / newTarget_left_);
-        //     _direction_left = (newTarget_left_ > 0.0) ? true : false;
-        //     digitalWrite(DIR_2, _direction_left);
-        // }
-        // if (newTarget_right_ == 0.0)
-        //     _stepInterval_right = 0;
-        // else
-        // {
-        //     _stepInterval_right = fabs(1000000.0f / newTarget_right_);
-        //     _direction_right = (newTarget_right_ > 0.0) ? true : false;
-        //     digitalWrite(DIR_1, _direction_right);
-        // }
     }
 
     timeLowLevel_ = currentTime_;
@@ -497,28 +367,6 @@ void RobotBaseStepper::updateSensors()
     }
     else
     {
-        // encoderValue_left_ = leftStepper->getCurrentPosition();
-        // encoderValue_right_ = rightStepper->getCurrentPosition();
-
-        // // if (currentTimeEncoderSpeed_ - timeFromLastPrint > 1e6) {
-        // //     Serial.printf("isRunningLeft: %i\n", leftStepper->isRunning());
-        // //     Serial.printf("isRunningRight: %i\n", rightStepper->isRunning());
-        // //     Serial.printf("encoderValue_left_: %f\n", encoderValue_left_);
-        // //     Serial.printf("encoderValue_right_: %f\n", encoderValue_right_);
-        // //     timeFromLastPrint = currentTimeEncoderSpeed_;
-        // // }
-        // currentSpeed_left_ = step_s_to_rad_s(
-        //     (encoderValue_left_ - oldEncoderValue_left_) * 1.0f
-        //         / ((currentTimeEncoderSpeed_ - oldTimeEncoderSpeed_) / 1000000.0f) // convert from us to s
-        // );
-
-        // currentSpeed_right_ = step_s_to_rad_s(
-        //     (encoderValue_right_ - oldEncoderValue_right_) * 1.0f
-        //         / ((currentTimeEncoderSpeed_ - oldTimeEncoderSpeed_) / 1000000.0f) // convert from us to s
-        // );
-
-        // currentSpeed_left_ = (leftStepperState == StepperState::FORWARD ? 1 : (leftStepperState == StepperState::BACKWARD ? -1 : 0)) * step_s_to_rad_s(leftStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
-        // currentSpeed_right_ = (rightStepperState == StepperState::FORWARD ? 1 : (rightStepperState == StepperState::BACKWARD ? -1 : 0)) * step_s_to_rad_s(rightStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
         currentSpeed_left_ = -step_s_to_rad_s(leftStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
         currentSpeed_right_ = step_s_to_rad_s(rightStepper->getCurrentSpeedInMilliHz(true) / 1000.0f);
 
@@ -539,26 +387,11 @@ void RobotBaseStepper::updateSensors()
         
     }
     oldTimeEncoderSpeed_ = currentTimeEncoderSpeed_;
-    // oldEncoderValue_left_ = encoderValue_left_;
-    // oldEncoderValue_right_ = encoderValue_right_;
 }
-
-
-// unsigned long RobotBaseStepper::getStepIntervalRight()
-// {
-//     return _stepInterval_right;
-// }
-
-
-// unsigned long RobotBaseStepper::getStepIntervalLeft()
-// {
-//     return _stepInterval_left;
-// }
 
 
 void RobotBaseStepper::forceStop() 
 {
-    // setMotorEnabled(false);
     leftStepper->forceStop();
     rightStepper->forceStop();
 }

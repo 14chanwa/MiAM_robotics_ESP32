@@ -36,10 +36,10 @@ void AbstractRobotBase::setBaseSpeed(DrivetrainTarget target)
     getRightWheel()->setWheelSpeed(target.motorSpeed[side::RIGHT]);
 }
 
-void AbstractRobotBase::updateControl() 
+void AbstractRobotBase::updateControl(bool motorEnabled) 
 {
-    getLeftWheel()->updateMotorControl();
-    getRightWheel()->updateMotorControl();
+    getLeftWheel()->updateMotorControl(motorEnabled);
+    getRightWheel()->updateMotorControl(motorEnabled);
 }
 
 void AbstractRobotBase::updateSensors() 

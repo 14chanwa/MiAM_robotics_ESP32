@@ -23,7 +23,7 @@ class RobotWheelDC : public AbstractRobotWheel
         void printToSerial();
 
         // low level loop functions
-        void updateMotorControl();
+        void updateMotorControl(bool motorEnabled);
         void updateEncoderSpeed();
 
         L298N* motorDriver;

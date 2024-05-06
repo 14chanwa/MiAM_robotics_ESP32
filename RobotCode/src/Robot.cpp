@@ -71,14 +71,20 @@ void performLowLevel(void* parameters)
             robot->measurements.motorSpeed[side::LEFT] = temp;
         }
 
+        bool robotEnabled = (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
+                robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH ||
+                robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY) &&
+                (!robot->measurements.left_switch_level && !robot->measurements.right_switch_level);
+
         // Serial.println("Compute drivetrain motion");
         // Motion occurs only if match started
         robot->target = robot->motionController->computeDrivetrainMotion(
             robot->measurements, 
             robot->dt_period_ms / 1000.0, 
-            robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
-                robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH ||
-                robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY
+            // Robot will stop if not enabled
+            robotEnabled,
+            // Avoidance is disabled if final approach
+            robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH
         );
 
         // Serial.println("Set base speed");
@@ -86,7 +92,7 @@ void performLowLevel(void* parameters)
 
         // update motor control
         // Serial.println("Update motor control");
-        robot->robotBase->updateControl();
+        robot->robotBase->updateControl(robotEnabled);
 
         // handle servo: servo is down iff
         // * MATCH_STARTED_FINAL_APPROACH and currentTime >= 99s

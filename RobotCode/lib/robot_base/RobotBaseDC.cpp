@@ -130,20 +130,31 @@ void RobotWheelDC::handleEncoderInterrupt()
     oldB = digitalRead(pinEncoderB_);
 }
 
-void RobotWheelDC::updateMotorControl()
+void RobotWheelDC::updateMotorControl(bool motorEnabled)
 {
     currentTime_ = micros();
     if (timeLowLevel_ > 0)
     {
         dt_ms_ = (currentTime_ - timeLowLevel_) / 1000.0; // in ms
-        error_ = currentSpeed_ - targetSpeed_; // in rad/s
 
-        PWMcorrection_ = motorPID->computeValue(error_, dt_ms_);
-
-        // convert from rad/s to 0-255
-        basePWMTarget_ = target_rad_s_to_pwm_command(targetSpeed_);
-        newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
-        newPWMTarget_ = (newPWMTarget_ > 0 ? 1 : -1) * std::min(std::abs(newPWMTarget_), 255);
+        // case motors should not move
+        if (!motorEnabled)
+        {
+            error_ = 0.0f;
+            PWMcorrection_ = 0.0f;
+            basePWMTarget_ = 0;
+            newPWMTarget_ = 0;
+        }
+        else
+        {
+            error_ = currentSpeed_ - targetSpeed_; // in rad/s
+            PWMcorrection_ = motorPID->computeValue(error_, dt_ms_);
+            
+            // convert from rad/s to 0-255
+            basePWMTarget_ = target_rad_s_to_pwm_command(targetSpeed_);
+            newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
+            newPWMTarget_ = (newPWMTarget_ > 0 ? 1 : -1) * std::min(std::abs(newPWMTarget_), 255);
+        }
 
         if (newPWMTarget_ >= 0)
         {

@@ -1,6 +1,7 @@
 #include <MotionController.hpp>
 #include <Utilities.h>
 #include <Strategy.hpp>
+#include <parameters.hpp>
 
 #define MIN_RANGE 100
 #define MAX_RANGE 300
@@ -16,11 +17,18 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
 
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
+#if (PAMI_ID == 4 || PAMI_ID == 5)
+        coeff = 0.25f;
+#else
         coeff = 0.0f;
+#endif
     }
     else if (vlx_range_detection_mm < MAX_RANGE)
     {
         coeff = (vlx_range_detection_mm - MIN_RANGE) / (MAX_RANGE - MIN_RANGE);
+#if (PAMI_ID == 4 || PAMI_ID == 5)
+        coeff = std::max(coeff, 0.25f);
+#endif
     }
 
     // if detected point is outside of table (+- 5 cm), keep going

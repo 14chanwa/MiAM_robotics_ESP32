@@ -88,7 +88,8 @@ class MotionController
         /// \return Target motor velocity
         DrivetrainTarget computeDrivetrainMotion(DrivetrainMeasurements const& measurements,
                                                     float const& dt,
-                                                    bool const& hasMatchStarted);
+                                                    bool const& hasMatchStarted,
+                                                    bool const& enableAvoidance);
 
         bool isPlayingRightSide_ = false;
 

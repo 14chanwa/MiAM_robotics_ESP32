@@ -42,7 +42,7 @@ class AbstractRobotWheel
         virtual void printToSerial() = 0;
 
         // low level loop functions
-        virtual void updateMotorControl() = 0;
+        virtual void updateMotorControl(bool motorEnabled) = 0;
         virtual void updateEncoderSpeed() = 0;
 
         void printPrefix(const char* value_name);
@@ -64,7 +64,7 @@ class AbstractRobotBase
         };
         virtual void setup() = 0;
         virtual void setBaseSpeed(DrivetrainTarget target);
-        virtual void updateControl();
+        virtual void updateControl(bool motorEnabled);
         virtual void updateSensors();
         virtual DrivetrainMeasurements getMeasurements() = 0;
         virtual RobotParameters getParameters() = 0;

@@ -100,7 +100,8 @@ bool MotionController::wasTrajectoryFollowingSuccessful()
 
 DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurements const &measurements,
                                                            float const &dt,
-                                                           bool const &hasMatchStarted)
+                                                           bool const &hasMatchStarted,
+                                                           bool const &enableAvoidance)
 {
     // Log input
     currentTime_ += dt;
@@ -146,6 +147,16 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             // Compute slowdown
             slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
             clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
+
+            // if clampedSlowDownCoeff and not avoidance, try avoiding
+            if (enableAvoidance && 
+                !currentTrajectories_.empty() && 
+                !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+                clampedSlowDownCoeff_ < 0.26f)
+            {
+                // TODO try to replanify
+                // TODO
+            }
         }
     }
 

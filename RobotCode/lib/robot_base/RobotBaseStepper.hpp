@@ -30,7 +30,7 @@ class RobotBaseStepper : public AbstractRobotBase
 
         // Reimplements base speed to avoid powering motors when still
         void setBaseSpeed(DrivetrainTarget target);
-        void updateControl();
+        void updateControl(bool motorEnabled);
         void updateSensors();
 
         void setBlockWheels(bool blockWheels);
