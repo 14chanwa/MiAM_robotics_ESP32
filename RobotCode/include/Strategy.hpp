@@ -32,6 +32,7 @@ namespace strategy
     float get_waiting_time_s();
 
     bool position_in_end_zone(RobotPosition position);
+    bool position_in_avoidance_exclusion(RobotPosition position);
 }
 
 

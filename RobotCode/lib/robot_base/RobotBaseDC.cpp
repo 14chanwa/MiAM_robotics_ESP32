@@ -40,7 +40,7 @@
 
 #define WHEEL_RADIUS_MM 30.0f
 
-#if PAMI_ID == 4
+#if PAMI_ID == 5
     #define WHEEL_SPACING_MM 42.5f
 #else
     #define WHEEL_SPACING_MM 41.0f
@@ -144,6 +144,7 @@ void RobotWheelDC::updateMotorControl(bool motorEnabled)
             PWMcorrection_ = 0.0f;
             basePWMTarget_ = 0;
             newPWMTarget_ = 0;
+            motorPID->resetIntegral();
         }
         else
         {

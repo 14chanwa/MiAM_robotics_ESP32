@@ -26,7 +26,7 @@
 
                     TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(float const& replanificationTime, bool resetVelocity = true);
+                    void replanify(float const& replanificationTime, float const& maxStartVelocity = 0.0);
 
                     void removePoints(int n);
 

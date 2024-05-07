@@ -60,7 +60,7 @@ namespace miam{
 
         }
 
-        void SampledTrajectory::replanify(float const& replanificationTime, bool resetVelocity)
+        void SampledTrajectory::replanify(float const& replanificationTime, float const& maxStartVelocity)
         {
             int N = sampledTrajectory_.size();
 
@@ -78,12 +78,9 @@ namespace miam{
             float currentCurvilinearAbscissa = replanificationTime; // time in the old traj
             float currentScalingFactor = 0.0; // factor by which to slowdown the traj
 
-            // if no reset velocity, update scale factor
-            if (!resetVelocity)
-            {
-                currentMaxLinearVelocity = getCurrentPoint(replanificationTime).linearVelocity;
-                currentScalingFactor = currentMaxLinearVelocity / config_.maxWheelVelocity;
-            }
+            // initial update scale factor
+            currentMaxLinearVelocity = std::max(maxStartVelocity, getCurrentPoint(replanificationTime).linearVelocity);
+            currentScalingFactor = currentMaxLinearVelocity / config_.maxWheelVelocity;
 
             TrajectoryPoint tp;
             std::vector<TrajectoryPoint > newSampledTrajectory;

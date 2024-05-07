@@ -24,13 +24,13 @@ void logTelemetry(void* parameters)
 
     #ifdef SEND_TELEPLOT_UDP
 
-      // // teleplot.update("currentPosition.x", motionController->currentPosition_.x);
-      // // teleplot.update("currentPosition.y", motionController->currentPosition_.y);
+      teleplot.update("currentPosition.x", robot->motionController->getCurrentPosition().x);
+      teleplot.update("currentPosition.y", robot->motionController->getCurrentPosition().y);
       // RobotPosition curPos = robot->motionController->getCurrentPosition();
       // teleplot.update2D("currentPosition", curPos.x, curPos.y);
       // teleplot.update("currentPosition.theta", curPos.theta);
-      // // teleplot.update("targetPosition.x", motionController->targetPoint.position.x);
-      // // teleplot.update("targetPosition.y", motionController->targetPoint.position.y);
+      teleplot.update("targetPosition.x", robot->motionController->targetPoint.position.x);
+      teleplot.update("targetPosition.y", robot->motionController->targetPoint.position.y);
       // teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
       // teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
       // teleplot.update("targetPoint.linear", robot->motionController->targetPoint.linearVelocity);

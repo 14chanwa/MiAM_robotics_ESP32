@@ -2,7 +2,7 @@
 #include <parameters.hpp>
 
 #define SLOW_APPROACH_WHEEL_VELOCITY 75.0f
-#define FINAL_TRAJECTORY_DISTANCE_CM 100.0f
+#define FINAL_TRAJECTORY_DISTANCE_MM 100.0f
 
 namespace strategy
 {
@@ -11,7 +11,7 @@ namespace strategy
         #if PAMI_ID == 2
             return 3.0;
         #elif PAMI_ID == 5
-            return 2.0;
+            return 0.0;
         #else
             return 0.0;
         #endif
@@ -35,6 +35,15 @@ namespace strategy
         #endif
     }
 
+    bool position_in_avoidance_exclusion(RobotPosition position)
+    {
+        #if PAMI_ID == 3 || PAMI_ID == 4 || PAMI_ID == 5
+        return position_in_end_zone(position);
+        #else
+        return false;
+        #endif
+    }
+
     TrajectoryVector get_default_trajectory(MotionController* motionController)
     {
         RobotPosition startPosition;
@@ -50,7 +59,7 @@ namespace strategy
 
         startPosition = RobotPosition(1230.0, 1925.0, -M_PI_2);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(80.0, 1450.0, M_PI);
+        targetPosition = RobotPosition(60.0, 1450.0, M_PI);
         
 
         positions.clear();
@@ -88,6 +97,10 @@ namespace strategy
         res.push_back(pt);
 
         tv = computeTrajectoryStraightLineToPoint(tc, res.getEndPoint().position, targetPosition);
+        for (auto traj : tv)
+        {
+                traj->setAvoidanceEnabled(false);
+        }
         res.insert(res.end(), tv.begin(), tv.end());
 
 
@@ -222,12 +235,30 @@ namespace strategy
 
     TrajectoryVector get_final_action_trajectory(MotionController* motionController)
     {
-        // Go forward
-        float distance = FINAL_TRAJECTORY_DISTANCE_CM;
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
+        TrajectoryVector res;
+        RobotPosition currentPosition(motionController->getCurrentPosition());
+#if PAMI_ID == 1
+        std::shared_ptr<Trajectory > pointTurnTowardsLeft(
+        std::make_shared<PointTurn >(
+                tc, 
+                currentPosition, 
+                M_PI)
+        );
+        res.push_back(pointTurnTowardsLeft);
+        currentPosition = res.back()->getEndPoint().position;
+#endif
+        // Go forward
+        float distance = FINAL_TRAJECTORY_DISTANCE_MM;
         // Movement should be very slow
         tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-        RobotPosition curPos(motionController->getCurrentPosition());
-        return computeTrajectoryStraightLine(tc, curPos, distance);
+        TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
+        res.insert(res.end(), sl.begin(), sl.end());
+
+        for (auto traj : res)
+        {
+                traj->setAvoidanceEnabled(false);
+        }
+        return res;
     }
 }

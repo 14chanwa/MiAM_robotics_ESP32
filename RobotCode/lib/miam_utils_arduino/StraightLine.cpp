@@ -65,14 +65,10 @@ namespace miam{
         }
 
 
-        void StraightLine::replanify(float const& replanificationTime, bool resetVelocity)
+        void StraightLine::replanify(float const& replanificationTime, float const& maxStartVelocity)
         {
             RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
-            float startVelocity = 0.0;
-            if (!resetVelocity)
-            {
-                startVelocity = getCurrentPoint(replanificationTime).linearVelocity;
-            }
+            float startVelocity = std::min(maxStartVelocity, getCurrentPoint(replanificationTime).linearVelocity);
             make(startPoint, startVelocity);
         }
 

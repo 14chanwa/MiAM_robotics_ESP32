@@ -1,6 +1,7 @@
 #include <MotionController.hpp>
 #include <parameters.hpp>
 #include <PointTurn.h>
+#include <Strategy.hpp>
 
 // #define DEBUG_MOTIONCONTROLLER_CPP
 
@@ -11,7 +12,7 @@
 
 #define TRANSVERSE_KP 0.005f
 
-#define ROTATION_KP 0.5f
+#define ROTATION_KP 0.2f
 #define ROTATION_KD 0.0f
 #define ROTATION_KI 0.0f
 
@@ -22,7 +23,7 @@
 
 // PAMI 2 & 3 will go near the border of the table
 // so avoiding left is better...
-#if PAMI_ID == 2 || PAMI_ID == 3
+#if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
     #define AVOIDANCE_SIDE AVOIDANCE_SIDE_LEFT
 #else
     #define AVOIDANCE_SIDE AVOIDANCE_SIDE_RIGHT
@@ -34,6 +35,10 @@
 #define AVOIDANCE_DISTANCE_SIDE_OBSTACLE 200.0f
 // Avoidance will try to catch up with current trajectory after this distance
 #define AVOIDANCE_DISTANCE_FORWARD_CATCHUP 450.0f
+// Avoidance will limit the catchup velocity to avoid too brutal discontinuity to this factor times max vel
+#define AVOIDANCE_MAX_VELOCITY_CATCHUP_FACTOR 0.5
+
+#define MIN_TIME_BETWEEN_AVOIDANCE_MS 2000
 
 using namespace miam::trajectory;
 
@@ -69,6 +74,9 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
     // Create mutex
     xMutex = xSemaphoreCreateMutex();  // crete a mutex object
     xMutex_currentPosition = xSemaphoreCreateMutex();
+
+    // Avoidance variable
+    timeSinceLastAvoidance_ = millis();
 }
 
 void MotionController::init(RobotPosition const& startPosition)
@@ -166,7 +174,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
         /// and not going backwards
         if (
             proximitySwitchTriggered &&
-            !(!currentTrajectories_.empty() && currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity < 0.0f)
+            (currentTrajectories_.empty() || currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity > 0.0f)
         )
         {
             slowDownCoeff_ = 0.0;
@@ -180,12 +188,19 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
         }
 
         // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
+        // also add a delay so as not to constantly replanify
+        // take into accound trajectory labelled not avoidance
+        // and also no avoidance if in final zone
         if (enableAvoidance && 
             !currentTrajectories_.empty() && 
-            !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+            // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+            millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
+            currentTrajectories_.front()->isAvoidanceEnabled() &&
+            !strategy::position_in_avoidance_exclusion(getCurrentPosition()) &&
             (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered)
         )
         {
+            Serial.println(">>>>>>>> Replanify");
             // try to replanify
             // first trajectory to follow will be avoidance trajectory 
             TrajectoryConfig tc = getTrajectoryConfig();
@@ -223,7 +238,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
                 // replanify the trajectory and set targetPosition to the start of the remaining trajectory
                 if (currentCurvilinearAbscissa < frontTrajectory->getDuration())
                 {
-                    frontTrajectory->replanify(currentCurvilinearAbscissa, false);
+                    frontTrajectory->replanify(currentCurvilinearAbscissa, tc.maxWheelVelocity * AVOIDANCE_MAX_VELOCITY_CATCHUP_FACTOR);
                     targetPosition = frontTrajectory->getCurrentPoint(0.0f).position;
                     targetVelocity = frontTrajectory->getCurrentPoint(0.0f).linearVelocity;
                 }
@@ -248,21 +263,31 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
                 avoidancePositionAfterGoingBack =  avoidanceTrajectory.getEndPoint().position;
                 res.insert(res.end(), avoidanceTrajectory.begin(), avoidanceTrajectory.end());
 
-                // then do an arc circle around obstacle, towards avoidance end
-                std::shared_ptr<Trajectory > pointTurnTowardsLeft(
-                    std::make_shared<PointTurn >(
-                        tc, 
-                        avoidancePositionAfterGoingBack, 
-                        avoidancePositionAfterGoingBack.theta + AVOIDANCE_SIDE * M_PI_2)
-                );
-                res.push_back(pointTurnTowardsLeft);
+                // // then do an arc circle around obstacle, towards avoidance end
+                // std::shared_ptr<Trajectory > pointTurnTowardsLeft(
+                //     std::make_shared<PointTurn >(
+                //         tc, 
+                //         avoidancePositionAfterGoingBack, 
+                //         avoidancePositionAfterGoingBack.theta + AVOIDANCE_SIDE * M_PI_2)
+                // );
+                // res.push_back(pointTurnTowardsLeft);
                 avoidancePositionAfterGoingBackAndPointTurn = res.back()->getEndPoint().position;
             }
 
             // Finally, go around
             RobotPosition avoidancePoint = avoidancePositionAfterGoingBack;
-            avoidancePoint.x += AVOIDANCE_DISTANCE_SIDE_OBSTACLE * std::cos(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
-            avoidancePoint.y += AVOIDANCE_DISTANCE_SIDE_OBSTACLE * std::sin(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
+            // if the obstacle is too far, try to avoid at its distance
+            if (measurements.vlx_range_detection_mm >= 150.0f)
+            {
+                float dist = std::sqrt(std::pow(measurements.vlx_range_detection_mm, 2) + std::pow(150.0f, 2));
+                avoidancePoint.x += dist * std::cos(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
+                avoidancePoint.y += dist * std::sin(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
+            }
+            else
+            {
+                avoidancePoint.x += AVOIDANCE_DISTANCE_SIDE_OBSTACLE * std::cos(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
+                avoidancePoint.y += AVOIDANCE_DISTANCE_SIDE_OBSTACLE * std::sin(avoidancePoint.theta + AVOIDANCE_SIDE * M_PI_4);
+            }
             std::vector<RobotPosition > positions;
             positions.push_back(avoidancePositionAfterGoingBackAndPointTurn);
             positions.push_back(avoidancePoint);
@@ -286,6 +311,9 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             curvilinearAbscissa_ = 0.0f;
             slowDownCoeff_ = 1.0f;
             clampedSlowDownCoeff_ = 1.0f;
+
+            // time
+            timeSinceLastAvoidance_ = millis();
 
         }
     }

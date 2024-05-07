@@ -402,26 +402,30 @@ void Robot::update_robot_state()
         // MATCH_STARTED_ACTION
         else if (motionController->isTrajectoryFinished())
         {
-            if (motionController->wasTrajectoryFollowingSuccessful())
-            {
+            // if (motionController->wasTrajectoryFollowingSuccessful())
+            // {
                 Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_FINAL_APPROACH");
                 TrajectoryVector tv = strategy::get_final_action_trajectory(motionController);
                 motionController->setTrajectoryToFollow(tv);
                 currentRobotState_ = RobotState::MATCH_STARTED_FINAL_APPROACH;
-            }
-            else
-            {
-                Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_ACTION");
-                // Attempt straight line + point turn
-                TrajectoryConfig tc = motionController->getTrajectoryConfig();
-                RobotPosition curPos(motionController->getCurrentPosition());
-                // straight line
-                TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, saved_trajectory_vector.getEndPoint().position));
-                // point turn
-                std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, saved_trajectory_vector.getEndPoint().position.theta));
-                tv.push_back(pt);
-                motionController->setTrajectoryToFollow(tv);
-            }
+            // }
+            // else
+            // {
+            //     Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_ACTION");
+            //     // Attempt straight line + point turn
+            //     TrajectoryConfig tc = motionController->getTrajectoryConfig();
+            //     RobotPosition curPos(motionController->getCurrentPosition());
+            //     // straight line
+            //     TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, saved_trajectory_vector.getEndPoint().position));
+            //     // point turn
+            //     std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, saved_trajectory_vector.getEndPoint().position.theta));
+            //     tv.push_back(pt);
+            //     for (auto traj : tv)
+            //     {
+            //         traj->setAvoidanceEnabled(false);
+            //     }
+            //     motionController->setTrajectoryToFollow(tv);
+            // }
         }
     }
 

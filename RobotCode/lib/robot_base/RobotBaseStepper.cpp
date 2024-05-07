@@ -19,7 +19,7 @@
 // Motor & encoder specs
 /////////////////////////////////////////////
 
-#define MOTOR_RATED_RPM 140.0f //120.0f // 30.0f
+#define MOTOR_RATED_RPM 160.0f //120.0f // 30.0f
 #define MOTOR_MICROSTEPS 16.0f
 #define MOTOR_STEPS_PER_REVOLUTION (400.0f * MOTOR_MICROSTEPS)
 

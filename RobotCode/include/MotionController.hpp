@@ -163,6 +163,7 @@ class MotionController
         bool trajectoryDone_ = false;
 
         long timeSinceFirstStopped_;
+        long timeSinceLastAvoidance_ = 0;
 
         float trajectoryTimeout_ = 1.0; // Number of seconds after the end of trajectory after which timeout is raised
 
