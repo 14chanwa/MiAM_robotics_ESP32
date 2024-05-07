@@ -49,9 +49,10 @@ namespace miam{
         }
 
 
-        void PointTurn::replanify(float const& replanificationTime)
+        void PointTurn::replanify(float const& replanificationTime, bool resetVelocity)
         {
             RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
+            // resetVelocity will have no effect since no linearVelocity
             make(startPoint);
         }
 

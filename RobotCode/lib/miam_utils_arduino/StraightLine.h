@@ -33,7 +33,7 @@
 
                     TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(float const& replanificationTime);
+                    void replanify(float const& replanificationTime, bool resetVelocity = true);
 
                     /// \brief Return line angle.
                     ///

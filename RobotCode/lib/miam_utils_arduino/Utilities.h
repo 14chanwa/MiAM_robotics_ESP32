@@ -106,7 +106,8 @@
                                                             std::vector<RobotPosition> const& positions,
                                                             float radius,
                                                             float transitionVelocityFactor = 0.5,
-                                                            bool backward = false);
+                                                            bool backward = false,
+                                                            float endVelocity = 0.0);
 
             /// \brief Compute a simple trajectory: going forward for a given distance.
             ///

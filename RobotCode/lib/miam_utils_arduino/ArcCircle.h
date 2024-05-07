@@ -43,7 +43,7 @@
 
                     TrajectoryPoint getCurrentPoint(float const& currentTime);
 
-                    void replanify(float const& replanificationTime);
+                    void replanify(float const& replanificationTime, bool resetVelocity = true);
 
                 private:
                     void make(RobotPosition const& startPoint, float const& startVelocity); ///< Build (or rebuild) the trajectory.

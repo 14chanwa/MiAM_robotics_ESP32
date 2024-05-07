@@ -65,10 +65,15 @@ namespace miam{
         }
 
 
-        void StraightLine::replanify(float const& replanificationTime)
+        void StraightLine::replanify(float const& replanificationTime, bool resetVelocity)
         {
             RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
-            make(startPoint, 0.0);
+            float startVelocity = 0.0;
+            if (!resetVelocity)
+            {
+                startVelocity = getCurrentPoint(replanificationTime).linearVelocity;
+            }
+            make(startPoint, startVelocity);
         }
 
 

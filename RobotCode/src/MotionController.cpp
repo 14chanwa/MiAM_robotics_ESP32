@@ -29,7 +29,7 @@
 #endif
 
 // Avoidance will try to go back this distance before avoiding
-#define AVOIDANCE_DISTANCE_BACKWARDS 30.0f
+#define AVOIDANCE_DISTANCE_BACKWARDS 60.0f
 // Avoidance will try to go around the obstacle at a distance this at an angle M_PI_4
 #define AVOIDANCE_DISTANCE_SIDE_OBSTACLE 200.0f
 // Avoidance will try to catch up with current trajectory after this distance
@@ -192,6 +192,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             RobotPosition currentPosition(getCurrentPosition());
             // target position after avoidance
             RobotPosition targetPosition(currentTrajectories_.front()->getEndPoint().position);
+            float targetVelocity = 0.0f;
 
             // while end of front trajectory is very close, remove
             while (!currentTrajectories_.empty() && 
@@ -204,6 +205,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
                 if (!currentTrajectories_.empty())
                 {
                     targetPosition = currentTrajectories_.front()->getEndPoint().position;
+                    targetVelocity = currentTrajectories_.front()->getEndPoint().linearVelocity;
                 }
             }
 
@@ -221,8 +223,9 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
                 // replanify the trajectory and set targetPosition to the start of the remaining trajectory
                 if (currentCurvilinearAbscissa < frontTrajectory->getDuration())
                 {
-                    frontTrajectory->replanify(currentCurvilinearAbscissa);
+                    frontTrajectory->replanify(currentCurvilinearAbscissa, false);
                     targetPosition = frontTrajectory->getCurrentPoint(0.0f).position;
+                    targetVelocity = frontTrajectory->getCurrentPoint(0.0f).linearVelocity;
                 }
                 // handle the case when the trajectory is at the limit
                 else
@@ -264,7 +267,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             positions.push_back(avoidancePositionAfterGoingBackAndPointTurn);
             positions.push_back(avoidancePoint);
             positions.push_back(targetPosition);
-            TrajectoryVector followingAvoidanceTrajectory = computeTrajectoryRoundedCorner(tc, positions, 100.0f);
+            TrajectoryVector followingAvoidanceTrajectory = computeTrajectoryRoundedCorner(tc, positions, 100.0f, 0.5f, false, targetVelocity);
 
             res.insert(res.end(), followingAvoidanceTrajectory.begin(), followingAvoidanceTrajectory.end());
 

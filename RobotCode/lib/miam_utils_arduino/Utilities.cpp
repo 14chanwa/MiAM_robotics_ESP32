@@ -116,7 +116,8 @@ namespace miam{
                                                         std::vector<RobotPosition> const& positions,
                                                         float radius,
                                                         float transitionVelocityFactor,
-                                                        bool backward)
+                                                        bool backward,
+                                                        float endVelocity)
         {
             TrajectoryVector trajectories;
             if(positions.size() < 2)
@@ -199,7 +200,7 @@ namespace miam{
             // Append final straight line.
             RobotPosition currentPoint = trajectories.back()->getEndPoint().position;
             RobotPosition endPoint = positions.back();
-            std::shared_ptr<StraightLine> line(new StraightLine(config, currentPoint, endPoint, (positions.size() == 2 ? 0 : transitionLinearVelocity), 0.0, backward));
+            std::shared_ptr<StraightLine> line(new StraightLine(config, currentPoint, endPoint, (positions.size() == 2 ? 0 : transitionLinearVelocity), endVelocity, backward));
             trajectories.push_back(line);
 
             return trajectories;

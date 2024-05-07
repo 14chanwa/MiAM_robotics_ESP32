@@ -57,7 +57,7 @@
                     /// \details Given a time t, replanify the trajectory to have a new trajectory
                     ///          starting at getCurrentPoint(t) with zero velocity at time t=0.
                     /// \param[in] replanificationTime Time at which we replanify, in seconds.
-                    virtual void replanify(float const& replanificationTime) = 0;
+                    virtual void replanify(float const& replanificationTime, bool resetVelocity = true) = 0;
 
                     /// \brief Set trajectory avoidance flag
                     void setAvoidanceEnabled(bool avoidanceEnabled) {
