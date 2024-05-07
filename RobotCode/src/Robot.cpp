@@ -62,6 +62,7 @@ void performLowLevel(void* parameters)
         robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
         robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
         robot->measurements.currentRobotState = robot->get_current_robot_state();
+        robot->measurements.currentMatchTime = robot->matchStarted() ? robot->match_current_time_s : 0.0f;
 
         // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
         if (robot->motionController->isPlayingRightSide_)

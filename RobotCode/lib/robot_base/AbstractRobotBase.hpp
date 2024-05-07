@@ -24,6 +24,7 @@ typedef struct {
     bool left_switch_level;
     bool right_switch_level;
     RobotState currentRobotState;
+    float currentMatchTime;
 } DrivetrainMeasurements;
 
 
