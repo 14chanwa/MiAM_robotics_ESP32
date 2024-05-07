@@ -25,19 +25,12 @@
 #define AVOIDANCE_OBSTACLE_RADIUS_MM 150.0f
 #define AVOIDANCE_MAX_AVOIDANCE_DISTANCE 400.0f
 
-#define AVOIDANCE_LIMIT_REMAINING_TIME 3.0f
 
 void MotionController::computeAvoidanceTrajectory(DrivetrainMeasurements const& measurements)
 {
     // time
     timeSinceLastAvoidance_ = millis();
     bool proximitySwitchTriggered = measurements.left_switch_level || measurements.right_switch_level;
-
-    // no avoidance if less than 3 sec remain
-    if (100.0f - measurements.currentMatchTime < AVOIDANCE_LIMIT_REMAINING_TIME)
-    {
-        return;
-    }
 
     Serial.println(">>>>>>>> Replanify");
     // try to replanify

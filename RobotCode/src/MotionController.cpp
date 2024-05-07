@@ -16,8 +16,10 @@
 #define ROTATION_KD 0.0f
 #define ROTATION_KI 0.0f
 
-#define AVOIDANCE_SLOWDOWN_THRESHOLD 0.40f
+#define AVOIDANCE_SLOWDOWN_THRESHOLD 0.35f
 #define MIN_TIME_BETWEEN_AVOIDANCE_MS 2000
+
+#define AVOIDANCE_LIMIT_REMAINING_TIME_S 2.5f
 
 using namespace miam::trajectory;
 
@@ -166,18 +168,39 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
         }
 
+        // position of the obstacle
+        RobotPosition obstaclePosition(getCurrentPosition());
+        float obstacle_distance = measurements.vlx_range_detection_mm;
+        // if switches were triggered, suppose the obstacle is 5cm in front
+        if (proximitySwitchTriggered)
+        {
+            obstacle_distance = std::min(obstacle_distance, 50.0f);
+        }
+        obstaclePosition.x += obstacle_distance * std::cos(obstaclePosition.theta);
+        obstaclePosition.y += obstacle_distance * std::sin(obstaclePosition.theta);
+
         // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
         // also add a delay so as not to constantly replanify
         // take into accound trajectory labelled not avoidance
         // and also no avoidance if in final zone
-        if (hasMatchStarted && 
-            enableAvoidance && 
+
+        if (
+            // avoidance conditions are satisfied
+            (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered) &&
+            // basic movement conditions are satisfied (based on PAMI state)
+            hasMatchStarted && enableAvoidance && 
+            // there is a trajectory to be followed
             !currentTrajectories_.empty() && 
+            // // do not perform multiple avoidance
             // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+            // do not perform avoidance if last one was too recent
             millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
+            // check if the trajectory should not be avoided
             currentTrajectories_.front()->isAvoidanceEnabled() &&
-            !strategy::position_in_avoidance_exclusion(getCurrentPosition()) &&
-            (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered)
+            // the obstacle is not in avoidance exclusion
+            !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+            // match will not end soon
+            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S
         )
         {
             computeAvoidanceTrajectory(measurements);
@@ -286,36 +309,36 @@ void MotionController::changeMotionControllerState()
                 // textlog << "[MotionController] "  << "Continue trajectory; replan" << std::endl;
                 nextMotionControllerState = CONTROLLER_TRAJECTORY_TRACKING;
             }
-            else if (durationSinceFirstStopped > 1.0) // && durationSinceLastAvoidance > 1.0
-            {
-                // transition to WAIT_FOR_TRAJECTORY
-                // if (avoidanceCount_ > maxAvoidanceAttempts_)
-                // {
-                    // textlog << "[MotionController] " << "Trajectory failed: attempted " << avoidanceCount_ << " avoidance" << std::endl;
-                    // textlog << "[MotionController] " << "Obstacle still present, canceling trajectory" << std::endl;
-                    // Failed to perform avoidance.
-                    // Raise flag and end trajectory following.
-                    wasTrajectoryFollowingSuccessful_ = false;
-                    currentTrajectories_.clear();
-                    nextMotionControllerState = CONTROLLER_WAIT_FOR_TRAJECTORY;
-                // }
-                // // transition to AVOIDANCE
-                // else 
-                // {
-                //     textlog << "[MotionController] " << "Scheduling avoidance" << std::endl;
+            // else if (durationSinceFirstStopped > 1.0) // && durationSinceLastAvoidance > 1.0
+            // {
+            //     // transition to WAIT_FOR_TRAJECTORY
+            //     // if (avoidanceCount_ > maxAvoidanceAttempts_)
+            //     // {
+            //         // textlog << "[MotionController] " << "Trajectory failed: attempted " << avoidanceCount_ << " avoidance" << std::endl;
+            //         // textlog << "[MotionController] " << "Obstacle still present, canceling trajectory" << std::endl;
+            //         // Failed to perform avoidance.
+            //         // Raise flag and end trajectory following.
+            //         wasTrajectoryFollowingSuccessful_ = false;
+            //         currentTrajectories_.clear();
+            //         nextMotionControllerState = CONTROLLER_WAIT_FOR_TRAJECTORY;
+            //     // }
+            //     // // transition to AVOIDANCE
+            //     // else 
+            //     // {
+            //     //     textlog << "[MotionController] " << "Scheduling avoidance" << std::endl;
 
-                //     avoidanceComputationMutex_.lock();
-                //     avoidanceComputationScheduled_ = true;
-                //     avoidanceComputationMutex_.unlock();
+            //     //     avoidanceComputationMutex_.lock();
+            //     //     avoidanceComputationScheduled_ = true;
+            //     //     avoidanceComputationMutex_.unlock();
 
-                //     timeSinceLastAvoidance_ = std::chrono::steady_clock::now();
-                //     std::cout << "slowDownCoeff_ : " << slowDownCoeff_ << std::endl;
-                //     std::cout << "clampedSlowDownCoeff_ : " << clampedSlowDownCoeff_ << std::endl;
-                //     std::cout << "avoidanceCount_ : " << avoidanceCount_ << std::endl;
+            //     //     timeSinceLastAvoidance_ = std::chrono::steady_clock::now();
+            //     //     std::cout << "slowDownCoeff_ : " << slowDownCoeff_ << std::endl;
+            //     //     std::cout << "clampedSlowDownCoeff_ : " << clampedSlowDownCoeff_ << std::endl;
+            //     //     std::cout << "avoidanceCount_ : " << avoidanceCount_ << std::endl;
 
-                //     nextMotionControllerState = CONTROLLER_WAIT_FOR_AVOIDANCE;
-                // }
-            }
+            //     //     nextMotionControllerState = CONTROLLER_WAIT_FOR_AVOIDANCE;
+            //     // }
+            // }
         }
         // else if (motionControllerState_ == CONTROLLER_WAIT_FOR_AVOIDANCE)
         // {

@@ -42,6 +42,18 @@ namespace strategy
         #else
         return false;
         #endif
+
+        // #if PAMI_ID == 3
+        // // top left blue corner
+        // return position.x <= 600 && position.y >= 1400;
+        // #elif PAMI_ID == 4
+        // // Bottom left blue corner
+        // return position.x <= 600 && position.y <= 600;
+        // #elif PAMI_ID == 5
+        // return position.x >= 2400 && position.y >= 650 && position.y <= 1350; 
+        // #else
+        // return false;
+        // #endif
     }
 
     TrajectoryVector get_default_trajectory(MotionController* motionController)
