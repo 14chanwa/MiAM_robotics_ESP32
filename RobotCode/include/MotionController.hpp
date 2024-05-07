@@ -91,6 +91,8 @@ class MotionController
                                                     bool const& hasMatchStarted,
                                                     bool const& enableAvoidance);
 
+        void computeAvoidanceTrajectory(DrivetrainMeasurements const& measurements);
+
         bool isPlayingRightSide_ = false;
 
         DrivetrainKinematics getKinematics()
