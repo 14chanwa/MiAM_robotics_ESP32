@@ -10,6 +10,8 @@
 #define TABLE_MAX_X 3000
 #define TABLE_MAX_Y 2000
 
+#define SLOWDOWN_KEEP_GOING 0.30f
+
 float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const &hasMatchStarted)
 {
 
@@ -31,7 +33,7 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
 #if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = 0.35f;
+        coeff = SLOWDOWN_KEEP_GOING;
 #else
         coeff = 0.0f;
 #endif
@@ -40,7 +42,7 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
     {
         coeff = (vlx_range_detection_mm - MIN_RANGE) / (MAX_RANGE - MIN_RANGE);
 #if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = std::max(coeff, 0.35f);
+        coeff = std::max(coeff, SLOWDOWN_KEEP_GOING);
 #endif
     }
 
@@ -64,7 +66,20 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
         strategy::position_in_end_zone(coordinates_of_detected_point)
     )
     {
-        coeff = std::max(coeff, 0.35f);
+        coeff = std::max(coeff, SLOWDOWN_KEEP_GOING);
+    }
+
+
+    // vlx detection range should be taken into account less if the robot is currently turning
+    // apply a coefficient cos(angularVelocity)
+    if (coeff <= 0.65)
+    {
+        float currentAngularVelocity = 0.0;
+        if (!currentTrajectories_.empty())
+        {
+            currentAngularVelocity = currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).angularVelocity;
+        }
+        coeff = (coeff < 1.0 ? (1-cos(currentAngularVelocity)) * 0.65f + cos(currentAngularVelocity) * coeff : coeff);
     }
 
     return coeff;

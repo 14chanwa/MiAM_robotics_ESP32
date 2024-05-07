@@ -67,7 +67,7 @@
 // Wheel PID parameters
 #define VELOCITY_KP 0.1f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.05f
+#define VELOCITY_KI 0.01f
 
 int target_rad_s_to_pwm_command(float speed_rad_s)
 {
