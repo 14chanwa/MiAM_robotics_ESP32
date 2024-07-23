@@ -48,8 +48,8 @@ namespace WiFiHandler
         //esp_wifi_set_mac(ESP_IF_WIFI_STA, &newMACAddress[0]);
         
         // ESP32 Board add-on after version > 1.0.5
-        uint8_t newMACAddress[] = WIFI_MAC_ADDRESS;
-        esp_wifi_set_mac(WIFI_IF_STA, &newMACAddress[0]);
+        // uint8_t newMACAddress[] = WIFI_MAC_ADDRESS;
+        // esp_wifi_set_mac(WIFI_IF_STA, &newMACAddress[0]);
         
         Serial.print("[NEW] ESP32 Board MAC Address:  ");
         Serial.println(WiFi.macAddress());

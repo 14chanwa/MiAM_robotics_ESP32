@@ -58,14 +58,20 @@ Button start_switch_button(START_SWITCH_PIN);
 
 void task_update_screen(void* parameters)
 {
+  char counter = 0;
   for(;;)
   {
+    counter = (counter+1) % 30;
+    tftScreen.registerTouch();
+    if (counter == 0)
+    {
 #ifdef USE_WIFI
-    tftScreen.update(WiFi.localIP());
+      tftScreen.update(WiFi.localIP());
 #else
-    tftScreen.update(ETH.localIP());
+      tftScreen.update(ETH.localIP());
 #endif
-    vTaskDelay(300 / portTICK_PERIOD_MS);
+    }
+    vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
 

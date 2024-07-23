@@ -3,28 +3,33 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
 #include <vector>
+#include <Types.h>
 #include <Match.hpp>
 #include <PAMIStates.hpp>
+#include <XPT2046_Touchscreen.h>
 
 #define TFT_CS 17
 #define TFT_RST 5
 #define TFT_DC 33
-#define TFT_LED 32
 
 #define TFT_HEIGHT 320
 #define TFT_WIDTH 240
 
+#define TOUCHSCREEN_CS 32
+
 #define DEBUG_TFT_SCREEN
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+XPT2046_Touchscreen ts(TOUCHSCREEN_CS);
 
 void TFTScreen::init()
 {
     tft.init(TFT_WIDTH, TFT_HEIGHT); 
-    tft.setRotation(3);
-    pinMode(TFT_LED, OUTPUT);
-    digitalWrite(TFT_LED, HIGH);
+    tft.setRotation(3); 
     tft.invertDisplay(false);
+
+    ts.begin();
+    ts.setRotation(3);
 
     tft.setTextWrap(true);
     tft.fillScreen(ST77XX_BLACK);
@@ -109,6 +114,40 @@ void TFTScreen::update(IPAddress localIP)
         tft.print("             ");
     }
 
+}
+
+#define TOUCH_MIN_X 3900.0f
+#define TOUCH_MIN_Y 3700.0f
+#define TOUCH_MAX_X 330.0f
+#define TOUCH_MAX_Y 220.0f
+
+Vector2 touch_to_screen(TS_Point p)
+{
+    Vector2 v;
+    v[0] = (p.x - TOUCH_MIN_X) / (TOUCH_MAX_X - TOUCH_MIN_X);
+    v[1] = (p.y - TOUCH_MIN_Y) / (TOUCH_MAX_Y - TOUCH_MIN_Y);
+    v[0] = std::max(std::min(v[0], 1.0f), 0.0f);
+    v[1] = std::max(std::min(v[1], 1.0f), 0.0f);
+    return v;
+}
+
+void TFTScreen::registerTouch()
+{
+    if (ts.touched()) {
+        TS_Point p = ts.getPoint();
+        // Serial.print("Pressure = ");
+        // Serial.print(p.z);
+        // Serial.print(", x = ");
+        // Serial.print(p.x);
+        // Serial.print(", y = ");
+        // Serial.print(p.y);
+        Vector2 v = touch_to_screen(p);
+        Serial.print(v[0]);
+        Serial.print(", ");
+        Serial.println(v[1]);
+        delay(30);
+        Serial.println();
+    }
 }
 
 #define PAMI_RECT_XSIZE 100
