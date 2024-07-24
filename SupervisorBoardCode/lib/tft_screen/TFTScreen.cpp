@@ -7,6 +7,7 @@
 #include <Match.hpp>
 #include <PAMIStates.hpp>
 #include <XPT2046_Touchscreen.h>
+#include <PAMIDrawable.hpp>
 
 #define TFT_CS 17
 #define TFT_RST 5
@@ -19,11 +20,55 @@
 
 #define DEBUG_TFT_SCREEN
 
+
+#define PAMI_RECT_XSIZE 100
+#define PAMI_RECT_YSIZE 100
+
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 XPT2046_Touchscreen ts(TOUCHSCREEN_CS);
 
+std::vector<std::shared_ptr<PAMIDrawable > > pami_drawables;
+
 void TFTScreen::init()
 {
+    // Create PAMIs
+    pami_drawables.clear();
+    for (uint i=1; i<=5; i++)
+    {
+        uint8_t gridX;
+        uint8_t gridY;
+        switch (i)
+        {
+            case 1:
+                gridX = 0;
+                gridY = 0;
+                break;
+            case 2:
+                gridX = 1;
+                gridY = 0;
+                break;
+            case 3:
+                gridX = 2;
+                gridY = 0;
+                break;
+            case 4:
+                gridX = 0;
+                gridY = 1;
+                break;
+            case 5:
+                gridX = 1;
+                gridY = 1;
+                break;
+        };
+
+        Vector2 top_left_corner(5 + gridX * (PAMI_RECT_XSIZE + 5), 5 + gridY * (PAMI_RECT_YSIZE + 5));
+        Vector2 dimensions(PAMI_RECT_XSIZE, PAMI_RECT_YSIZE);
+
+        std::shared_ptr<PAMIDrawable > new_drawable(new PAMIDrawable(i, top_left_corner, dimensions));
+        pami_drawables.push_back(new_drawable);
+    }
+
+
     tft.init(TFT_WIDTH, TFT_HEIGHT); 
     tft.setRotation(3); 
     tft.invertDisplay(false);
@@ -128,6 +173,8 @@ Vector2 touch_to_screen(TS_Point p)
     v[1] = (p.y - TOUCH_MIN_Y) / (TOUCH_MAX_Y - TOUCH_MIN_Y);
     v[0] = std::max(std::min(v[0], 1.0f), 0.0f);
     v[1] = std::max(std::min(v[1], 1.0f), 0.0f);
+    v[0] = v[0] * TFT_HEIGHT;
+    v[1] = v[1] * TFT_WIDTH;
     return v;
 }
 
@@ -142,80 +189,26 @@ void TFTScreen::registerTouch()
         // Serial.print(", y = ");
         // Serial.print(p.y);
         Vector2 v = touch_to_screen(p);
-        Serial.print(v[0]);
-        Serial.print(", ");
-        Serial.println(v[1]);
+        // Serial.print(v[0]);
+        // Serial.print(", ");
+        // Serial.println(v[1]);
+        // Serial.println();
+        for (auto p : pami_drawables)
+        {
+            if (p->clicked(v))
+            {
+                Serial.print("PAMI Clicked: ");
+                Serial.print(p->pami_id_);
+                Serial.println();
+            }
+        }
         delay(30);
-        Serial.println();
     }
 }
 
-#define PAMI_RECT_XSIZE 100
-#define PAMI_RECT_YSIZE 100
 
 void TFTScreen::drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID)
 {
-    // pamiID is the desired PAMI, id is the id read in the message
-
-    // Grid
-    // 1 2 3
-    // 4 5
-
-    uint8_t gridX;
-    uint8_t gridY;
-    switch (pamiID)
-    {
-        case 1:
-            gridX = 0;
-            gridY = 0;
-            break;
-        case 2:
-            gridX = 1;
-            gridY = 0;
-            break;
-        case 3:
-            gridX = 2;
-            gridY = 0;
-            break;
-        case 4:
-            gridX = 0;
-            gridY = 1;
-            break;
-        case 5:
-            gridX = 1;
-            gridY = 1;
-            break;
-        default:
-            return;
-    };
-    
-    // Drawing color is black if the message is invalid
-    uint16_t drawingColor;
-    uint8_t id = pamiReport.get_sender_id()-10;
-    if (id >= 1 && id <= 5)
-    {
-        drawingColor = (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? ST77XX_BLUE : ST77XX_YELLOW);
-    }
-    else
-    {
-        drawingColor = ST77XX_BLACK;
-    }
-    
-    tft.fillRect(
-        gridX * (PAMI_RECT_XSIZE + 10), 
-        gridY * (PAMI_RECT_YSIZE + 10), 
-        PAMI_RECT_XSIZE, 
-        PAMI_RECT_YSIZE,
-        // (pamiReport.playingSide_ == PlayingSide::BLUE_SIDE ? (uint16_t) strtol(0x7ED1E6, NULL, 16) : (uint16_t) strtol(OxFFF27A, NULL, 16)));
-        drawingColor);
-
-    if (id >= 1 && id <= 5)
-    {
-        // battery reading
-        tft.setTextSize(1);
-        tft.setTextColor(ST77XX_BLACK, drawingColor);
-        tft.setCursor( gridX * (PAMI_RECT_XSIZE + 10) + 10, 
-            gridY * (PAMI_RECT_YSIZE + 10) + 10);
-        tft.print(pamiReport.batteryReading_);
-    }
+   pami_drawables.at(pamiID-1)->update(pamiReport);
+   pami_drawables.at(pamiID-1)->draw(tft);
 }
