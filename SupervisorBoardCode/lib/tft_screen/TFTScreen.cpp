@@ -7,7 +7,9 @@
 #include <Match.hpp>
 #include <PAMIStates.hpp>
 #include <XPT2046_Touchscreen.h>
+
 #include <PAMIDrawable.hpp>
+#include <ButtonDrawable.hpp>
 
 #define TFT_CS 17
 #define TFT_RST 5
@@ -18,8 +20,7 @@
 
 #define TOUCHSCREEN_CS 32
 
-#define DEBUG_TFT_SCREEN
-
+// #define DEBUG_TFT_SCREEN
 
 #define PAMI_RECT_XSIZE 100
 #define PAMI_RECT_YSIZE 100
@@ -28,6 +29,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 XPT2046_Touchscreen ts(TOUCHSCREEN_CS);
 
 std::vector<std::shared_ptr<PAMIDrawable > > pami_drawables;
+std::shared_ptr<ButtonDrawable > button_change_color;
 
 void TFTScreen::init()
 {
@@ -66,15 +68,21 @@ void TFTScreen::init()
 
         std::shared_ptr<PAMIDrawable > new_drawable(new PAMIDrawable(i, top_left_corner, dimensions));
         pami_drawables.push_back(new_drawable);
-    }
 
+        top_left_corner = Vector2(215, 150);
+        dimensions = Vector2(PAMI_RECT_XSIZE, 40);
+        button_change_color = std::make_shared<ButtonDrawable >(
+            top_left_corner,
+            dimensions
+        );
+    }
 
     tft.init(TFT_WIDTH, TFT_HEIGHT); 
     tft.setRotation(3); 
     tft.invertDisplay(false);
 
     ts.begin();
-    ts.setRotation(3);
+    ts.setRotation(3); 
 
     tft.setTextWrap(true);
     tft.fillScreen(ST77XX_BLACK);
@@ -88,7 +96,7 @@ void TFTScreen::init()
 void TFTScreen::update(IPAddress localIP)
 {
 
-    for (uint8_t i=1; i<=5; i++)
+    for (uint8_t i=1; i<pami_drawables.size()+1; i++)
     {
         drawPAMI(PAMIStates::readPAMIMessage(i), i);
     }
@@ -109,19 +117,42 @@ void TFTScreen::update(IPAddress localIP)
     }
 
     // Update current side
-    tft.setCursor(230, 150);
     if (Match::getSide() == PlayingSide::BLUE_SIDE)
     {
-        tft.setTextSize(2);
-        tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
-        tft.print("BLUE  ");
+        button_change_color->update(
+            "BLUE",
+            ST77XX_BLACK,
+            ST77XX_BLACK,
+            2,
+            ST77XX_BLUE
+        );
     }
     else
     {
-        tft.setTextSize(2);
-        tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
-        tft.print("YELLOW");
+        button_change_color->update(
+            "YELLOW",
+            ST77XX_BLACK,
+            ST77XX_BLACK,
+            2,
+            ST77XX_YELLOW
+        );
     }
+
+    button_change_color->draw(tft);
+
+    // tft.setCursor(230, 150);
+    // if (Match::getSide() == PlayingSide::BLUE_SIDE)
+    // {
+    //     tft.setTextSize(2);
+    //     tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
+    //     tft.print("BLUE  ");
+    // }
+    // else
+    // {
+    //     tft.setTextSize(2);
+    //     tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+    //     tft.print("YELLOW");
+    // }
 
     // Update seconds count
     tft.setTextSize(1);
@@ -147,17 +178,17 @@ void TFTScreen::update(IPAddress localIP)
     tft.print(PAMIStates::readLastMessageTime());
 #endif
 
-    // PAMI motor lock
-    tft.setTextSize(1);
-    tft.setCursor(230, 180);
-    if (Match::getStopMotors())
-    {
-        tft.print("Motors LOCKED");
-    }
-    else
-    {
-        tft.print("             ");
-    }
+    // // PAMI motor lock
+    // tft.setTextSize(1);
+    // tft.setCursor(230, 180);
+    // if (Match::getStopMotors())
+    // {
+    //     tft.print("Motors LOCKED");
+    // }
+    // else
+    // {
+    //     tft.print("             ");
+    // }
 
 }
 
@@ -200,6 +231,18 @@ void TFTScreen::registerTouch()
                 Serial.print("PAMI Clicked: ");
                 Serial.print(p->pami_id_);
                 Serial.println();
+            }
+        }
+        if (button_change_color->clicked(v))
+        {
+            Serial.println("Button clicked");
+            if (Match::getSide() == PlayingSide::YELLOW_SIDE)
+            {
+                Match::setSide(PlayingSide::BLUE_SIDE);
+            }
+            else
+            {
+                Match::setSide(PlayingSide::YELLOW_SIDE);
             }
         }
         delay(30);

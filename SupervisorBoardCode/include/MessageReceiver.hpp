@@ -4,10 +4,16 @@
 #include <Utilities.h>
 #include <Message.hpp>
 
-#define USE_WIFICLIENT_API
+// #define USE_WIFICLIENT_API
+#define USE_ASYNCTCP
 
 #ifdef USE_WIFICLIENT_API
-#include <WiFi.h>
+    #include <WiFi.h>
+#else 
+#ifdef USE_ASYNCTCP
+#include <Arduino.h>
+#include <AsyncTCP.h>
+#endif
 #endif
 
 
@@ -27,34 +33,18 @@ public:
     static void stopReceiving();
 
 private:
-    char* buffer; 
-    char* sendBuffer;
 #ifdef USE_WIFICLIENT_API
     WiFiServer* server;
+#else
+#ifdef USE_ASYNCTCP
+    AsyncServer* server;
 #else
     int serverSocket;
     int clientSocket;
 #endif
+#endif
 
     std::vector<float > receivedTrajectory;
 };
-
-
-// class MessageReceiverUDP
-// {
-
-// public:
-//     MessageReceiverUDP();
-//     ~MessageReceiverUDP();
-//     void begin();
-    
-//     std::shared_ptr<Message > receive();
-
-// private:
-//     float* buffer; 
-//     int serverSocket;
-//     int clientSocket;
-//     std::vector<float > receivedTrajectory;
-// };
 
 #endif

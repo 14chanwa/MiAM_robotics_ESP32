@@ -10,7 +10,7 @@
 
 #include <ServoHandler.hpp>
 
-#define USE_WIFI
+// #define USE_WIFI
 // #define USE_ARDUINO_OTA
 
 #ifdef USE_WIFI
@@ -61,7 +61,7 @@ void task_update_screen(void* parameters)
   char counter = 0;
   for(;;)
   {
-    counter = (counter+1) % 30;
+    counter = (counter+1) % 2;
     tftScreen.registerTouch();
     if (counter == 0)
     {

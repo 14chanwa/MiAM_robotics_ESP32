@@ -2,7 +2,7 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 
 #define DEBOUNCE_DELAY 200
-#define CLICKED_ANIMATION_DURATION 50
+#define CLICKED_ANIMATION_DURATION 100
 
 Drawable::Drawable(Vector2& top_left_corner, Vector2& dimensions) :
     top_left_corner_(top_left_corner),

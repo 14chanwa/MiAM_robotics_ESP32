@@ -24,7 +24,7 @@ void task_messageReceiver(void* parameters)
         std::shared_ptr<Message > message = messageReceiver.receive();
         if (message != nullptr)
         {
-            // Serial.println("TCP received message");
+            Serial.println("TCP received message");
             // robot->notify_new_message(message);
             PAMIStates::registerMessage(message);
         }

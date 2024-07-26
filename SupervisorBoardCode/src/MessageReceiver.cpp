@@ -16,12 +16,148 @@
 
 #define SIZE_OF_BUFFER 512
 bool stopReceiving_ = false;
+char* buffer; 
+char* sendBuffer;
+
+SemaphoreHandle_t xSemaphore_new_message = NULL;
+std::shared_ptr<Message > new_message;
+bool new_message_received = false;
+
 
 MessageReceiver::MessageReceiver(){
 #ifdef USE_WIFICLIENT_API
     server = new WiFiServer(778);
+#else
+#ifdef USE_ASYNCTCP
+    xSemaphore_new_message = xSemaphoreCreateMutex();
+    server = new AsyncServer(778);
 #endif
+#endif
+
 };
+
+/* clients events */
+static void handleError(void* arg, AsyncClient* client, int8_t error)
+{
+    Serial.println("handleError");
+  //(void) arg;
+
+  // Serial.printf("\nConnection error %s from client %s \n", client->errorToString(error), client->remoteIP().toString().c_str());
+}
+
+static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
+{
+    Serial.println("handleData");
+  //(void) arg;
+
+  // Serial.printf("\nData received from client %s \n", client->remoteIP().toString().c_str());
+  Serial.write((uint8_t*)data, len);
+
+    in_addr adress;
+    IPAddress remoteIP = client->remoteIP();
+    inet_aton(remoteIP.toString().c_str(), &adress);
+    unsigned char *ip = (unsigned char *)&(adress.s_addr);
+    uint8_t senderId = ip[3];
+    #ifdef DEBUG
+    Serial.print(">>>> Client is connected: ");
+    Serial.println(client->remoteIP());
+#endif
+
+    std::shared_ptr<Message > message = Message::parse((float*) data, len/4, senderId);
+
+    // Then send a command
+    int sizeToWrite = 0;
+    if (Match::getMatchStarted())
+    {
+        // send a match state message
+        MatchStateMessage newMessage = MatchStateMessage(true, Match::getMatchTimeSeconds(), 10);
+        sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+    }
+    else
+    {
+        bool need_stop_pami = false;
+        if (message->get_message_type() == MessageType::PAMI_REPORT)
+        {
+            if (static_cast<PamiReportMessage *>(message.get())->matchStarted_)
+            {
+                need_stop_pami = true;
+            }
+        }
+        if (need_stop_pami)
+        {
+            // need to stop the pami: send a matchState
+            MatchStateMessage newMessage = MatchStateMessage(false, 0.0, 10);
+            sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+        }
+        else
+        {
+            // send a configuration message
+            ConfigurationMessage newMessage = ConfigurationMessage(Match::getSide(), Match::getStopMotors(), 10);
+            sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+        }
+    }
+
+  // reply to client
+  if (client->canSend())
+  {
+#ifdef DEBUG
+    Serial.print("Connected to: ");
+    Serial.println(remoteIP);
+#endif
+    int sizeOfSentMessage = client->add(sendBuffer, sizeToWrite*4);
+    client->send();
+#ifdef DEBUG
+    Serial.print("Sent message size: ");
+    Serial.print(sizeOfSentMessage);
+    Serial.print(" expected ");
+    Serial.println(sizeToWrite*4);
+#endif
+  }
+
+  // trigger new message
+  if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
+  {
+    new_message_received = true;
+    new_message = message;
+    xSemaphoreGive(xSemaphore_new_message);
+  }
+    client->close();
+}
+
+static void handleDisconnect(void* arg, AsyncClient* client)
+{
+    Serial.println("handleDisconnect");
+  //(void) arg;
+
+  // Serial.printf("\nClient %s disconnected\n", client->remoteIP().toString().c_str());
+}
+
+static void handleTimeOut(void* arg, AsyncClient* client, uint32_t time)
+{
+
+    Serial.println("handleTimeOut");
+//   (void) arg;
+//   (void) time;
+
+  // Serial.printf("\nClient ACK timeout ip: %s\n", client->remoteIP().toString().c_str());
+}
+
+
+/* server events */
+static void handleNewClient(void* arg, AsyncClient* client)
+{
+    Serial.println("handleNewClient");
+  //(void) arg;
+
+  // Serial.printf("\nNew client has been connected to server, IP: %s", client->remoteIP().toString().c_str());
+
+  // register events
+  client->onData(&handleData, NULL);
+  client->onError(&handleError, NULL);
+  client->onDisconnect(&handleDisconnect, NULL);
+  client->onTimeout(&handleTimeOut, NULL);
+}
+
 
 void MessageReceiver::begin()
 {
@@ -31,6 +167,10 @@ void MessageReceiver::begin()
 #ifdef USE_WIFICLIENT_API
     server->begin();
     server->setTimeout(1);
+#else
+#ifdef USE_ASYNCTCP
+    server->onClient(&handleNewClient, NULL);
+    server->begin();
 #else
     // creating socket
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -58,13 +198,16 @@ void MessageReceiver::begin()
     // listening to the assigned socket
     listen(serverSocket, 5);
 #endif
+#endif
 }
 
 MessageReceiver::~MessageReceiver()
 {
 #ifndef USE_WIFICLIENT_API
+#ifndef USE_ASYNCTCP
     // closing the socket.
     close(serverSocket);
+#endif
 #endif
 }
 
@@ -78,10 +221,10 @@ std::shared_ptr<Message> MessageReceiver::receive()
         vTaskDelay(10000 / portTICK_PERIOD_MS);
         return message;
     }
-    WiFiClient client = server->available();
-    client.setTimeout(1);
 
 #ifdef USE_WIFICLIENT_API
+    WiFiClient client = server->available();
+    client.setTimeout(1);
     if (client)
     { // loop while the client's connected
         in_addr adress;
@@ -170,6 +313,18 @@ std::shared_ptr<Message> MessageReceiver::receive()
 #endif
     }
 #else
+#ifdef USE_ASYNCTCP
+    // Receiving and replying is handled via async callbacks
+    if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
+    {    
+        if (new_message_received)
+        {
+            message = new_message;
+            new_message_received = false;
+        }
+        xSemaphoreGive(xSemaphore_new_message);
+    } 
+#else
     sockaddr_in client_addr;
     socklen_t sin_size;
     // accepting connection request
@@ -216,6 +371,7 @@ std::shared_ptr<Message> MessageReceiver::receive()
 #endif
         message = Message::parse(receivedTrajectory, senderId);
     }
+#endif
 #endif
 
     return message;

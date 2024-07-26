@@ -20,7 +20,7 @@ PAMIDrawable::PAMIDrawable(uint8_t pami_id, Vector2& top_left_corner, Vector2& d
 
 void PAMIDrawable::update(PamiReportMessage& message)
 {
-    if (message.get_sender_id() == pami_id_)
+    if (message.get_sender_id() != 255)
     {
         last_updated_millis_ = millis();
         last_message_ = message;
@@ -33,7 +33,7 @@ void PAMIDrawable::draw(Adafruit_GFX& target)
     // Drawing color is black if the message is invalid
     uint16_t drawingColor;
     bool pami_is_active = millis() - last_updated_millis_ < MESSAGE_TIMEOUT && 
-        last_message_.get_sender_id() == pami_id_;
+        last_message_.get_sender_id() != 255;
     if (is_currently_clicked())
     {
         drawingColor = ST77XX_WHITE;
