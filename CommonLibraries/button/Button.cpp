@@ -5,18 +5,31 @@
 #define DEFAULT_STATE HIGH
 
 #define DEBUG_BUTTON
+#ifdef DEBUG_BUTTON
+#define DEBUG_PRINT(x) Serial.print(x);
+#define DEBUG_PRINTLN(x) Serial.println(x);
+#else
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#endif
 
-Button::Button(char pin) : 
-    pin_(pin), 
-    lastChange_(0), 
-    lastEvent_(ButtonEvent::NO_EVENT),
-    lastPinState_(DEFAULT_STATE)
+Button::Button(char pin) : Button(pin, DEFAULT_STATE)
 {
 
 }
+
+Button::Button(char pin, bool default_state) : 
+    pin_(pin), 
+    lastChange_(0), 
+    lastEvent_(ButtonEvent::NO_EVENT),
+    lastPinState_(default_state)
+{
+
+}
+
 void Button::init()
 {
-    pinMode(pin_, INPUT_PULLUP);
+    pinMode(pin_, INPUT);
 }
 
 void Button::update()
@@ -36,16 +49,12 @@ void Button::update()
         if (currentPinState == HIGH)
         {
             lastEvent_ = ButtonEvent::NEW_STATE_HIGH;
-#ifdef DEBUG_BUTTON
-            Serial.println("Trigger event HIGH");
-#endif
+            DEBUG_PRINTLN("Trigger event HIGH");
         }
         else
         {
-#ifdef DEBUG_BUTTON
             lastEvent_ = ButtonEvent::NEW_STATE_LOW;
-            Serial.println("Trigger event LOW");
-#endif
+            DEBUG_PRINTLN("Trigger event LOW");
         }
         lastPinState_ = currentPinState;
         lastChange_ = currentTime;
@@ -54,14 +63,15 @@ void Button::update()
 
 ButtonEvent Button::getEvent()
 {
-    // Serial.println("getEvent");
     ButtonEvent readEvent = lastEvent_;
     if (readEvent == ButtonEvent::NEW_STATE_HIGH)
-#ifdef DEBUG_BUTTON
-        Serial.println("getEvent: HIGH");
+    {
+        DEBUG_PRINTLN("getEvent: HIGH");
+    }
     else if (readEvent == ButtonEvent::NEW_STATE_LOW)
-        Serial.println("getEvent: LOW");
-#endif
+    {
+        DEBUG_PRINTLN("getEvent: LOW");
+    }
     lastEvent_ = ButtonEvent::NO_EVENT;
     return readEvent;
 }

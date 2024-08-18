@@ -12,9 +12,11 @@ class Button
 {
 public:
     Button(char pin);
+    Button(char pin, bool default_state);
     void init();
     void update();
     ButtonEvent getEvent(); 
+    bool getValue();
 
 private:
     char pin_;
