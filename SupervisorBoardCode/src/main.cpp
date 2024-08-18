@@ -1,7 +1,6 @@
 
 #include <TFTScreen.hpp>
 #include <esp_wifi.h>
-#include <ArduinoOTA.h>
 
 #include <MessageHandler.hpp>
 #include <Button.hpp>
@@ -90,6 +89,8 @@ void task_read_pins(void* parameters)
   }
 }
 
+#ifdef USE_ARDUINO_OTA
+#include <ArduinoOTA.h>
 void task_handle_ota(void* parameters)
 {
   for (;;)
@@ -99,6 +100,7 @@ void task_handle_ota(void* parameters)
   }
   
 }
+#endif
 
 void task_monitor_buttons(void* parameters)
 {
@@ -196,9 +198,9 @@ void setup()
     "task_update_screen",
     10000,
     NULL,
-    10,
+    40,
     NULL,
-    0
+    1
   );
 
   xTaskCreatePinnedToCore(
@@ -206,9 +208,9 @@ void setup()
     "task_read_pins",
     10000,
     NULL,
-    90,
+    20,
     NULL,
-    0
+    1
   );
 
 
@@ -217,9 +219,9 @@ void setup()
     "task_monitor_buttons",
     10000,
     NULL,
-    90,
+    30,
     NULL,
-    0
+    1
   );
 
   xTaskCreatePinnedToCore(
@@ -227,9 +229,9 @@ void setup()
     "task_handle_servo",
     10000,
     NULL,
-    30,
+    50,
     NULL,
-    0
+    1
   );
 
 #ifdef USE_WIFI
@@ -292,5 +294,4 @@ void setup()
 void loop()
 {
   taskYIELD();
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
 }

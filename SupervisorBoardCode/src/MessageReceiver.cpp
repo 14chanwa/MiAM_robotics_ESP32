@@ -19,22 +19,11 @@ bool stopReceiving_ = false;
 char* buffer; 
 char* sendBuffer;
 
+#ifdef USE_ASYNCTCP
+
 SemaphoreHandle_t xSemaphore_new_message = NULL;
 std::shared_ptr<Message > new_message;
 bool new_message_received = false;
-
-
-MessageReceiver::MessageReceiver(){
-#ifdef USE_WIFICLIENT_API
-    server = new WiFiServer(778);
-#else
-#ifdef USE_ASYNCTCP
-    xSemaphore_new_message = xSemaphoreCreateMutex();
-    server = new AsyncServer(778);
-#endif
-#endif
-
-};
 
 /* clients events */
 static void handleError(void* arg, AsyncClient* client, int8_t error)
@@ -115,13 +104,13 @@ static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
   }
 
   // trigger new message
-  if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
-  {
+//   if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
+//   {
     new_message_received = true;
     new_message = message;
-    xSemaphoreGive(xSemaphore_new_message);
-  }
-    client->close();
+//     xSemaphoreGive(xSemaphore_new_message);
+//   }
+    client->close(true);
 }
 
 static void handleDisconnect(void* arg, AsyncClient* client)
@@ -130,6 +119,8 @@ static void handleDisconnect(void* arg, AsyncClient* client)
   //(void) arg;
 
   // Serial.printf("\nClient %s disconnected\n", client->remoteIP().toString().c_str());
+  // delete client;
+  delete client;
 }
 
 static void handleTimeOut(void* arg, AsyncClient* client, uint32_t time)
@@ -157,6 +148,19 @@ static void handleNewClient(void* arg, AsyncClient* client)
   client->onDisconnect(&handleDisconnect, NULL);
   client->onTimeout(&handleTimeOut, NULL);
 }
+#endif
+
+MessageReceiver::MessageReceiver(){
+#ifdef USE_WIFICLIENT_API
+    server = new WiFiServer(778);
+#else
+#ifdef USE_ASYNCTCP
+    // xSemaphore_new_message = xSemaphoreCreateMutex();
+    server = new AsyncServer(778);
+#endif
+#endif
+
+};
 
 
 void MessageReceiver::begin()
@@ -170,6 +174,7 @@ void MessageReceiver::begin()
 #else
 #ifdef USE_ASYNCTCP
     server->onClient(&handleNewClient, NULL);
+    Serial.println("Beginning server");
     server->begin();
 #else
     // creating socket
@@ -315,15 +320,15 @@ std::shared_ptr<Message> MessageReceiver::receive()
 #else
 #ifdef USE_ASYNCTCP
     // Receiving and replying is handled via async callbacks
-    if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
-    {    
+    // if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
+    // {    
         if (new_message_received)
         {
             message = new_message;
             new_message_received = false;
         }
-        xSemaphoreGive(xSemaphore_new_message);
-    } 
+    //     xSemaphoreGive(xSemaphore_new_message);
+    // } 
 #else
     sockaddr_in client_addr;
     socklen_t sin_size;
