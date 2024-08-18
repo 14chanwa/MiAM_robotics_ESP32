@@ -98,7 +98,7 @@ namespace MessageHandler{
             "task_messageReceiver",
             100000,
             NULL,
-            40,
+            9,
             NULL,
             1
         );

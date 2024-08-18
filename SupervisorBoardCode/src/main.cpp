@@ -1,6 +1,6 @@
 
 #include <TFTScreen.hpp>
-#include <esp_wifi.h>
+// #include <esp_wifi.h>
 
 #include <MessageHandler.hpp>
 #include <Button.hpp>
@@ -13,11 +13,11 @@
 // #define USE_ARDUINO_OTA
 
 #ifdef USE_WIFI
+#include <WiFi.h>
 #include <WiFiHandler.hpp>
 #else
 // #include <WebServer_WT32_ETH01.h>
 #include <ETH.h>
-#include <WiFi.h>
 
 /* 
    * ETH_CLOCK_GPIO0_IN   - default: external clock from crystal oscillator
@@ -198,9 +198,9 @@ void setup()
     "task_update_screen",
     10000,
     NULL,
-    40,
+    6,
     NULL,
-    1
+    0
   );
 
   xTaskCreatePinnedToCore(
@@ -208,9 +208,9 @@ void setup()
     "task_read_pins",
     10000,
     NULL,
-    20,
+    8,
     NULL,
-    1
+    0
   );
 
 
@@ -219,9 +219,9 @@ void setup()
     "task_monitor_buttons",
     10000,
     NULL,
-    30,
+    7,
     NULL,
-    1
+    0
   );
 
   xTaskCreatePinnedToCore(
@@ -229,9 +229,9 @@ void setup()
     "task_handle_servo",
     10000,
     NULL,
-    50,
+    1,
     NULL,
-    1
+    0
   );
 
 #ifdef USE_WIFI
@@ -254,7 +254,7 @@ void setup()
     NULL,
     30,
     NULL,
-    0
+    1
   );
 
   ArduinoOTA
