@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include <PAMIStates.hpp>
 
-// #define DEBUG_LOG
+#define DEBUG_LOG
 
 #ifdef DEBUG_LOG
 #define DEBUG_PRINT(x) Serial.print(x);
@@ -98,18 +98,23 @@ namespace MessageReceiver {
                 DEBUG_PRINT("Connected to: ");
                 DEBUG_PRINTLN(remoteIP);
                 int sizeOfSentMessage = client->add(sendBuffer, sizeToWrite*4);
-                client->send();
-                DEBUG_PRINT("Sent message size: ");
-                DEBUG_PRINT(sizeOfSentMessage);
-                DEBUG_PRINT(" expected ");
-                DEBUG_PRINTLN(sizeToWrite*4);
+                if (client->send())
+                {
+                    DEBUG_PRINT("Sent message size: ");
+                    DEBUG_PRINT(sizeOfSentMessage);
+                    DEBUG_PRINT(" expected ");
+                    DEBUG_PRINTLN(sizeToWrite*4);
+                }
+                else
+                {
+                    DEBUG_PRINTLN("Could not send message");
+                }
+                
             }
 
             // Release semaphore
             xSemaphoreGive(xSemaphore_new_message);
         }
-
-        client->close(true);
     }
 
     static void handleDisconnect(void* arg, AsyncClient* client)
@@ -121,6 +126,7 @@ namespace MessageReceiver {
     static void handleTimeOut(void* arg, AsyncClient* client, uint32_t time)
     {
         DEBUG_PRINTLN("handleTimeOut");
+        client->close();
     }
 
     /* server events */
@@ -128,6 +134,7 @@ namespace MessageReceiver {
     {
         DEBUG_PRINTLN("handleNewClient");
         // register events
+        client->setRxTimeout(3);
         client->onData(&handleData, NULL);
         client->onError(&handleError, NULL);
         client->onDisconnect(&handleDisconnect, NULL);

@@ -2,7 +2,7 @@
 #include <secret.hpp>
 
 // #define USE_WIFI
-// #define ENABLE_OTA_UPDATE
+#define ENABLE_OTA_UPDATE
 
 #ifdef USE_WIFI
     #include <WiFi.h>
