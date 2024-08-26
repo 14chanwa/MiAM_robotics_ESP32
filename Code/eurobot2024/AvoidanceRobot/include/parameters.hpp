@@ -18,7 +18,7 @@ namespace robotdimensions
 
     float const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
-    float const maxWheelSpeed = 400;         ///< Maximum wheel speed, in mm/s.
+    float const maxWheelSpeed = 600;         ///< Maximum wheel speed, in mm/s.
     float const maxWheelAcceleration = 1000; ///< Maximum wheel acceleration, in mm/s^2.
 
     miam::L6470_STEP_MODE const stepMode = miam::MICRO_4;

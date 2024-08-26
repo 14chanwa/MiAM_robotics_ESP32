@@ -13,6 +13,8 @@
 
 #include <SoftwareButton.hpp>
 
+#include <DrivetrainKinematics.h>
+
 /*
   Tasks
 */
@@ -26,17 +28,30 @@ void task_print_encoders(void *parameters)
   }
 }
 
-std::vector<float> targetController({0, 0});
-
 /*
   Functions
 */
 
-// Compute max stepper motor speed.
-int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
-int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
+DrivetrainKinematics driveTrainKinematics(
+    robotdimensions::wheelRadius,
+    robotdimensions::wheelSpacing,
+    robotdimensions::encoderWheelRadius,
+    robotdimensions::encoderWheelSpacing);
 
-void task_async_connect_wifi(void* parameters)
+// Compute max stepper motor speed.
+const int maxStepperSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
+const int maxStepperAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
+
+const float maxWheelSpeedRadS = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius;
+
+// Max linear speed is max speed achieved when wheel spin forward
+const float maxLinearBaseSpeed = driveTrainKinematics.forwardKinematics(
+                                                         WheelSpeed(maxWheelSpeedRadS, maxWheelSpeedRadS))
+                                     .linear; // mm/s
+// Max angular speed ; to tweak
+const float maxAngularBaseSpeed = 2 * M_PI; // rad/s
+
+void task_async_connect_wifi(void *parameters)
 {
   // WiFi
   const uint8_t newMacAddress[] = SECRET_AVOIDANCE_ROBOT_WIFI_MAC;
@@ -73,7 +88,7 @@ void setup()
   // Steppers
   while (!stepper_handler::is_inited())
   {
-    if (!stepper_handler::init(maxSpeed, maxAcceleration, robotdimensions::stepMode))
+    if (!stepper_handler::init(maxStepperSpeed, maxStepperAcceleration, robotdimensions::stepMode))
     {
       Serial.print(".");
       vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -81,68 +96,174 @@ void setup()
   }
 }
 
-std::vector<float> motorSpeed_({0, 0});
-#define DEAD_ZONE 15
+Vector2 wheelSpeed_rad_s_({0, 0});
+Vector2 remoteStickReading({0, 0});
+#define REMOTE_DEAD_ZONE 15
+#define REMOTE_MAX_VALUE 128.0
 
-long lastControllerMillis = 0;
-#define CONTROLLER_TIMEOUT 200
-bool motorHighZ_ = false;
+long lastRemoteControllerMillis = 0;
+#define REMOTE_CONTROLLER_TIMEOUT 200
 
 SoftwareButton buttonX(LOW);
+SoftwareButton buttonO(LOW);
+
+enum ControlState
+{
+  CONTROLLED_BY_REMOTE,
+  CONTROLLED_BY_MESSAGE
+};
+
+enum MotorState
+{
+  HIGHZ,
+  POWERED
+};
+
+enum StepperCommunicationState
+{
+  IDLE,
+  COMMAND_REQUESTED
+};
+
+ControlState currentControlState = CONTROLLED_BY_REMOTE;
+MotorState currentMotorState = POWERED;
+StepperCommunicationState stepperCommunicationState = IDLE;
+
+
+bool newMessageReceived = false;
 
 void loop()
 {
+  newMessageReceived = bluetooth_receiver_handler::newMessageReceived();
 
-  if (bluetooth_receiver_handler::newMessageReceived())
+  if (newMessageReceived)
   {
+    lastRemoteControllerMillis = millis();
 
     const ps3_data_type::ps3_t *data = bluetooth_receiver_handler::getData();
     buttonX.update(data->button.cross);
+    buttonO.update(data->button.circle);
+    // full left = -127, full right = 128
+    remoteStickReading[0] = data->analog.stick.lx;
+    // full back = -127, full forward = 128
+    remoteStickReading[1] = -data->analog.stick.ly;
 
-    bool buttonWasPressed = buttonX.getEvent() == ButtonEvent::NEW_STATE_HIGH;
-
-    if (buttonWasPressed)
+    // Handle X was pressed
+    if (buttonX.getEvent() == ButtonEvent::NEW_STATE_HIGH)
     {
-      if (!motorHighZ_)
+      switch (currentMotorState)
       {
+      case MotorState::POWERED:
         stepper_handler::getStepperMotors()->highZ();
-        log_i("Stepper to highZ");
-      }
-      else
-      {
+        currentMotorState = MotorState::HIGHZ;
+        log_i("Motor -> HIGHZ");
+        break;
+      case MotorState::HIGHZ:
         stepper_handler::getStepperMotors()->hardStop();
-        log_i("Stepper to hardStop");
+        currentMotorState = MotorState::POWERED;
+        log_i("Motor -> POWERED");
+        break;
       }
-      motorHighZ_ = !motorHighZ_;
+    }
+
+    // Handle O was pressed
+    if (buttonO.getEvent() == ButtonEvent::NEW_STATE_HIGH)
+    {
+      switch (currentControlState)
+      {
+      case ControlState::CONTROLLED_BY_MESSAGE:
+        currentControlState = ControlState::CONTROLLED_BY_REMOTE;
+        log_i("Control -> CONTROLLED_BY_REMOTE");
+        break;
+      case ControlState::CONTROLLED_BY_REMOTE:
+        currentControlState = ControlState::CONTROLLED_BY_MESSAGE;
+        log_i("Control -> CONTROLLED_BY_MESSAGE");
+        break;
+      }
+    }
+    // Stop the robot
+    wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] = 0;
+    wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] = 0;
+    stepperCommunicationState = StepperCommunicationState::COMMAND_REQUESTED;
+  }
+
+  if (currentControlState == ControlState::CONTROLLED_BY_REMOTE)
+  {
+    if (millis() - lastRemoteControllerMillis > REMOTE_CONTROLLER_TIMEOUT)
+    {
+      log_e("Remote controller timeout");
+      // Stop the robot
+      wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] = 0;
+      wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] = 0;
+      stepperCommunicationState = StepperCommunicationState::COMMAND_REQUESTED;
     }
     else
     {
-
-      targetController[0] = -data->analog.stick.ly;
-      targetController[1] = -data->analog.stick.ly;
-
-      if (abs(targetController[0]) > DEAD_ZONE)
+      if (newMessageReceived)
       {
-        motorSpeed_[RIGHT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
-        motorSpeed_[LEFT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
-      }
-      else
-      {
-        motorSpeed_[RIGHT_ENCODER_INDEX] = 0;
-        motorSpeed_[LEFT_ENCODER_INDEX] = 0;
-      }
+        // Get the angle of the joystick vector
+        float x = remoteStickReading[0] / REMOTE_MAX_VALUE;
+        float y = remoteStickReading[1] / REMOTE_MAX_VALUE;
+        float joystickAngle = atan2f(y, x);
 
-      if (!motorHighZ_)
-      {
-        stepper_handler::setSpeed(motorSpeed_[RIGHT_ENCODER_INDEX], motorSpeed_[LEFT_ENCODER_INDEX]);
+        // Get the norm of the joystick vector
+        float joystickNorm = remoteStickReading.norm();
+
+        // log_v("x: %f - y: %f - joystickAngle: %f - joystickNorm: %f",
+        //   x, y, joystickAngle, joystickNorm);
+
+        if (joystickNorm > REMOTE_DEAD_ZONE)
+        {
+
+          WheelSpeed newWheelSpeed = driveTrainKinematics.inverseKinematics(
+              BaseSpeed(
+                  maxLinearBaseSpeed * y,
+                  maxAngularBaseSpeed * -x // if joystick pushed left, angle should be direct
+                ) 
+              );
+
+          // Trim the wheel speed if necessary
+          float maxSpeedCalculated = max(abs(newWheelSpeed.right), abs(newWheelSpeed.left));
+          
+          if (abs(maxSpeedCalculated) > maxWheelSpeedRadS)
+          {
+            newWheelSpeed.right = newWheelSpeed.right * maxWheelSpeedRadS / maxSpeedCalculated;
+            newWheelSpeed.left = newWheelSpeed.left * maxWheelSpeedRadS / maxSpeedCalculated;
+          }
+
+          // Set speed
+          wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] = newWheelSpeed.right;
+          wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] = newWheelSpeed.left;
+          stepperCommunicationState = StepperCommunicationState::COMMAND_REQUESTED;
+
+          // log_v(
+          //   "newWheelSpeed.right %f - newWheelSpeed.left %f - motorSpeed[RIGHT] %f - motorSpeed[LEFT] %f", 
+          //   newWheelSpeed.right, 
+          //   newWheelSpeed.left, 
+          //   wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX], 
+          //   wheelSpeed_rad_s_[LEFT_ENCODER_INDEX]
+          // );
+        }
+        else
+        {
+          wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] = 0;
+          wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] = 0;
+          stepperCommunicationState = StepperCommunicationState::COMMAND_REQUESTED;
+        }
       }
     }
   }
-  else if (millis() - lastControllerMillis > CONTROLLER_TIMEOUT)
+
+  if (stepperCommunicationState == StepperCommunicationState::COMMAND_REQUESTED)
   {
-    // Stop the robot
-    motorSpeed_[RIGHT_ENCODER_INDEX] = 0;
-    motorSpeed_[LEFT_ENCODER_INDEX] = 0;
+    if (currentMotorState == MotorState::POWERED)
+    {
+      stepper_handler::setSpeed(
+        wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] / robotdimensions::stepSize, 
+        wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] / robotdimensions::stepSize
+      );
+    }
+    stepperCommunicationState = StepperCommunicationState::IDLE;
   }
 
   vTaskDelay(10 / portTICK_PERIOD_MS);
