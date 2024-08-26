@@ -11,14 +11,16 @@
 #include <parameters.hpp>
 #include <secret.hpp>
 
+#include <SoftwareButton.hpp>
+
 /*
   Tasks
 */
 
-void task_print_encoders(void* parameters)
+void task_print_encoders(void *parameters)
 {
-  bool tock = false; 
-  for(;;)
+  bool tock = false;
+  for (;;)
   {
     if (tock)
     {
@@ -39,13 +41,11 @@ void task_print_encoders(void* parameters)
   }
 }
 
-std::vector<float > targetController({0, 0});
-
+std::vector<float> targetController({0, 0});
 
 /*
   Functions
 */
-
 
 // Compute max stepper motor speed.
 int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
@@ -90,31 +90,66 @@ void setup()
 std::vector<float> motorSpeed_({0, 0});
 #define DEAD_ZONE 15
 
+long lastControllerMillis = 0;
+#define CONTROLLER_TIMEOUT 200
+bool motorHighZ_ = false;
+
+SoftwareButton buttonX(LOW);
+
 void loop()
 {
 
   if (bluetooth_receiver_handler::newMessageReceived())
   {
-    const ps3_data_type::ps3_t* data = bluetooth_receiver_handler::getData();
-    targetController[0] = -data->analog.stick.ly;
-    targetController[1] = -data->analog.stick.ly;
 
-    if (abs(targetController[0]) > DEAD_ZONE)
+    const ps3_data_type::ps3_t *data = bluetooth_receiver_handler::getData();
+    buttonX.update(data->button.cross);
+
+    bool buttonWasPressed = buttonX.getEvent() == ButtonEvent::NEW_STATE_HIGH;
+
+    if (buttonWasPressed)
     {
-      motorSpeed_[RIGHT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
-      motorSpeed_[LEFT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
-
+      if (!motorHighZ_)
+      {
+        stepper_handler::getStepperMotors()->highZ();
+        log_i("Stepper to highZ");
+      }
+      else
+      {
+        stepper_handler::getStepperMotors()->hardStop();
+        log_i("Stepper to hardStop");
+      }
+      motorHighZ_ = !motorHighZ_;
     }
     else
     {
+
+      targetController[0] = -data->analog.stick.ly;
+      targetController[1] = -data->analog.stick.ly;
+
+      if (abs(targetController[0]) > DEAD_ZONE)
+      {
+        motorSpeed_[RIGHT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
+        motorSpeed_[LEFT_ENCODER_INDEX] = maxSpeed * targetController[0] / 128.0;
+      }
+      else
+      {
         motorSpeed_[RIGHT_ENCODER_INDEX] = 0;
         motorSpeed_[LEFT_ENCODER_INDEX] = 0;
-    }
+      }
 
-    stepper_handler::setSpeed(motorSpeed_[RIGHT_ENCODER_INDEX], motorSpeed_[LEFT_ENCODER_INDEX]);
-    
+      if (!motorHighZ_)
+      {
+        stepper_handler::setSpeed(motorSpeed_[RIGHT_ENCODER_INDEX], motorSpeed_[LEFT_ENCODER_INDEX]);
+      }
+    }
+  }
+  else if (millis() - lastControllerMillis > CONTROLLER_TIMEOUT)
+  {
+    // Stop the robot
+    motorSpeed_[RIGHT_ENCODER_INDEX] = 0;
+    motorSpeed_[LEFT_ENCODER_INDEX] = 0;
   }
 
   vTaskDelay(10 / portTICK_PERIOD_MS);
-
 }

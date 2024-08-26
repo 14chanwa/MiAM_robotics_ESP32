@@ -47,4 +47,9 @@ namespace stepper_handler
         motorSpeed_[LEFT_ENCODER_INDEX] = leftValue;
         stepperMotors_.setSpeed(motorSpeed_);
     }
+
+    miam::L6470* getStepperMotors()
+    {
+        return &stepperMotors_;
+    }
 }

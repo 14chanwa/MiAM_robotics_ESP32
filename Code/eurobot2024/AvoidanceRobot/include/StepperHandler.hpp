@@ -9,6 +9,8 @@ namespace stepper_handler
     bool init(int maxSpeed, int maxAcceleration, miam::L6470_STEP_MODE stepMode);
 
     void setSpeed(float rightValue, float leftValue);
+
+    miam::L6470* getStepperMotors();
 }
 
 #endif
