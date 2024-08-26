@@ -11,20 +11,19 @@ namespace wifi_handler
 
     void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info)
     {
-        log_i("Connected to AP successfully!");
+        log_d("Connected to AP successfully! RSSI=%d", WiFi.RSSI());
     }
 
     void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
     {
-        log_i("Got new IP address");
-        Serial.println(WiFi.localIP());
+        log_d("Got new IP address: %S", WiFi.localIP().toString().c_str());
     }
 
     void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
     {
-        log_i("Disconnected from WiFi access point");
-        log_i("WiFi lost connection. Reason: %d", info.wifi_sta_disconnected.reason);
-        log_i("Trying to Reconnect");
+        log_w("Disconnected from WiFi access point");
+        log_w("WiFi lost connection. Reason: %d", info.wifi_sta_disconnected.reason);
+        log_w("Trying to Reconnect");
         WiFi.begin(ssid_, password_);
     }
 
@@ -124,27 +123,19 @@ namespace wifi_handler
         WiFi.onEvent(WiFiGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
         WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
-        Serial.print("Current WiFi MAC Address: ");
-        Serial.println(WiFi.macAddress());
+        log_i("Current WiFi MAC Address: %S", WiFi.macAddress().c_str());
 
         WiFi.begin(ssid_, password_);
-        Serial.print("Connecting to WiFi ..");
+        log_d("WiFi configured");
         while (WiFi.status() != WL_CONNECTED)
         {
-            Serial.print('.');
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
-        Serial.println();
-        Serial.print("Current ESP32 IP: ");
-        Serial.println(WiFi.localIP());
-        Serial.print("Gateway (router) IP: "); 
-        Serial.println(WiFi.gatewayIP());
-        Serial.print("Subnet Mask: "); 
-        Serial.println(WiFi.subnetMask());
-        Serial.print("Primary DNS: ");
-        Serial.println(WiFi.dnsIP(0));
-        Serial.print("Secondary DNS: "); 
-        Serial.println(WiFi.dnsIP(1));
+        log_v("Current ESP32 IP: %S", WiFi.localIP().toString().c_str());
+        log_v("Gateway (router) IP: %S", WiFi.gatewayIP().toString().c_str());
+        log_v("Subnet Mask: %S", WiFi.subnetMask().toString().c_str());
+        log_v("Primary DNS: %S", WiFi.dnsIP(0).toString().c_str());
+        log_v("Secondary DNS: %S", WiFi.dnsIP(1).toString().c_str());
 
         ArduinoOTA.begin();
 

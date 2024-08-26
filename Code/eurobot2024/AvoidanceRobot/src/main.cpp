@@ -19,25 +19,10 @@
 
 void task_print_encoders(void *parameters)
 {
-  bool tock = false;
   for (;;)
   {
-    if (tock)
-    {
-      Serial.print("tock ");
-    }
-    else
-    {
-      Serial.print("tick ");
-    }
-    Serial.print(stepper_handler::is_inited());
-    Serial.print(", ");
-    Serial.print(encoder_handler::getRightValue());
-    Serial.print(", ");
-    Serial.print(encoder_handler::getLeftValue());
-    Serial.println();
-    tock = !tock;
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    log_d("stepper init: %d - right encoder: %d - left encoder: %d", stepper_handler::is_inited(), encoder_handler::getRightValue(), encoder_handler::getLeftValue());
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
   }
 }
 
@@ -51,6 +36,22 @@ std::vector<float> targetController({0, 0});
 int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
 int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
 
+void task_async_connect_wifi(void* parameters)
+{
+  // WiFi
+  const uint8_t newMacAddress[] = SECRET_AVOIDANCE_ROBOT_WIFI_MAC;
+  // wifi_handler::setBaseMACAddress(newMacAddress);
+  // wifi_handler::printCurrentMACAddress();
+  wifi_handler::connectSTA(SECRET_SSID, SECRET_PASSWORD);
+  // wifi_handler::printCurrentMACAddress();
+
+  // Message broadcast
+  message_handler::init();
+
+  // When wifi is connected, this task will end
+  vTaskDelete(NULL);
+}
+
 void setup()
 {
   vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -60,21 +61,14 @@ void setup()
   // Encoders
   encoder_handler::init();
 
-  // WiFi
-  const uint8_t newMacAddress[] = SECRET_AVOIDANCE_ROBOT_WIFI_MAC;
-  // wifi_handler::setBaseMACAddress(newMacAddress);
-  // wifi_handler::printCurrentMACAddress();
-  wifi_handler::connectSTA(SECRET_SSID, SECRET_PASSWORD);
-  // wifi_handler::printCurrentMACAddress();
-
-  // // Message broadcast
-  // message_handler::init();
+  // Async init WiFi, message and OTA
+  xTaskCreate(task_async_connect_wifi, "task_connect_wifi", 10000, NULL, 30, NULL);
 
   // Bluetooth serial receiver
   bluetooth_receiver_handler::init();
 
   // Print encoder
-  xTaskCreate(task_print_encoders, "task_print_encoders", 1000, NULL, 10, NULL);
+  xTaskCreate(task_print_encoders, "task_print_encoders", 10000, NULL, 20, NULL);
 
   // Steppers
   while (!stepper_handler::is_inited())

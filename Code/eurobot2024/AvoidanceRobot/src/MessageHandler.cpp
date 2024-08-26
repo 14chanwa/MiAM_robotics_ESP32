@@ -44,8 +44,6 @@ namespace message_handler
             }   
             else
             {
-                log_i("Sent report SCD");
-
                 // Wait for reply
                 long startMillis = millis();
                 while (wifiClient.connected() && !wifiClient.available() && (millis() - startMillis < RESPONSE_TIMEOUT))
@@ -56,7 +54,7 @@ namespace message_handler
                 if (wifiClient.available())
                 {
                     uint32_t len = wifiClient.read((uint8_t *)read_buffer, READ_BUFFER_SIZE);
-                    log_i("Received message size: %d", len);
+                    log_d("Sent report and received message size: %d", len);
                 }
                 else
                 {
