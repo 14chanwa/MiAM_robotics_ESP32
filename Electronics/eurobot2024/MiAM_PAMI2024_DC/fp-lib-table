@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "MiAM_ESP32_Footprints")(type "KiCad")(uri "${KIPRJMOD}/../../library/MiAM_ESP32_Footprints")(options "")(descr ""))
+)
