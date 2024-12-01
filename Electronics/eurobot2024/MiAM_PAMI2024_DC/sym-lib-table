@@ -3,4 +3,5 @@
   (lib (name "ESP32_DEVKIT_V1")(type "KiCad")(uri "${KIPRJMOD}/../..//library/ESP32-DEVKIT-V1.kicad_sym")(options "")(descr ""))
   (lib (name "MiAM_ESP32")(type "KiCad")(uri "${KIPRJMOD}/../../library/MiAM_ESP32.kicad_sym")(options "")(descr ""))
   (lib (name "ESP32-DEVKITC-32U")(type "KiCad")(uri "${KIPRJMOD}/../../library/ESP32-DEVKITC-32U.kicad_sym")(options "")(descr ""))
+  (lib (name "miam_logo")(type "KiCad")(uri "${KIPRJMOD}/../../library/miam_logo.kicad_sym")(options "")(descr ""))
 )
