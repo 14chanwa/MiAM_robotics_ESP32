@@ -53,7 +53,7 @@ HardwareSerial mySerial(1);
 void task_report_broadcast(void *parameters)
 {
     Robot *robot = Robot::getInstance();
-    float *buffer = new float[MAX_SIZE_OF_PAMI_REPORT / 4];
+    uint8_t *buffer = new uint8_t[MAX_SIZE_OF_PAMI_REPORT / 4];
     int sizeOfMessage = 0;
 
     // wifiClient.setTimeout(1);
@@ -70,7 +70,7 @@ void task_report_broadcast(void *parameters)
         }
 
         PamiReportMessage report = robot->get_pami_report();
-        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
+        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
 
         // Send over serial
         // TODO add crc
@@ -87,8 +87,9 @@ void task_report_broadcast(void *parameters)
         
         // Transfer data over serial
         Serial.print("Sending ");
-        Serial.println(sizeOfMessage*4);
-        myPacketSerial.send((uint8_t*)buffer, sizeOfMessage*4);
+        Serial.print(sizeOfMessage);
+        Serial.println(" over serial");
+        myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
 
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
@@ -124,7 +125,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
     //     }
     // }
 
-    std::shared_ptr<Message> message = Message::parse((const float*)buffer, size/4, 10);
+    std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
     Robot::getInstance()->notify_new_message(message);
 
 

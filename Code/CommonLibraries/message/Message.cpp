@@ -7,21 +7,41 @@
 #include <Arduino.h>
 #endif
 
-#define MESSAGE_PAYLOAD_START 1
+#define MESSAGE_PAYLOAD_START 2
 
 #define TRAJECTORY_SERIALIZATION_DELTAT 0.1
 
 using namespace miam::trajectory;
 
-std::shared_ptr<Message > Message::parse(const float* message, int sizeOfMessage, uint8_t senderId)
+// read a T and increment byte counter
+template <class T> T read_from_buffer(const uint8_t* buffer, uint& byte_index)
+{
+    T res = buffer[byte_index];
+    byte_index += sizeof(T);
+    return res;
+}
+
+// write a T and increment byte counter
+template <class T> void write_to_buffer(uint8_t* buffer, const T target, uint& byte_index)
+{
+    memcpy(&(buffer[byte_index]), &target, sizeof(T));
+    byte_index += sizeof(T);
+}
+
+void Message::write_header(uint8_t* results, uint& byte_index)
+{
+    // Message type
+    write_to_buffer<uint8_t>(results, (uint8_t)messageType_, byte_index);
+    // Sender id
+    write_to_buffer<uint8_t>(results, (uint8_t)senderId_, byte_index);
+}
+
+std::shared_ptr<Message > Message::parse(const uint8_t* message, int sizeOfMessage, uint8_t senderId)
 {
     if (sizeOfMessage == 0)
     {
         return std::make_shared<ErrorMessage >(senderId);;
     }
-
-    // Message type is the first float casted to int
-    int message_type = (int)message[0];
 
     Serial.print("Message is: ");
     for (uint i=0; i<sizeOfMessage; i++)
@@ -31,120 +51,43 @@ std::shared_ptr<Message > Message::parse(const float* message, int sizeOfMessage
     }
     Serial.println();
 
-    // // Sender is the second float casted to int
-    // senderId = (int)message[1];
+    uint byte_index = 0;
+
+    // Message type is the first byte casted to int
+    uint8_t message_type = read_from_buffer<uint8_t>(message, byte_index);
+
+    // Sender is the second byte casted to int
+    senderId = read_from_buffer<uint8_t>(message, byte_index);
 
     if (message_type == MessageType::CONFIGURATION)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 2)
+        if (sizeOfMessage == ConfigurationMessage::get_expected_size())
         {
-            // First byte of payload is configuration
-            if ((bool)message[MESSAGE_PAYLOAD_START] == PlayingSide::BLUE_SIDE)
-            {
-                return std::make_shared<ConfigurationMessage >(
-                    PlayingSide::BLUE_SIDE,
-                    (bool) message[MESSAGE_PAYLOAD_START + 1],
-                    senderId
-                );
-            }
-            else if ((bool)message[MESSAGE_PAYLOAD_START] == PlayingSide::YELLOW_SIDE)
-            {
-                return std::make_shared<ConfigurationMessage >(
-                    PlayingSide::YELLOW_SIDE,
-                    (bool) message[MESSAGE_PAYLOAD_START + 1],
-                    senderId
-                );
-            }
+            return std::make_shared<ConfigurationMessage >(message, sizeOfMessage);
         }
     }
     else if (message_type == MessageType::MATCH_STATE)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 2)
+        if (sizeOfMessage == MatchStateMessage::get_expected_size())
         {
-            // First byte of payload is match started
-            // Second byte of payload is match time
-            return std::make_shared<MatchStateMessage >(
-                (bool) message[MESSAGE_PAYLOAD_START],
-                (float) message[MESSAGE_PAYLOAD_START + 1],
-                senderId
-            );
+            return std::make_shared<MatchStateMessage >(message, sizeOfMessage);
         }
     }
     else if (message_type == MessageType::NEW_TRAJECTORY)
     {
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START >= 2)
+        if (sizeOfMessage >= NewTrajectoryMessage::get_expected_size())
         {
-            // Message should be size >= 2
-            int size_of_trajectory = (int)message[MESSAGE_PAYLOAD_START];
-            float duration_of_trajectory = (float)message[MESSAGE_PAYLOAD_START + 1];
-
-            int expected_size = size_of_trajectory * 5;
-
-            // Payload size is initial size - header - 2 first floats
-            int trajectory_payload_start = MESSAGE_PAYLOAD_START + 2;
-
-            if (expected_size == (sizeOfMessage - trajectory_payload_start))
-            {
-                std::vector<TrajectoryPoint > trajectoryPoints;
-
-                for (int i = 0; i < size_of_trajectory; i++)
-                {
-                    TrajectoryPoint tp;
-                    tp.position.x = message[trajectory_payload_start + 5*i];
-                    tp.position.y = message[trajectory_payload_start + 5*i + 1];
-                    tp.position.theta = message[trajectory_payload_start + 5*i + 2];
-                    tp.linearVelocity = message[trajectory_payload_start + 5*i + 3];
-                    tp.angularVelocity = message[trajectory_payload_start + 5*i + 4];
-                    trajectoryPoints.push_back(tp);
-                }
-
-                TrajectoryConfig tc;
-                std::shared_ptr<SampledTrajectory > traj(new SampledTrajectory(tc, trajectoryPoints, duration_of_trajectory));
-                TrajectoryVector newTrajectory;
-                newTrajectory.push_back(traj);
-
-                return std::make_shared<NewTrajectoryMessage >(
-                    newTrajectory,
-                    senderId
-                );
-            }
+            return std::make_shared<NewTrajectoryMessage >(message, sizeOfMessage);
         }
     }
     else if (message_type == MessageType::PAMI_REPORT)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 5)
+        if (sizeOfMessage == PamiReportMessage::get_expected_size())
         {
-            // First byte of payload is match started
-            // Second byte of payload is match time
-            // 3rd byte is side
-
-            uint8_t pami_id = (uint8_t) message[MESSAGE_PAYLOAD_START];
-
-            if ((bool)message[MESSAGE_PAYLOAD_START+3] == PlayingSide::BLUE_SIDE)
-            {
-                return std::make_shared<PamiReportMessage >(
-                    (bool) message[MESSAGE_PAYLOAD_START+1],
-                    (float) message[MESSAGE_PAYLOAD_START + 2],
-                    PlayingSide::BLUE_SIDE,
-                    message[MESSAGE_PAYLOAD_START + 4],
-                    pami_id
-                );
-            }
-            else if ((bool)message[MESSAGE_PAYLOAD_START+3] == PlayingSide::YELLOW_SIDE)
-            {
-                // First byte of payload is match started
-                // Second byte of payload is match time
-                return std::make_shared<PamiReportMessage >(
-                    (bool) message[MESSAGE_PAYLOAD_START+1],
-                    (float) message[MESSAGE_PAYLOAD_START + 2],
-                    PlayingSide::YELLOW_SIDE,
-                    message[MESSAGE_PAYLOAD_START + 4],
-                    pami_id
-                );
-            }
+            return std::make_shared<PamiReportMessage >(message, sizeOfMessage);
         }
     }
 #ifdef DEBUG_MESSAGE
@@ -154,41 +97,100 @@ std::shared_ptr<Message > Message::parse(const float* message, int sizeOfMessage
     return std::make_shared<ErrorMessage >(senderId);
 }
 
-// function definitions
-int  ConfigurationMessage::serialize(float* results, int maxsize)
-{
-    // Total size in floats is header size =3
-    if (maxsize < 3) return -1;
+/* 
+ * Message 
+ */
 
-    int current_index = 0;
-    // First byte is message type
-    results[current_index++] = (float)get_message_type();
-    // Second byte is side
-    results[current_index++] = (float)playingSide_;
-    // Third byte is stop motors
-    results[current_index++] = (float)stopMotors_;
-    return current_index;
+void Message::read_header(const uint8_t* buffer, uint& byte_index)
+{
+    messageType_ = (MessageType) read_from_buffer<uint8_t >(buffer, byte_index);
+    senderId_ = read_from_buffer<uint8_t >(buffer, byte_index);
 }
 
-int NewTrajectoryMessage::serialize(float* results, int maxsize)
+/* 
+ * ConfigurationMessage 
+ */
+
+ConfigurationMessage::ConfigurationMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
 {
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
+
+    // Read payload
+    if ((bool)read_from_buffer<uint8_t >(buffer, byte_index) == PlayingSide::YELLOW_SIDE)
+    {
+        playingSide_ = PlayingSide::YELLOW_SIDE;
+    }
+    else
+    {
+        playingSide_ = PlayingSide::BLUE_SIDE;
+    }
+    stopMotors_ = (bool)read_from_buffer<uint8_t >(buffer, byte_index);
+}
+
+int ConfigurationMessage::serialize(uint8_t* results, int maxsize)
+{
+    if (maxsize < get_expected_size()) return -1;
+
+    uint byte_index = 0;
+    Message::write_header(results, byte_index);
+
+    // Side -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)playingSide_, byte_index);
+    // stop motors -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)stopMotors_, byte_index);
+
+    return byte_index;
+}
+
+/* 
+ * NewTrajectoryMessage 
+ */
+
+NewTrajectoryMessage::NewTrajectoryMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
+{
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
+
+    // Read payload
+    int size_of_trajectory = read_from_buffer<int>(buffer, byte_index);
+    float duration_of_trajectory = read_from_buffer<float>(buffer, byte_index);
+    int expected_size = size_of_trajectory * 5;
+
+    // TODO add size check
+
+    std::vector<TrajectoryPoint > trajectoryPoints;
+    for (int i = 0; i < size_of_trajectory; i++)
+    {
+        TrajectoryPoint tp;
+        tp.position.x = read_from_buffer<float>(buffer, byte_index);
+        tp.position.y = read_from_buffer<float>(buffer, byte_index);
+        tp.position.theta = read_from_buffer<float>(buffer, byte_index);
+        tp.linearVelocity = read_from_buffer<float>(buffer, byte_index);
+        tp.angularVelocity = read_from_buffer<float>(buffer, byte_index);
+        trajectoryPoints.push_back(tp);
+    }
+    TrajectoryConfig tc;
+    std::shared_ptr<SampledTrajectory > traj(new SampledTrajectory(tc, trajectoryPoints, duration_of_trajectory));
+    newTrajectory_.push_back(traj);
+}
+
+int NewTrajectoryMessage::serialize(uint8_t* results, int maxsize)
+{
+    if (maxsize < get_expected_size()) return -1;
+
     // Serializing the trajectory:
     // N+1 = Number of points is duration / TRAJECTORY_SERIALIZATION_DELTAT + 1
     // N = number of time intervals
     int N = std::ceil(newTrajectory_.getDuration() / TRAJECTORY_SERIALIZATION_DELTAT);
     int deltat = newTrajectory_.getDuration() / N;
 
-    // Total size in floats is header size + (N+1*5) pts
-    if (maxsize < 3 + N+1) return -1;
-
-    int current_index = 0;
-    // First byte is message type
-    results[current_index++] = (float)get_message_type();
-    // Second byte is size of trajectory in number of points
-    results[current_index++] = (float)(N+1);
-    // Third byte is duration
-    results[current_index++] = (float)newTrajectory_.getDuration();
-    // Following bytes are trajectory points
+    uint byte_index = 0;
+    // size of trajectory in number of points -> int
+    write_to_buffer<int>(results, (int)(N+1), byte_index);
+    // duration -> float
+    write_to_buffer<float>(results, (float)newTrajectory_.getDuration(), byte_index);
+    // Following bytes are trajectory points -> float
     for (int i = 0; i < N+1; i++)
     {
         TrajectoryPoint pt;
@@ -198,31 +200,50 @@ int NewTrajectoryMessage::serialize(float* results, int maxsize)
         } else {
             pt = newTrajectory_.getEndPoint();
         }
-        results[current_index++] = (float)pt.position.x;
-        results[current_index++] = (float)pt.position.y;
-        results[current_index++] = (float)pt.position.theta;
-        results[current_index++] = (float)pt.linearVelocity;
-        results[current_index++] = (float)pt.angularVelocity;
+
+        write_to_buffer<float>(results, (float)pt.position.x, byte_index);
+        write_to_buffer<float>(results, (float)pt.position.y, byte_index);
+        write_to_buffer<float>(results, (float)pt.position.theta, byte_index);
+        write_to_buffer<float>(results, (float)pt.linearVelocity, byte_index);
+        write_to_buffer<float>(results, (float)pt.angularVelocity, byte_index);
     }
-    return current_index;
+    return byte_index;
 }
 
-int MatchStateMessage::serialize(float* results, int maxsize)
+/* 
+ * MatchStateMessage 
+ */
+
+MatchStateMessage::MatchStateMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
 {
-    // Total size in floats is header size =3
-    if (maxsize < 3) return -1;
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
 
-    int current_index = 0;
-    // First byte is message type
-    results[current_index++] = (float)get_message_type();
-    // Second byte is match started
-    results[current_index++] = (float)matchStarted_;
-    // Third byte is match time
-    results[current_index++] = (float)matchTime_;
-    return current_index;
+    // Read payload
+    matchStarted_ = (bool)read_from_buffer<uint8_t >(buffer, byte_index);
+    matchTime_ = read_from_buffer<float >(buffer, byte_index);
 }
 
-int ErrorMessage::serialize(float* results, int maxsize)
+int MatchStateMessage::serialize(uint8_t* results, int maxsize)
+{
+    if (maxsize < get_expected_size()) return -1;
+
+    uint byte_index = 0;
+    Message::write_header(results, byte_index);
+
+    // match started -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)matchStarted_, byte_index);
+    // match time -> float
+    write_to_buffer<float>(results, matchTime_, byte_index);
+
+    return byte_index;
+}
+
+/* 
+ * ErrorMessage 
+ */
+
+int ErrorMessage::serialize(uint8_t* results, int maxsize)
 {
     // Total size in floats is header size =1
     if (maxsize < 1) return -1;
@@ -233,23 +254,44 @@ int ErrorMessage::serialize(float* results, int maxsize)
     return current_index;
 }
 
-int PamiReportMessage::serialize(float* results, int maxsize)
-{
-    // Total size in floats is header size =4
-    if (maxsize < 6) return -1;
+/* 
+ * PamiReportMessage 
+ */
 
-    int current_index = 0;
-    // First byte is message type
-    results[current_index++] = (float)get_message_type();
-    // Second byte is match started
-    results[current_index++] = (float)senderId_;
-    // Second byte is match started
-    results[current_index++] = (float)matchStarted_;
-    // Third byte is match time
-    results[current_index++] = (float)matchTime_;
-    // 4th byte is playing side
-    results[current_index++] = (float)playingSide_;
-    // 5th byte is battery reading
-    results[current_index++] = (float)batteryReading_;
-    return current_index;
+PamiReportMessage::PamiReportMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
+{
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
+
+    // Read payload
+    matchStarted_ = (bool)read_from_buffer<uint8_t >(buffer, byte_index);
+    matchTime_ = read_from_buffer<float >(buffer, byte_index);
+    if ((bool)read_from_buffer<uint8_t >(buffer, byte_index) == PlayingSide::YELLOW_SIDE)
+    {
+        playingSide_ = PlayingSide::YELLOW_SIDE;
+    }
+    else
+    {
+        playingSide_ = PlayingSide::BLUE_SIDE;
+    }
+    batteryReading_ = read_from_buffer<float >(buffer, byte_index);
+}
+
+int PamiReportMessage::serialize(uint8_t* results, int maxsize)
+{
+    if (maxsize < get_expected_size()) return -1;
+
+    uint byte_index = 0;
+    Message::write_header(results, byte_index);
+
+    // match started -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)matchStarted_, byte_index);
+    // match time -> float
+    write_to_buffer<float>(results, matchTime_, byte_index);
+    // playing side -> uint8_t
+    write_to_buffer<uint8_t>(results, (uint8_t)playingSide_, byte_index);
+    // battery reading -> float
+    write_to_buffer<float>(results, batteryReading_, byte_index);
+
+    return byte_index;
 }

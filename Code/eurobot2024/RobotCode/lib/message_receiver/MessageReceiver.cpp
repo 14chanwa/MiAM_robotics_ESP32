@@ -73,7 +73,7 @@ std::shared_ptr<Message > MessageReceiver::receive()
     // parse the message
     Serial.print("Message length: ");
     Serial.println(len);
-    std::shared_ptr<Message > message(Message::parse((float *) buffer, len/4, senderId));
+    std::shared_ptr<Message > message(Message::parse((uint8_t*) buffer, len, senderId));
 
     return message;
 };

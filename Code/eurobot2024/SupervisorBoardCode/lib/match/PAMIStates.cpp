@@ -22,7 +22,7 @@ void registerMessage(std::shared_ptr<Message > message)
     Serial.println(message->get_sender_id());
     Serial.print("Message type is ");
     Serial.print(message->get_message_type());
-    Serial.print(" expected ");
+    Serial.print("  ");
     Serial.println(MessageType::PAMI_REPORT);
 #endif
     if (message->get_message_type() == MessageType::PAMI_REPORT && senderID >= 1 && senderID <= 5)
