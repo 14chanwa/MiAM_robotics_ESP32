@@ -13,7 +13,7 @@
 
 using namespace miam::trajectory;
 
-std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint8_t senderId)
+std::shared_ptr<Message > Message::parse(const float* message, int sizeOfMessage, uint8_t senderId)
 {
     if (sizeOfMessage == 0)
     {
@@ -23,8 +23,16 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
     // Message type is the first float casted to int
     int message_type = (int)message[0];
 
+    Serial.print("Message is: ");
+    for (uint i=0; i<sizeOfMessage; i++)
+    {
+        Serial.print(message[i]);
+        Serial.print(" ");
+    }
+    Serial.println();
+
     // // Sender is the second float casted to int
-    // int sender_id = (int) message.at(1);
+    // senderId = (int)message[1];
 
     if (message_type == MessageType::CONFIGURATION)
     {
@@ -107,31 +115,34 @@ std::shared_ptr<Message > Message::parse(float* message, int sizeOfMessage, uint
     else if (message_type == MessageType::PAMI_REPORT)
     {
         // Check size of payload
-        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 4)
+        if (sizeOfMessage - MESSAGE_PAYLOAD_START == 5)
         {
             // First byte of payload is match started
             // Second byte of payload is match time
             // 3rd byte is side
-            if ((bool)message[MESSAGE_PAYLOAD_START+2] == PlayingSide::BLUE_SIDE)
+
+            uint8_t pami_id = (uint8_t) message[MESSAGE_PAYLOAD_START];
+
+            if ((bool)message[MESSAGE_PAYLOAD_START+3] == PlayingSide::BLUE_SIDE)
             {
                 return std::make_shared<PamiReportMessage >(
-                    (bool) message[MESSAGE_PAYLOAD_START],
-                    (float) message[MESSAGE_PAYLOAD_START + 1],
+                    (bool) message[MESSAGE_PAYLOAD_START+1],
+                    (float) message[MESSAGE_PAYLOAD_START + 2],
                     PlayingSide::BLUE_SIDE,
-                    message[MESSAGE_PAYLOAD_START + 3],
-                    senderId
+                    message[MESSAGE_PAYLOAD_START + 4],
+                    pami_id
                 );
             }
-            else if ((bool)message[MESSAGE_PAYLOAD_START+2] == PlayingSide::YELLOW_SIDE)
+            else if ((bool)message[MESSAGE_PAYLOAD_START+3] == PlayingSide::YELLOW_SIDE)
             {
                 // First byte of payload is match started
                 // Second byte of payload is match time
                 return std::make_shared<PamiReportMessage >(
-                    (bool) message[MESSAGE_PAYLOAD_START],
-                    (float) message[MESSAGE_PAYLOAD_START + 1],
+                    (bool) message[MESSAGE_PAYLOAD_START+1],
+                    (float) message[MESSAGE_PAYLOAD_START + 2],
                     PlayingSide::YELLOW_SIDE,
-                    message[MESSAGE_PAYLOAD_START + 3],
-                    senderId
+                    message[MESSAGE_PAYLOAD_START + 4],
+                    pami_id
                 );
             }
         }
@@ -225,11 +236,13 @@ int ErrorMessage::serialize(float* results, int maxsize)
 int PamiReportMessage::serialize(float* results, int maxsize)
 {
     // Total size in floats is header size =4
-    if (maxsize < 5) return -1;
+    if (maxsize < 6) return -1;
 
     int current_index = 0;
     // First byte is message type
     results[current_index++] = (float)get_message_type();
+    // Second byte is match started
+    results[current_index++] = (float)senderId_;
     // Second byte is match started
     results[current_index++] = (float)matchStarted_;
     // Third byte is match time

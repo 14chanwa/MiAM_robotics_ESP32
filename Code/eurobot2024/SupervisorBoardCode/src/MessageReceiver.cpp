@@ -51,7 +51,8 @@ namespace MessageReceiver {
         DEBUG_PRINT(">>>> Client is connected: ");
         DEBUG_PRINTLN(client->remoteIP());
 
-        std::shared_ptr<Message > message = Message::parse((float*) data, len/4, senderId);
+        std::shared_ptr<Message > message = Message::parse((float*) data, len/4);
+        // std::shared_ptr<Message > message = Message::parse((float*) data, len/4, senderId);
 
         // Semaphore is used since shared buffer is used
         if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))

@@ -38,7 +38,7 @@ public:
     MessageType get_message_type() { return messageType_; }
     uint8_t get_sender_id() { return senderId_; }
 
-    static std::shared_ptr<Message > parse(float* message, int sizeOfMessage, uint8_t senderId = 255);
+    static std::shared_ptr<Message > parse(const float* message, int sizeOfMessage, uint8_t senderId = 255);
     virtual int serialize(float* results, int maxsize) { return 0; };
 
 private:

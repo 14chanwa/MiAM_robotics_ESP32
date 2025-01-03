@@ -37,7 +37,8 @@ void task_blink_led(void *parameters)
         }
         else if (ms == RobotState::MATCH_STARTED_WAITING ||
             ms == RobotState::MATCH_STARTED_ACTION ||
-            ms == RobotState::MATCH_STARTED_FINAL_APPROACH)
+            ms == RobotState::MATCH_STARTED_FINAL_APPROACH ||
+            ms == RobotState::MOVING_SETUP_TRAJECTORY)
         {
             // blink fast
             ledcWrite(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);

@@ -20,6 +20,7 @@ namespace strategy
 
     void turn_around(MotionController *motionController, float angle)
     {
+        Serial.println("TurnAround");
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
         traj.clear();
         RobotPosition curPos(motionController->getCurrentPosition());
@@ -31,6 +32,7 @@ namespace strategy
 
     void go_to_point(MotionController *motionController, RobotPosition targetPoint)
     {
+        Serial.println("GoToPoint");
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
         RobotPosition curPos(motionController->getCurrentPosition());
         TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
@@ -42,19 +44,60 @@ namespace strategy
     {
         RobotPosition startPosition(motionController->getCurrentPosition());
         RobotPosition targetPosition(startPosition);
+        TrajectoryConfig tc = motionController->getTrajectoryConfig();
+
+        TrajectoryVector tv;
+        TrajectoryVector tv2;
 
         targetPosition.x += 1000;
-        go_to_point(motionController, targetPosition);
-        turn_around(motionController, M_PI_2);
+        tv2 = computeTrajectoryStraightLineToPoint(tc, startPosition, targetPosition);
+        tv.insert(tv.end(), tv2.begin(), tv2.end());
+
+        {
+            startPosition = targetPosition;
+            targetPosition.theta += M_PI_2;
+            std::shared_ptr<Trajectory> pt(new PointTurn(tc, startPosition, targetPosition.theta));
+            tv.push_back(pt);
+        }
+
+        startPosition = targetPosition;
         targetPosition.y += 1000;
-        go_to_point(motionController, targetPosition);
-        turn_around(motionController, M_PI_2);
+        tv2 = computeTrajectoryStraightLineToPoint(tc, startPosition, targetPosition);
+        tv.insert(tv.end(), tv2.begin(), tv2.end());
+
+        {
+            startPosition = targetPosition;
+            targetPosition.theta += M_PI_2;
+            std::shared_ptr<Trajectory> pt(new PointTurn(tc, startPosition, targetPosition.theta));
+            tv.push_back(pt);
+        }
+
+        startPosition = targetPosition;
         targetPosition.x -= 1000;
-        go_to_point(motionController, targetPosition);
-        turn_around(motionController, M_PI_2);
+        tv2 = computeTrajectoryStraightLineToPoint(tc, startPosition, targetPosition);
+        tv.insert(tv.end(), tv2.begin(), tv2.end());
+
+        {
+            startPosition = targetPosition;
+            targetPosition.theta += M_PI_2;
+            std::shared_ptr<Trajectory> pt(new PointTurn(tc, startPosition, targetPosition.theta));
+            tv.push_back(pt);
+        }
+
+        startPosition = targetPosition;
         targetPosition.y -= 1000;
-        go_to_point(motionController, targetPosition);
-        turn_around(motionController, M_PI_2);
+        tv2 = computeTrajectoryStraightLineToPoint(tc, startPosition, targetPosition);
+        tv.insert(tv.end(), tv2.begin(), tv2.end());
+
+        {
+            startPosition = targetPosition;
+            targetPosition.theta += M_PI_2;
+            std::shared_ptr<Trajectory> pt(new PointTurn(tc, startPosition, targetPosition.theta));
+            tv.push_back(pt);
+        }
+        
+        motionController->setTrajectoryToFollow(tv);
+        motionController->waitForTrajectoryFinished();
     }
 
     void go_to_zone_3(MotionController *motionController)

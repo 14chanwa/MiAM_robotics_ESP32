@@ -58,7 +58,7 @@ void performLowLevel(void* parameters)
         robot->robotBase->updateSensors();
         // Serial.println("Get measurements");
         robot->measurements = robot->robotBase->getMeasurements();
-        robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
+        robot->measurements.vlx_range_detection_mm = 1000; //I2CHandler::get_smoothed_vl53l0x();
         robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
         robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
         robot->measurements.currentRobotState = robot->get_current_robot_state();
@@ -85,7 +85,7 @@ void performLowLevel(void* parameters)
             // Robot will stop if not enabled
             robotEnabled,
             // Avoidance is disabled if final approach
-            robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH
+            (robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH) && (robot->currentRobotState_ != RobotState::MOVING_SETUP_TRAJECTORY) 
         );
 
         // Serial.println("Set base speed");
@@ -149,8 +149,8 @@ Robot::Robot()
     motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
     motionController->init(RobotPosition(0.0, 0.0, 0.0));
 
-    length_of_saved_traj_float = preferences.getInt("traj_len_float", -1);
-    duration_of_saved_traj = preferences.getFloat("traj_duration", -1);
+    length_of_saved_traj_float = -1; //preferences.getInt("traj_len_float", -1);
+    duration_of_saved_traj = -1; //preferences.getFloat("traj_duration", -1);
     // if (length_of_saved_traj_float > 0)
     // {
     //   Serial.print("Reading saved traj of length ");
