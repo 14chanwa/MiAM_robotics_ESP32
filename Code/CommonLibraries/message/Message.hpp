@@ -39,13 +39,17 @@ public:
     uint8_t get_sender_id() { return senderId_; }
 
     static std::shared_ptr<Message > parse(const uint8_t* message, int sizeOfMessage, uint8_t senderId = 255);
-    virtual int serialize(uint8_t* results, int maxsize) { return 0; };
+
+    virtual int serialize(uint8_t* results, int maxsize) = 0;
+    
     static uint get_expected_size() { return 2; }
 
 private:
     MessageType messageType_;
     uint8_t senderId_;
+    
     Message(MessageType mt, uint8_t senderId = 255) : messageType_(mt), senderId_(senderId) {};
+
     void write_header(uint8_t* results, uint& byte_index);
     void read_header(const uint8_t* buffer, uint& byte_index);
 

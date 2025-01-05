@@ -86,9 +86,10 @@ void task_report_broadcast(void *parameters)
         // int sizeOfSent = newMessage.serialize((uint8_t*)buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
         
         // Transfer data over serial
-        Serial.print("Sending ");
-        Serial.print(sizeOfMessage);
-        Serial.println(" over serial");
+        // Serial.print("Sending ");
+        // Serial.print(sizeOfMessage);
+        // Serial.println(" over serial");
+        Serial.print("#");
         myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
 
         vTaskDelay(500 / portTICK_PERIOD_MS);

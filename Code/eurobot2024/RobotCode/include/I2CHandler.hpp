@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include "Adafruit_VL53L0X.h"
+#include <ADCReading.hpp>
 
 class DisplayInformations
 {
@@ -34,6 +36,23 @@ namespace I2CHandler
     void printOLEDMessage(String message);
 
     void update_ssd1306(DisplayInformations* informations);
+};
+
+class VLXSensor
+{
+public:
+    VLXSensor() {}
+    void init(uint8_t target_i2c_addr);
+
+    uint16_t get_current() { return current_; }
+    uint16_t get_smoothed() { return smoothed_; }
+
+    void update();
+private:
+    Adafruit_VL53L0X lox_;
+    ADCReading adc_;
+    uint16_t current_;
+    uint16_t smoothed_;
 };
 
 #endif

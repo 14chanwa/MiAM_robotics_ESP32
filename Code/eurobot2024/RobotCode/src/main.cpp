@@ -79,10 +79,10 @@ void setup()
   HeartbeatHandler::start_heartbeat();
 
 
-  // Serial.println("Attempt connect WiFi");
+  Serial.println("Attempt connect WiFi");
   
-  // // connect wifi
-  // WiFiHandler::initWiFi();
+  // connect wifi
+  WiFiHandler::initWiFi();
 
   // Init i2c peripherals
   I2CHandler::init();
@@ -98,7 +98,7 @@ void setup()
   Serial.println("Low Level Loop");
   Robot::startLowLevelLoop();
 
-  // TelemetryHandler::begin();
+  TelemetryHandler::begin();
 
 #ifdef DEBUG_MODE_MATCH
   match_started = true;
