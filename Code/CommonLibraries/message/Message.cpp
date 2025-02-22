@@ -16,7 +16,8 @@ using namespace miam::trajectory;
 // read a T and increment byte counter
 template <class T> T read_from_buffer(const uint8_t* buffer, uint& byte_index)
 {
-    T res = buffer[byte_index];
+    T res;
+    memcpy(&res, &(buffer[byte_index]), sizeof(T));
     byte_index += sizeof(T);
     return res;
 }
