@@ -468,6 +468,7 @@ void Robot::notify_new_message(std::shared_ptr<Message > message)
         Serial.println("Notifying new message");
         newMessage_ = message;
         newMessageToRead_ = true;
+        lastMessageReceivedTime_ = millis();
         xSemaphoreGive(xMutex_newMessage);
     }
 }

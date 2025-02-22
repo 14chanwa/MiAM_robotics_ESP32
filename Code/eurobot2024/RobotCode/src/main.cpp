@@ -19,7 +19,7 @@
 #include <MessageHandler.hpp>
 #include <TelemetryHandler.hpp>
 
-#define DEBUG_MODE_SIMPLE_TRAJECTORY
+//#define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 
 /////////////////////////////////////////////////////////////////////
@@ -28,29 +28,6 @@
 
 using namespace miam;
 using namespace miam::trajectory;
-
-#define FASTLED_PIN 0
-#include <FastLED.h>
-
-// How many leds in your strip?
-#define NUM_LEDS 1
-CRGB leds[NUM_LEDS];
-
-void task_fastled(void* parameters)
-{
-  FastLED.addLeds<WS2812, FASTLED_PIN, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
-  for(;;)
-  {
-    // Turn the LED on, then pause
-    leds[0] = CRGB::Red;
-    FastLED.show();
-    delay(500);
-    // Now turn the LED off, then pause
-    leds[0] = CRGB::Black;
-    FastLED.show();
-    delay(500);
-  }
-}
 
 /////////////////////////////////////////////////////////////////////
 // Setup
@@ -65,21 +42,10 @@ void setup()
   Serial.println("Setup begin");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-  xTaskCreatePinnedToCore(
-    task_fastled,
-    "task_fastled",
-    10000,
-    NULL,
-    30,
-    NULL,
-    1
-  );
-
   Robot::init();
 
   // start heartbeat
   HeartbeatHandler::start_heartbeat();
-
 
   Serial.println("Attempt connect WiFi");
   
