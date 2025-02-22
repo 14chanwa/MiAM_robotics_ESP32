@@ -18,8 +18,8 @@
 
 // #define TOUCH_SENSOR 0
 
-#define LEFT_SWITCH_PIN 33
-#define RIGHT_SWITCH_PIN 5
+// #define LEFT_SWITCH_PIN 33
+#define RIGHT_SWITCH_PIN 39
 
 /////////////////////////////////////////////
 // Functions
@@ -71,7 +71,7 @@ namespace AnalogReadings
         analogReadResolution(12);
         analogSetAttenuation(ADC_11db);
 
-        pinMode(LEFT_SWITCH_PIN, INPUT_PULLDOWN);
+        // pinMode(LEFT_SWITCH_PIN, INPUT_PULLDOWN);
         pinMode(RIGHT_SWITCH_PIN, INPUT_PULLDOWN);
     }
 
@@ -87,7 +87,7 @@ namespace AnalogReadings
         // touchSensorValue = touch_sensor_reading.readADC_Avg(touchRead(TOUCH_SENSOR)) / 1000.0;
         minBatReading = std::min(minBatReading, batReading);
 
-        leftSwitchValue_ = digitalRead(LEFT_SWITCH_PIN);
+        leftSwitchValue_ = digitalRead(RIGHT_SWITCH_PIN);
         rightSwitchValue_ = digitalRead(RIGHT_SWITCH_PIN);
     }
 

@@ -25,10 +25,35 @@ char data_wifi_tx[MAX_SEND_SIZE];
 
 PacketSerial myPacketSerial;
 
+#define LED_PIN PA30
+
+void task_blink_led(void *parameters)
+{
+    pinMode(LED_PIN, OUTPUT);
+
+    for(;;)
+    {
+      digitalWrite(LED_PIN, HIGH);
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      digitalWrite(LED_PIN, LOW);
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    
+}
+
 
 void setup() {
 
   xSemaphore = xSemaphoreCreateMutex();
+
+  xTaskCreate(
+      task_blink_led, 
+      "task_blink_led",
+      10000,
+      NULL,
+      1,
+      NULL
+  ); 
 
   Serial.begin(115200);
   Serial1.begin(115200);

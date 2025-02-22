@@ -37,7 +37,8 @@ void logTelemetry(void* parameters)
       teleplot.update("currentMotorSpeed.1", robot->measurements.motorSpeed[1]);
       teleplot.update("targetMotorSpeed.0", robot->target.motorSpeed[0]);
       teleplot.update("targetMotorSpeed.1", robot->target.motorSpeed[1]);
-      // teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
+      teleplot.update2D("currentPosition", robot->motionController->getCurrentPosition().x, robot->motionController->getCurrentPosition().y);
+      teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
       // teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
       // teleplot.update("targetPoint.linear", robot->motionController->targetPoint.linearVelocity);
       // teleplot.update("targetPoint.angular", robot->motionController->targetPoint.angularVelocity);

@@ -19,6 +19,8 @@
 #include <MessageHandler.hpp>
 #include <TelemetryHandler.hpp>
 
+#define DEBUG_MODE_SIMPLE_TRAJECTORY
+
 
 /////////////////////////////////////////////////////////////////////
 // Tasks
@@ -63,15 +65,15 @@ void setup()
   Serial.println("Setup begin");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-  // xTaskCreatePinnedToCore(
-  //   task_fastled,
-  //   "task_fastled",
-  //   1000,
-  //   NULL,
-  //   30,
-  //   NULL,
-  //   1
-  // );
+  xTaskCreatePinnedToCore(
+    task_fastled,
+    "task_fastled",
+    10000,
+    NULL,
+    30,
+    NULL,
+    1
+  );
 
   Robot::init();
 
@@ -127,8 +129,9 @@ void setup()
   for (;;)
   {
     Serial.println("Moving...");
-    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
     strategy::make_a_square(robot->motionController);
+    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
+    robot->motionController->waitForTrajectoryFinished();
     // strategy::go_to_zone_3(motionController);
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);

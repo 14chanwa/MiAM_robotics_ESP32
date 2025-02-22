@@ -95,9 +95,7 @@ namespace strategy
             std::shared_ptr<Trajectory> pt(new PointTurn(tc, startPosition, targetPosition.theta));
             tv.push_back(pt);
         }
-        
         motionController->setTrajectoryToFollow(tv);
-        motionController->waitForTrajectoryFinished();
     }
 
     void go_to_zone_3(MotionController *motionController)

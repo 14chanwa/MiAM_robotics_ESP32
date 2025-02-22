@@ -48,7 +48,7 @@
 // #endif
 
 // give 20% overhead
-#define MAX_SPEED_RPM (MOTOR_RATED_RPM)
+#define MAX_SPEED_RPM (MOTOR_RATED_RPM * 0.75)
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
@@ -66,9 +66,9 @@
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
-#define VELOCITY_KP 0.1f
+#define VELOCITY_KP 0.5f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.01f
+#define VELOCITY_KI 0.1f
 
 int target_rad_s_to_pwm_command(float speed_rad_s)
 {
@@ -116,8 +116,7 @@ RobotWheelDC::RobotWheelDC(
         pwmChannel
     );
     motorPID = new miam::PID(
-        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 
-        0.5 * 255.0 / VELOCITY_KP // max integral is 50% of the max control
+        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 255.0 / 2.0
     );
 }
 

@@ -3,11 +3,8 @@
 
 #define PAMI_ID 4
 
-#if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
-    #define USE_STEPPER_MOTORS
-#else
-    #define USE_DC_MOTORS
-#endif
+// #define USE_STEPPER_MOTORS
+#define USE_DC_MOTORS
 
 // Set MAC address manually for router to allocate static IPs
 #define WIFI_MAC_ADDRESS {0xAA, 0xAB, 0xAC, 0xAD, 0x00, PAMI_ID}

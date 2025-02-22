@@ -4,9 +4,10 @@
 
 #define RIGHT_VLX_ENABLE 33
 #define MIDDLE_VLX_ENABLE 32
+#define LEFT_VLX_ENABLE 5
 
-#define LEFT_VLX_ADDRESS 0x40
-#define MIDDLE_VLX_ADDRESS 0x35
+#define LEFT_VLX_ADDRESS 0x31
+#define MIDDLE_VLX_ADDRESS 0x30
 
 namespace I2CHandler
 {
@@ -18,20 +19,36 @@ namespace I2CHandler
     {
         pinMode(RIGHT_VLX_ENABLE, OUTPUT);
         pinMode(MIDDLE_VLX_ENABLE, OUTPUT);
+        pinMode(LEFT_VLX_ENABLE, OUTPUT);
+
+        // Reset all vlx : low, high, low
+        digitalWrite(MIDDLE_VLX_ENABLE, LOW);
+        digitalWrite(RIGHT_VLX_ENABLE, LOW);
+        digitalWrite(LEFT_VLX_ENABLE, LOW);
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+
+        digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
+        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
+        digitalWrite(LEFT_VLX_ENABLE, HIGH);
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
 
         digitalWrite(MIDDLE_VLX_ENABLE, LOW);
         digitalWrite(RIGHT_VLX_ENABLE, LOW);
 
         vTaskDelay(50 / portTICK_PERIOD_MS);
+
+        // Init left vlx
         left_sensor.init(LEFT_VLX_ADDRESS);
 
+        // Init middle vlx
         digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
-
         vTaskDelay(50 / portTICK_PERIOD_MS);
         middle_sensor.init(MIDDLE_VLX_ADDRESS);
 
+        // Init right vlx
         digitalWrite(RIGHT_VLX_ENABLE, HIGH);
-
         vTaskDelay(50 / portTICK_PERIOD_MS);
         right_sensor.init(VL53L0X_I2C_ADDR);
 
