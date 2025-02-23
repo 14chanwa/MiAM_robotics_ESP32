@@ -9,7 +9,7 @@ class PAMIDrawable : public Drawable
 public:
     PAMIDrawable(uint8_t pami_id, Vector2& top_left_corner, Vector2& dimensions);
     void update(PamiReportMessage& message);
-    void draw(Adafruit_GFX& target);
+    void draw(TFT_eSPI& target);
     uint8_t pami_id_;
 
 private:

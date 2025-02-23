@@ -10,7 +10,7 @@ public:
     ButtonDrawable(
         Vector2& top_left_corner, 
         Vector2& dimensions);
-    void draw(Adafruit_GFX& target);
+    void draw(TFT_eSPI& target);
     void update(
         std::string text, 
         uint16_t text_color,

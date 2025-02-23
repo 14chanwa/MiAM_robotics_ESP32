@@ -1,5 +1,4 @@
 #include <PAMIDrawable.hpp>
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 
 #define MESSAGE_TIMEOUT 2000
 #define COLOR_GREY 0x8c71
@@ -7,7 +6,7 @@
 PAMIDrawable::PAMIDrawable(uint8_t pami_id, Vector2& top_left_corner, Vector2& dimensions) :
     Drawable(top_left_corner, dimensions), 
     pami_id_(pami_id),
-    drawing_color_(ST77XX_BLACK),
+    drawing_color_(TFT_BLACK),
     last_updated_millis_(0),
     last_message_(PamiReportMessage(
         false, 
@@ -27,7 +26,7 @@ void PAMIDrawable::update(PamiReportMessage& message)
     }
 }
 
-void PAMIDrawable::draw(Adafruit_GFX& target)
+void PAMIDrawable::draw(TFT_eSPI& target)
 {
     
     // Drawing color is black if the message is invalid
@@ -36,11 +35,11 @@ void PAMIDrawable::draw(Adafruit_GFX& target)
         last_message_.get_sender_id() != 255;
     if (is_currently_clicked())
     {
-        drawingColor = ST77XX_WHITE;
+        drawingColor = TFT_WHITE;
     }
     else if (pami_is_active)
     {
-        drawingColor = (last_message_.playingSide_ == PlayingSide::BLUE_SIDE ? ST77XX_BLUE : ST77XX_YELLOW);
+        drawingColor = (last_message_.playingSide_ == PlayingSide::BLUE_SIDE ? TFT_BLUE : TFT_YELLOW);
     }
     else
     {
@@ -58,7 +57,7 @@ void PAMIDrawable::draw(Adafruit_GFX& target)
     if (pami_is_active)
     {
         target.setTextSize(1);
-        target.setTextColor(ST77XX_BLACK, drawingColor);
+        target.setTextColor(TFT_BLACK, drawingColor);
         target.setCursor(top_left_corner_[0] + 10, 
             top_left_corner_[1] + 10);
         target.print(last_message_.batteryReading_);

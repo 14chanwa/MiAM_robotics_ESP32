@@ -1,22 +1,14 @@
 #include <TFTScreen.hpp>
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+#include <TFT_eSPI.h>
 #include <SPI.h>
 #include <vector>
 #include <Types.h>
 #include <Match.hpp>
 #include <PAMIStates.hpp>
-#include <XPT2046_Touchscreen.h>
 
 #include <PAMIDrawable.hpp>
 #include <ButtonDrawable.hpp>
 
-#define TFT_CS 17
-#define TFT_RST 5
-#define TFT_DC 33
-
-#define TFT_HEIGHT 320
-#define TFT_WIDTH 240
 
 #define TOUCHSCREEN_CS 32
 
@@ -25,8 +17,7 @@
 #define PAMI_RECT_XSIZE 100
 #define PAMI_RECT_YSIZE 100
 
-Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-XPT2046_Touchscreen ts(TOUCHSCREEN_CS);
+TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 std::vector<std::shared_ptr<PAMIDrawable > > pami_drawables;
 std::shared_ptr<ButtonDrawable > button_change_color;
@@ -77,16 +68,13 @@ void TFTScreen::init()
         );
     }
 
-    tft.init(TFT_WIDTH, TFT_HEIGHT); 
-    tft.setRotation(3); 
+    tft.init(); 
+    tft.setRotation(1); 
     tft.invertDisplay(false);
 
-    ts.begin();
-    ts.setRotation(3); 
-
     tft.setTextWrap(true);
-    tft.fillScreen(ST77XX_BLACK);
-    tft.setTextColor(ST77XX_WHITE);
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE);
     tft.setTextSize(1);
 
     tft.setCursor(10, 230);
@@ -103,7 +91,7 @@ void TFTScreen::update(IPAddress localIP)
 
     // Update match time
     tft.setTextSize(2);
-    tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(230, 120);
     if (Match::getMatchStarted())
     {
@@ -121,20 +109,20 @@ void TFTScreen::update(IPAddress localIP)
     {
         button_change_color->update(
             "BLUE",
-            ST77XX_BLACK,
-            ST77XX_BLACK,
+            TFT_BLACK,
+            TFT_BLACK,
             2,
-            ST77XX_BLUE
+            TFT_BLUE
         );
     }
     else
     {
         button_change_color->update(
             "YELLOW",
-            ST77XX_BLACK,
-            ST77XX_BLACK,
+            TFT_BLACK,
+            TFT_BLACK,
             2,
-            ST77XX_YELLOW
+            TFT_YELLOW
         );
     }
 
@@ -144,22 +132,22 @@ void TFTScreen::update(IPAddress localIP)
     // if (Match::getSide() == PlayingSide::BLUE_SIDE)
     // {
     //     tft.setTextSize(2);
-    //     tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
+    //     tft.setTextColor(TFT_BLUE, TFT_BLACK);
     //     tft.print("BLUE  ");
     // }
     // else
     // {
     //     tft.setTextSize(2);
-    //     tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+    //     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
     //     tft.print("YELLOW");
     // }
 
     // Update seconds count
     tft.setTextSize(1);
     tft.setCursor(180, 230);
-    tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
+    tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
     tft.print(millis() / 1000);
-    tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print(" seconds.");
 
     // Update local IP
@@ -192,16 +180,16 @@ void TFTScreen::update(IPAddress localIP)
 
 }
 
-#define TOUCH_MIN_X 3900.0f
-#define TOUCH_MIN_Y 3700.0f
-#define TOUCH_MAX_X 330.0f
-#define TOUCH_MAX_Y 220.0f
+#define TOUCH_MIN_X 319.0f
+#define TOUCH_MIN_Y 8.0f
+#define TOUCH_MAX_X 8.0f
+#define TOUCH_MAX_Y 238.0f
 
-Vector2 touch_to_screen(TS_Point p)
+Vector2 touch_to_screen(uint16_t x, uint16_t y)
 {
     Vector2 v;
-    v[0] = (p.x - TOUCH_MIN_X) / (TOUCH_MAX_X - TOUCH_MIN_X);
-    v[1] = (p.y - TOUCH_MIN_Y) / (TOUCH_MAX_Y - TOUCH_MIN_Y);
+    v[0] = (x - TOUCH_MIN_X) / (TOUCH_MAX_X - TOUCH_MIN_X);
+    v[1] = (y - TOUCH_MIN_Y) / (TOUCH_MAX_Y - TOUCH_MIN_Y);
     v[0] = std::max(std::min(v[0], 1.0f), 0.0f);
     v[1] = std::max(std::min(v[1], 1.0f), 0.0f);
     v[0] = v[0] * TFT_HEIGHT;
@@ -211,15 +199,16 @@ Vector2 touch_to_screen(TS_Point p)
 
 void TFTScreen::registerTouch()
 {
-    if (ts.touched()) {
-        TS_Point p = ts.getPoint();
+    uint16_t x, y;
+    if (tft.getTouch(&x, &y)) {
         // Serial.print("Pressure = ");
         // Serial.print(p.z);
-        // Serial.print(", x = ");
-        // Serial.print(p.x);
+        // Serial.print("x = ");
+        // Serial.print(x);
         // Serial.print(", y = ");
-        // Serial.print(p.y);
-        Vector2 v = touch_to_screen(p);
+        // Serial.print(y);
+        // Serial.print(", ");
+        Vector2 v = touch_to_screen(x, y);
         // Serial.print(v[0]);
         // Serial.print(", ");
         // Serial.println(v[1]);

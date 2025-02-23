@@ -1,5 +1,4 @@
 #include <ButtonDrawable.hpp>
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 
 
 ButtonDrawable::ButtonDrawable(
@@ -7,10 +6,10 @@ ButtonDrawable::ButtonDrawable(
         Vector2& dimensions) :
     Drawable(top_left_corner, dimensions), 
     text_(""),
-    text_color_(ST77XX_BLACK),
-    text_color_clicked_(ST77XX_BLACK),
+    text_color_(TFT_BLACK),
+    text_color_clicked_(TFT_BLACK),
     text_size_(1),
-    background_color_(ST77XX_BLACK),
+    background_color_(TFT_BLACK),
     lastDrawingColor(0)
 {
 
@@ -31,9 +30,9 @@ void ButtonDrawable::update(
     background_color_ = background_color;
 }
 
-void ButtonDrawable::draw(Adafruit_GFX& target)
+void ButtonDrawable::draw(TFT_eSPI& target)
 {
-    uint16_t drawingColor = is_currently_clicked() ? ST77XX_WHITE : background_color_;
+    uint16_t drawingColor = is_currently_clicked() ? TFT_WHITE : background_color_;
     if (drawingColor == lastDrawingColor)
         return;
     

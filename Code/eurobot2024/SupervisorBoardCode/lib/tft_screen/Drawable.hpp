@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <Types.h>
-#include <Adafruit_GFX.h>    // Core graphics library
+#include <TFT_eSPI.h>
 
 enum DrawableState
 {
@@ -16,7 +16,7 @@ class Drawable
 public:
     Drawable(Vector2& top_left_corner, Vector2& dimensions);
     bool clicked(Vector2& coordinates);
-    virtual void draw(Adafruit_GFX& target) = 0;
+    virtual void draw(TFT_eSPI& target) = 0;
 
 protected:
     bool is_currently_clicked();

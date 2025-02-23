@@ -1,5 +1,4 @@
 #include <Drawable.hpp>
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 
 #define DEBOUNCE_DELAY 200
 #define CLICKED_ANIMATION_DURATION 100
