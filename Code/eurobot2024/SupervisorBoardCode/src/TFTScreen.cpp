@@ -10,8 +10,6 @@
 #include <ButtonDrawable.hpp>
 
 
-#define TOUCHSCREEN_CS 32
-
 // #define DEBUG_TFT_SCREEN
 
 #define PAMI_RECT_XSIZE 100
@@ -59,14 +57,15 @@ void TFTScreen::init()
 
         std::shared_ptr<PAMIDrawable > new_drawable(new PAMIDrawable(i, top_left_corner, dimensions));
         pami_drawables.push_back(new_drawable);
-
-        top_left_corner = Vector2(215, 150);
-        dimensions = Vector2(PAMI_RECT_XSIZE, 40);
-        button_change_color = std::make_shared<ButtonDrawable >(
-            top_left_corner,
-            dimensions
-        );
     }
+
+    // Button change color
+    Vector2 top_left_corner(215, 150);
+    Vector2 dimensions(PAMI_RECT_XSIZE, 40);
+    button_change_color = std::make_shared<ButtonDrawable >(
+        top_left_corner,
+        dimensions
+    );
 
     tft.init(); 
     tft.setRotation(1); 
