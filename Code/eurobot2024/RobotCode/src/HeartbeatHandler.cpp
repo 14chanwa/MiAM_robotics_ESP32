@@ -4,6 +4,7 @@
 #include <Robot.hpp>
 #include <LEDTimer.hpp>
 #include <vector>
+#include <I2CHandler.hpp>
 
 #include <FastLED.h>
 #define FASTLED_PIN 0
@@ -21,10 +22,19 @@
 #define LED_PWM_HIGH_LEVEL 32
 
 // LED RING
-#define LED_RING_BRIGHTNESS 6
+#define LED_RING_BRIGHTNESS 2
 
 // How many leds in your strip?
 #define NUM_LEDS 16
+
+// VLX leds constants
+#define STOP_RANGE 50
+#define STOP_COLOR CRGB(255,0,0)
+#define NEAR_RANGE 300
+#define NEAR_COLOR CRGB(153,255,51)//(255,128,0)
+#define FAR_COLOR CRGB(153,255,51)
+#define OFF_COLOR CRGB(178,102,255)
+
 
 namespace HeartbeatHandler
 {
@@ -43,18 +53,44 @@ namespace HeartbeatHandler
 
         // Back LED and status led
         PWMLEDTimer status_led_timer(LED_PWM_CHANNEL, LED_PWM_HIGH_LEVEL);
-        CRGBLEDTimer status_ring_timer(&(leds[0]));
-        status_ring_timer.setColor(CRGB::Red);
+        CRGBLEDTimer status_ring_timer(&(leds[8]));
+        status_ring_timer.setColor(CRGB(255,0,0));
         status_ring_timer.setPeriod(500);
 
         // Side indicator leds
         std::vector<std::shared_ptr<CRGBLEDTimer > > side_indicator_ring_timers;
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[1])));
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[2])));
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[3])));
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[13])));
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[14])));
-        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[15])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[5])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[6])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[7])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[9])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[10])));
+        side_indicator_ring_timers.push_back(std::make_shared<CRGBLEDTimer >(&(leds[11])));
+
+        // VLX indicator leds
+        std::vector<std::shared_ptr<CRGBLEDTimer > > leds_right;
+        leds_right.push_back(std::make_shared<CRGBLEDTimer >(&(leds[2])));
+        leds_right.push_back(std::make_shared<CRGBLEDTimer >(&(leds[3])));
+        leds_right.push_back(std::make_shared<CRGBLEDTimer >(&(leds[4])));
+        for (auto timer : leds_right)
+        {
+            timer->setPeriod(0);
+        }
+        std::vector<std::shared_ptr<CRGBLEDTimer > > leds_middle;
+        leds_middle.push_back(std::make_shared<CRGBLEDTimer >(&(leds[15])));
+        leds_middle.push_back(std::make_shared<CRGBLEDTimer >(&(leds[0])));
+        leds_middle.push_back(std::make_shared<CRGBLEDTimer >(&(leds[1])));
+        for (auto timer : leds_middle)
+        {
+            timer->setPeriod(0);
+        }
+        std::vector<std::shared_ptr<CRGBLEDTimer > > leds_left;
+        leds_left.push_back(std::make_shared<CRGBLEDTimer >(&(leds[12])));
+        leds_left.push_back(std::make_shared<CRGBLEDTimer >(&(leds[13])));
+        leds_left.push_back(std::make_shared<CRGBLEDTimer >(&(leds[14])));
+        for (auto timer : leds_left)
+        {
+            timer->setPeriod(0);
+        }
 
         for(;;)
         {
@@ -64,15 +100,15 @@ namespace HeartbeatHandler
             // Led color
             if (ms == RobotState::MATCH_ENDED)
             {
-                status_ring_timer.setColor(CRGB::Green);
+                status_ring_timer.setColor(CRGB(0,255,0));
             }
             else if (ms == RobotState::WAIT_FOR_CONFIGURATION || ms == RobotState::WAIT_FOR_MATCH_START)
             {
-                status_ring_timer.setColor(CRGB::Purple);
+                status_ring_timer.setColor(CRGB(178,102,255));
             }
             else
             {
-                status_ring_timer.setColor(CRGB::Red);
+                status_ring_timer.setColor(CRGB(255,0,0));
             }
 
             // Led period
@@ -105,11 +141,11 @@ namespace HeartbeatHandler
             {
                 if (robot->motionController->isPlayingRightSide_)
                 {
-                    timer->setColor(CRGB::Yellow);
+                    timer->setColor(CRGB(255,255,51));
                 }
                 else
                 {
-                    timer->setColor(CRGB::Blue);
+                    timer->setColor(CRGB(0,0,255));
                 }
 
                 // Blink if last message was more than 3 sec ago
@@ -124,6 +160,78 @@ namespace HeartbeatHandler
 
                 timer->update();
             }
+
+            // Handle vlx
+            int16_t vlx_value = I2CHandler::get_smoothed_vlx_side(I2CHandler::RIGHT);
+            for (auto timer : leds_right)
+            {
+                if (vlx_value < 0)
+                { 
+                    timer->setColor(OFF_COLOR);
+                }
+                else if (vlx_value > NEAR_RANGE)
+                {
+                    timer->setColor(FAR_COLOR);
+                }
+                else if (vlx_value > STOP_RANGE)
+                {
+                    uint8_t prop = (uint8_t) 255 * (1.0 - (vlx_value - STOP_RANGE) / (1.0 * (NEAR_RANGE - STOP_RANGE)));
+                    CRGB color = CRGB::blend(NEAR_COLOR, STOP_COLOR, prop);
+                    timer->setColor(color);
+                }
+                else
+                {
+                    timer->setColor(STOP_COLOR);
+                }
+                timer->update();
+            }
+            vlx_value = I2CHandler::get_smoothed_vlx_side(I2CHandler::MIDDLE);
+            for (auto timer : leds_middle)
+            {
+                if (vlx_value < 0)
+                { 
+                    timer->setColor(OFF_COLOR);
+                }
+                else if (vlx_value > NEAR_RANGE)
+                {
+                    timer->setColor(FAR_COLOR);
+                }
+                else if (vlx_value > STOP_RANGE)
+                {
+                    uint8_t prop = (uint8_t) 255 * (1.0 - (vlx_value - STOP_RANGE) / (1.0 * (NEAR_RANGE - STOP_RANGE)));
+                    CRGB color = CRGB::blend(NEAR_COLOR, STOP_COLOR, prop);
+                    timer->setColor(color);
+                }
+                else
+                {
+                    timer->setColor(STOP_COLOR);
+                }
+                timer->update();
+            }
+            vlx_value = I2CHandler::get_smoothed_vlx_side(I2CHandler::LEFT);
+            for (auto timer : leds_left)
+            {
+                if (vlx_value < 0)
+                { 
+                    timer->setColor(OFF_COLOR);
+                }
+                else if (vlx_value > NEAR_RANGE)
+                {
+                    timer->setColor(FAR_COLOR);
+                }
+                else if (vlx_value > STOP_RANGE)
+                {
+                    uint8_t prop = (uint8_t) 255 * (1.0 - (vlx_value - STOP_RANGE) / (1.0 * (NEAR_RANGE - STOP_RANGE)));
+                    CRGB color = CRGB::blend(NEAR_COLOR, STOP_COLOR, prop);
+                    timer->setColor(color);
+                }
+                else
+                {
+                    timer->setColor(STOP_COLOR);
+                }
+                timer->update();
+            }
+
 
             FastLED.show();
             vTaskDelay(50 / portTICK_PERIOD_MS);

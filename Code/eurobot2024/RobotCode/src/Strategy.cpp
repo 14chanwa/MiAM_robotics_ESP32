@@ -15,7 +15,7 @@ namespace strategy
         RobotPosition curPos(motionController->getCurrentPosition());
         TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
         motionController->setTrajectoryToFollow(tv);
-        motionController->waitForTrajectoryFinished();
+        //motionController->waitForTrajectoryFinished();
     }
 
     void turn_around(MotionController *motionController, float angle)

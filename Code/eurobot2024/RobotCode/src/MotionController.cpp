@@ -21,6 +21,8 @@
 
 #define AVOIDANCE_LIMIT_REMAINING_TIME_S 2.5f
 
+#define VLX_STOP_RANGE 50
+
 using namespace miam::trajectory;
 
 MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters) : 
@@ -150,7 +152,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     else
     {
 
-        bool proximitySwitchTriggered = measurements.left_switch_level || measurements.right_switch_level;
+        bool proximitySwitchTriggered = measurements.vlx_range_detection_mm < VLX_STOP_RANGE;
         /// * move is stopped when contact is made with at least ONE OF the switches
         /// and not going backwards
         if (

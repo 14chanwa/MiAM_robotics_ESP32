@@ -21,6 +21,9 @@ typedef struct {
     Vector2 motorSpeed; ///<< Measured motor speed, in rad/s
     // std::deque<DetectedRobot> lidarDetection; ///< Robots detected by the lidar.
     float vlx_range_detection_mm;
+    float left_vlx;
+    float middle_vlx;
+    float right_vlx;
     bool left_switch_level;
     bool right_switch_level;
     RobotState currentRobotState;

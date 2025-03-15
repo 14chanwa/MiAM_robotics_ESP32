@@ -38,12 +38,17 @@
 // Wheel specs
 /////////////////////////////////////////////
 
+#if PAMI_ID == 5
+#define WHEEL_RADIUS_MM 13.5f
+#define WHEEL_SPACING_MM 32.5f
+#else 
 #define WHEEL_RADIUS_MM 30.0f
+#define WHEEL_SPACING_MM 28.0f
+#endif
 
 // #if PAMI_ID == 5
 //     #define WHEEL_SPACING_MM 42.5f
-// #else
-    #define WHEEL_SPACING_MM 28.0f 
+// #else 
 //     //41.0f
 // #endif
 

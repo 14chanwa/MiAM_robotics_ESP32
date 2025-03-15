@@ -9,7 +9,7 @@ namespace strategy
     float get_waiting_time_s()
     {
         #if PAMI_ID == 2
-            return 3.0;
+            return 1.5;
         #elif PAMI_ID == 5
             return 0.0;
         #else
@@ -69,11 +69,10 @@ namespace strategy
         
 #if PAMI_ID == 1
 
-        startPosition = RobotPosition(1230.0, 1925.0, -M_PI_2);
+        startPosition = RobotPosition(35.0, 1600.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(60.0, 1450.0, M_PI);
+        targetPosition = RobotPosition(1920.0, 1450.0, M_PI);
         
-
         positions.clear();
         positions.push_back(startPosition);
 
@@ -81,10 +80,13 @@ namespace strategy
 
         // straight line towards bottom
         tmp = startPosition;
-        tmp.y -= 200;
+        tmp.x += 200;
         positions.push_back(tmp);
-        tmp.x = 600;
-        tmp.y = 1450.0;
+        tmp.x = 550;
+        tmp.y = 1500.0;
+        positions.push_back(tmp);
+        tmp.x = 1450.0;
+        tmp.y = 1096.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -93,26 +95,25 @@ namespace strategy
 
 #elif PAMI_ID == 2
 
-        startPosition = RobotPosition(1120.0, 1887.5, M_PI);
+        startPosition = RobotPosition(35.0, 1700.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(750.0, 2000.0, M_PI_2);
+        targetPosition = RobotPosition(1500.0, 1400.0, M_PI);
         
+        positions.clear();
+        positions.push_back(startPosition);
+
         RobotPosition tmp = targetPosition;
 
         // straight line towards bottom
-        tmp = targetPosition;
-        tmp.y = startPosition.y;
-        tv = computeTrajectoryStraightLineToPoint(tc, startPosition, tmp);
-        res.insert(res.end(), tv.begin(), tv.end());
-
-        std::shared_ptr<Trajectory> pt(new PointTurn(tc, res.getEndPoint().position, M_PI_2));
-        res.push_back(pt);
-
-        tv = computeTrajectoryStraightLineToPoint(tc, res.getEndPoint().position, targetPosition);
-        for (auto traj : tv)
-        {
-                traj->setAvoidanceEnabled(false);
-        }
+        tmp = startPosition;
+        tmp.x += 150;
+        positions.push_back(tmp);
+        tmp.x = 1000.0;
+        tmp.y = 1300.0;
+        positions.push_back(tmp);
+        positions.push_back(targetPosition);
+        
+        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
 
@@ -168,24 +169,28 @@ namespace strategy
 
         // Option 1
 
-        startPosition = RobotPosition(1440.0, 1925.0, -M_PI_2);
+        startPosition = RobotPosition(35.0, 1905.0, 0.0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(2635, 1145, 0);
         
         positions.clear();
         positions.push_back(startPosition);
 
-        RobotPosition tmp = targetPosition;
+        RobotPosition tmp = startPosition;
+        tmp.x += 1300.0;
+        positions.push_back(tmp);
+        tmp.x -= 150;
+        tmp.y -= 350;
+        positions.push_back(tmp);
 
-        // straight line towards bottom
-        tmp = startPosition;
-        tmp.y -= 400;
-        positions.push_back(tmp);
-        tmp = targetPosition;
-        tmp.x -= 200;
-        positions.push_back(tmp);
-        positions.push_back(targetPosition);
-        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
+        // // straight line towards bottom
+        // tmp = startPosition;
+        // tmp.y -= 400;
+        // positions.push_back(tmp);
+        // tmp = targetPosition;
+        // tmp.x -= 200;
+        // positions.push_back(tmp);
+        // positions.push_back(targetPosition);
+        tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
 #else
@@ -210,37 +215,7 @@ namespace strategy
         TrajectoryVector tv;
         std::vector<RobotPosition > positions;
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
-        
-#if PAMI_ID == 5
-
-        // Option 2
-
-        startPosition = RobotPosition(1440.0, 1925.0, -M_PI_2);
-        motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(2635, 1145, 0);
-        
-        positions.clear();
-        positions.push_back(startPosition);
-
-        RobotPosition tmp = targetPosition;
-
-        // straight line towards bottom
-        tmp = RobotPosition(1437.0, 1728.0, 0.0);
-        positions.push_back(tmp);
-        tmp = RobotPosition(2120.0, 1487.0, 0.0);
-        positions.push_back(tmp);
-        tmp = targetPosition;
-        tmp.x -= 200;
-        positions.push_back(tmp);
-        positions.push_back(targetPosition);
-        
-        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
-        res.insert(res.end(), tv.begin(), tv.end());
-
-#else
         res = strategy::get_default_trajectory(motionController);
-
-#endif
         return res;
     }
 
@@ -249,28 +224,28 @@ namespace strategy
     {
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
         TrajectoryVector res;
-        RobotPosition currentPosition(motionController->getCurrentPosition());
-#if PAMI_ID == 1
-        std::shared_ptr<Trajectory > pointTurnTowardsLeft(
-        std::make_shared<PointTurn >(
-                tc, 
-                currentPosition, 
-                M_PI)
-        );
-        res.push_back(pointTurnTowardsLeft);
-        currentPosition = res.back()->getEndPoint().position;
-#endif
-        // Go forward
-        float distance = FINAL_TRAJECTORY_DISTANCE_MM;
-        // Movement should be very slow
-        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-        TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
-        res.insert(res.end(), sl.begin(), sl.end());
+//         RobotPosition currentPosition(motionController->getCurrentPosition());
+// #if PAMI_ID == 1
+//         std::shared_ptr<Trajectory > pointTurnTowardsLeft(
+//         std::make_shared<PointTurn >(
+//                 tc, 
+//                 currentPosition, 
+//                 M_PI)
+//         );
+//         res.push_back(pointTurnTowardsLeft);
+//         currentPosition = res.back()->getEndPoint().position;
+// #endif
+//         // Go forward
+//         float distance = FINAL_TRAJECTORY_DISTANCE_MM;
+//         // Movement should be very slow
+//         tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
+//         TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
+//         res.insert(res.end(), sl.begin(), sl.end());
 
-        for (auto traj : res)
-        {
-                traj->setAvoidanceEnabled(false);
-        }
+//         for (auto traj : res)
+//         {
+//                 traj->setAvoidanceEnabled(false);
+//         }
         return res;
     }
 }

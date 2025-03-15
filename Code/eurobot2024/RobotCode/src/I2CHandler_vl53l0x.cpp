@@ -11,6 +11,7 @@
 
 namespace I2CHandler
 {
+
     VLXSensor right_sensor;
     VLXSensor middle_sensor;
     VLXSensor left_sensor;
@@ -36,18 +37,23 @@ namespace I2CHandler
 
         digitalWrite(MIDDLE_VLX_ENABLE, LOW);
         digitalWrite(RIGHT_VLX_ENABLE, LOW);
+        digitalWrite(LEFT_VLX_ENABLE, LOW);
 
-        vTaskDelay(50 / portTICK_PERIOD_MS);
 
         // Init left vlx
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        digitalWrite(LEFT_VLX_ENABLE, HIGH);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
         left_sensor.init(LEFT_VLX_ADDRESS);
 
         // Init middle vlx
+        vTaskDelay(50 / portTICK_PERIOD_MS);
         digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
         vTaskDelay(50 / portTICK_PERIOD_MS);
         middle_sensor.init(MIDDLE_VLX_ADDRESS);
 
         // Init right vlx
+        vTaskDelay(50 / portTICK_PERIOD_MS);
         digitalWrite(RIGHT_VLX_ENABLE, HIGH);
         vTaskDelay(50 / portTICK_PERIOD_MS);
         right_sensor.init(VL53L0X_I2C_ADDR);
@@ -64,6 +70,46 @@ namespace I2CHandler
         return std::min(std::min(right_sensor.get_smoothed(), middle_sensor.get_smoothed()), left_sensor.get_smoothed());
     };
 
+    int16_t get_smoothed_vlx_side(Side side)
+    {
+        switch (side)
+        {
+            case RIGHT:
+                if (right_sensor.is_init())
+                {
+                    return right_sensor.get_smoothed();
+                }
+                else
+                {
+                    return -1;
+                }
+                break;
+            case MIDDLE:
+                if (middle_sensor.is_init())
+                {
+                    return middle_sensor.get_smoothed();
+                }
+                else
+                {
+                    return -1;
+                }
+                break;
+            case LEFT:
+                if (left_sensor.is_init())
+                {
+                    return left_sensor.get_smoothed();
+                }
+                else
+                {
+                    return -1;
+                }
+                break;
+            default:
+                return -1;
+        }
+    }
+
+
     void update_vl53l0x()
     {
         right_sensor.update();
@@ -77,16 +123,18 @@ void VLXSensor::init(uint8_t target_i2c_addr)
 {
     if (I2CHandler::i2c_get())
     {
-        if (!lox_.begin(target_i2c_addr, true,
+        if (lox_.begin(target_i2c_addr, true,
                         I2CHandler::get_wire(),
                         Adafruit_VL53L0X::VL53L0X_SENSE_DEFAULT))
         {
-            Serial.println(F("Failed to boot VL53L0X"));
-            while (1)
-                ;
+            // start continuous ranging
+            lox_.startRangeContinuous(20);
+            is_init_ = true;
         }
-        // start continuous ranging
-        lox_.startRangeContinuous(20);
+        else
+        {
+            Serial.println(F("Failed to boot VL53L0X"));
+        }
 
         // Release i2c
         I2CHandler::i2c_give();
@@ -97,7 +145,7 @@ void VLXSensor::update()
 {
     if (I2CHandler::i2c_get())
     {
-        if (lox_.isRangeComplete())
+        if (is_init_ && lox_.isRangeComplete())
         {
             current_ = lox_.readRange();
             smoothed_ = adc_.readADC_Avg(current_);

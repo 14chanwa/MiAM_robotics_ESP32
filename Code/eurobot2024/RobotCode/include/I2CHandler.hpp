@@ -21,6 +21,13 @@
 
 namespace I2CHandler
 {
+    enum Side
+    {
+        RIGHT,
+        MIDDLE,
+        LEFT
+    };
+
     void init();
     TwoWire* get_wire();
 
@@ -30,6 +37,7 @@ namespace I2CHandler
     void init_vl53l0x();
     uint16_t get_current_vl53l0x();
     uint16_t get_smoothed_vl53l0x();
+    int16_t get_smoothed_vlx_side(Side side);
     void update_vl53l0x();
 
     // void initOLEDScreen();
@@ -48,7 +56,9 @@ public:
     uint16_t get_smoothed() { return smoothed_; }
 
     void update();
+    bool is_init() { return is_init_; }
 private:
+    bool is_init_ = false;
     Adafruit_VL53L0X lox_;
     ADCReading adc_;
     uint16_t current_ = 8000;

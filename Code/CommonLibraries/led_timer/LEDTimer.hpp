@@ -33,7 +33,7 @@ class CRGBLEDTimer : public LEDTimer
             color_changed_(false)
         {}
 
-        void setColor(CRGB::HTMLColorCode color) { 
+        void setColor(CRGB color) { 
             if (color_ != color)
             {
                 color_ = color;
@@ -44,7 +44,7 @@ class CRGBLEDTimer : public LEDTimer
 
     private:
         CRGB* led_;
-        CRGB::HTMLColorCode color_;
+        CRGB color_;
         bool color_changed_;
 };
 
@@ -73,7 +73,7 @@ void CRGBLEDTimer::update()
     }
     else
     {
-        *led_ = CRGB::Black;
+        *led_ = CRGB(0,0,0);
     }
 }
 

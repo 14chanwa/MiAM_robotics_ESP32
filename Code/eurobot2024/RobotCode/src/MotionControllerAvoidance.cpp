@@ -5,13 +5,13 @@
 #define AVOIDANCE_SIDE_LEFT 1
 #define AVOIDANCE_SIDE_RIGHT -1
 
-// PAMI 2 & 3 will go near the border of the table
-// so avoiding left is better...
-#if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
-    #define AVOIDANCE_SIDE AVOIDANCE_SIDE_LEFT
-#else
-    #define AVOIDANCE_SIDE AVOIDANCE_SIDE_RIGHT
-#endif
+// // PAMI 2 & 3 will go near the border of the table
+// // so avoiding left is better...
+// #if PAMI_ID == 1 || PAMI_ID == 2 || PAMI_ID == 3
+//     #define AVOIDANCE_SIDE AVOIDANCE_SIDE_LEFT
+// #else
+//     #define AVOIDANCE_SIDE AVOIDANCE_SIDE_RIGHT
+// #endif
 
 // Avoidance will try to go back this distance before avoiding
 #define AVOIDANCE_DISTANCE_BACKWARDS 60.0f
@@ -109,6 +109,9 @@ void MotionController::computeAvoidanceTrajectory(DrivetrainMeasurements const& 
         // res.push_back(pointTurnTowardsLeft);
         avoidancePositionAfterGoingBackAndPointTurn = res.back()->getEndPoint().position;
     }
+
+    // Decide on avoidance side based on measurements
+    int AVOIDANCE_SIDE = measurements.left_vlx > measurements.right_vlx ? AVOIDANCE_SIDE_LEFT : AVOIDANCE_SIDE_RIGHT;
 
     // Finally, go around
     // assume object radius is AVOIDANCE_OBSTACLE_RADIUS_MM
