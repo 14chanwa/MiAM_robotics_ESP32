@@ -12,6 +12,10 @@
 
 using namespace miam::trajectory;
 
+#define FUNNY_ACTION_SERVO_PERIOD 500
+bool funny_action_state = false;
+long funny_action_timer = 0;
+
 
 Robot* Robot::getInstance() 
 {
@@ -106,7 +110,19 @@ void performLowLevel(void* parameters)
             || robot->currentRobotState_ == RobotState::MATCH_ENDED 
         )
         {
-            ServoHandler::servoDown();
+            if (millis() - funny_action_timer > FUNNY_ACTION_SERVO_PERIOD)
+            {
+                funny_action_state = !funny_action_state;
+                funny_action_timer = millis();
+            }
+            if (funny_action_state)
+            {
+                ServoHandler::servoDown();
+            }
+            else
+            {
+                ServoHandler::servoUp();
+            }
         }
         else
         {

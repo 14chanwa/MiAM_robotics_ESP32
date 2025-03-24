@@ -34,7 +34,7 @@ using namespace miam::trajectory;
 /////////////////////////////////////////////////////////////////////
 
 
-// #define DEBUG_MODE_SIMPLE_TRAJECTORY
+//#define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 void setup()
 {

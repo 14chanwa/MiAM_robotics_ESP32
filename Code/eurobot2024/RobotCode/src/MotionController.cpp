@@ -600,6 +600,11 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     if (isPlayingRightSide_)
         targetSpeed.angular = -targetSpeed.angular;
 
+//     // Invert velocity if using pami TANK (id 5)
+// #if PAMI_ID == 5
+//     targetSpeed.angular = -targetSpeed.angular;
+// #endif
+
     // save target
     targetSpeed_ = targetSpeed;
 

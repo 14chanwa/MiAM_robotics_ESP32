@@ -68,7 +68,7 @@ void TFTScreen::init()
     );
 
     tft.init(); 
-    tft.setRotation(1); 
+    tft.setRotation(3); 
     tft.invertDisplay(false);
 
     tft.setTextWrap(true);
@@ -179,10 +179,10 @@ void TFTScreen::update(IPAddress localIP)
 
 }
 
-#define TOUCH_MIN_X 319.0f
-#define TOUCH_MIN_Y 8.0f
-#define TOUCH_MAX_X 8.0f
-#define TOUCH_MAX_Y 238.0f
+#define TOUCH_MAX_X 319.0f
+#define TOUCH_MAX_Y 8.0f
+#define TOUCH_MIN_X 8.0f
+#define TOUCH_MIN_Y 238.0f
 
 Vector2 touch_to_screen(uint16_t x, uint16_t y)
 {

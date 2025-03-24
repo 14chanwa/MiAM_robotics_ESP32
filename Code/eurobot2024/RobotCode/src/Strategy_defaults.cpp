@@ -71,7 +71,7 @@ namespace strategy
 
         startPosition = RobotPosition(35.0, 1600.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1920.0, 1450.0, M_PI);
+        targetPosition = RobotPosition(1900.0, 1420.0, M_PI);
         
         positions.clear();
         positions.push_back(startPosition);
