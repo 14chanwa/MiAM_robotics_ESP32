@@ -167,6 +167,10 @@ namespace strategy
 
 #elif PAMI_ID == 5
 
+        // PAMI should go slower
+        tc.maxWheelVelocity *= 0.75;
+        tc.maxWheelAcceleration *= 0.75;
+
         // Option 1
 
         startPosition = RobotPosition(35.0, 1905.0, 0.0);
@@ -178,9 +182,22 @@ namespace strategy
         RobotPosition tmp = startPosition;
         tmp.x += 1300.0;
         positions.push_back(tmp);
-        tmp.x -= 150;
-        tmp.y -= 350;
+        tmp.y -= 180;
         positions.push_back(tmp);
+        tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
+        res.insert(res.end(), tv.begin(), tv.end());
+
+
+        // tc.maxWheelVelocity *= 0.5;
+        // // positions.clear();
+        // RobotPosition newStart = tmp = res.back()->getEndPoint().position;
+        // //tmp.theta = -M_PI/2;
+        // tv = computeTrajectoryStraightLine(tc, tmp, 250);
+        // // positions.push_back(tmp);
+        // // tmp.y -= 350;
+        // // positions.push_back(tmp);
+        // // tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
+        // res.insert(res.end(), tv.begin(), tv.end());
 
         // // straight line towards bottom
         // tmp = startPosition;
@@ -190,8 +207,6 @@ namespace strategy
         // tmp.x -= 200;
         // positions.push_back(tmp);
         // positions.push_back(targetPosition);
-        tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
-        res.insert(res.end(), tv.begin(), tv.end());
 
 #else
 
@@ -224,7 +239,7 @@ namespace strategy
     {
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
         TrajectoryVector res;
-//         RobotPosition currentPosition(motionController->getCurrentPosition());
+        RobotPosition currentPosition(motionController->getCurrentPosition());
 // #if PAMI_ID == 1
 //         std::shared_ptr<Trajectory > pointTurnTowardsLeft(
 //         std::make_shared<PointTurn >(
@@ -235,12 +250,14 @@ namespace strategy
 //         res.push_back(pointTurnTowardsLeft);
 //         currentPosition = res.back()->getEndPoint().position;
 // #endif
-//         // Go forward
-//         float distance = FINAL_TRAJECTORY_DISTANCE_MM;
-//         // Movement should be very slow
-//         tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-//         TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
-//         res.insert(res.end(), sl.begin(), sl.end());
+#if PAMI_ID == 5
+        // Go forward
+        float distance = 180;
+        // Movement should be very slow
+        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
+        TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
+        res.insert(res.end(), sl.begin(), sl.end());
+#endif
 
 //         for (auto traj : res)
 //         {

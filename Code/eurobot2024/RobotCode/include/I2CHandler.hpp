@@ -3,7 +3,8 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "Adafruit_VL53L0X.h"
+#include <Adafruit_VL53L0X.h>
+#include <Adafruit_VL53L1X.h>
 #include <ADCReading.hpp>
 
 // class DisplayInformations
@@ -40,6 +41,8 @@ namespace I2CHandler
     int16_t get_smoothed_vlx_side(Side side);
     void update_vl53l0x();
 
+    uint16_t get_bottom_smoothed();
+
     // void initOLEDScreen();
     // void printOLEDMessage(String message);
 
@@ -50,19 +53,40 @@ class VLXSensor
 {
 public:
     VLXSensor() {}
-    void init(uint8_t target_i2c_addr);
+    virtual void init(uint8_t target_i2c_addr) = 0;
 
     uint16_t get_current() { return current_; }
     uint16_t get_smoothed() { return smoothed_; }
 
-    void update();
+    virtual void update() = 0;
     bool is_init() { return is_init_; }
-private:
+protected:
     bool is_init_ = false;
-    Adafruit_VL53L0X lox_;
     ADCReading adc_;
     uint16_t current_ = 8000;
     uint16_t smoothed_ = 8000;
+};
+
+class VL0XSensor: public VLXSensor
+{
+public:
+    VL0XSensor() : VLXSensor() {}
+    void init(uint8_t target_i2c_addr);
+    void update();
+
+private:
+    Adafruit_VL53L0X lox_;
+};
+
+class VL1XSensor: public VLXSensor
+{
+public:
+    VL1XSensor() : VLXSensor() {}
+    void init(uint8_t target_i2c_addr);
+    void update();
+
+private:
+    Adafruit_VL53L1X l1x_;
 };
 
 #endif

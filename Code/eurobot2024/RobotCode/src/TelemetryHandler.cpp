@@ -95,6 +95,7 @@ void logTelemetry(void* parameters)
 
       teleplot.update("vlx_ranging_data_mm", I2CHandler::get_current_vl53l0x());
       teleplot.update("vlx_ranging_data_smoothed_mm", I2CHandler::get_smoothed_vl53l0x());
+      teleplot.update("vlx_bottom_smoothed_mm", I2CHandler::get_bottom_smoothed());
 
     #else
     #ifdef SEND_SERIAL

@@ -84,6 +84,14 @@ void performLowLevel(void* parameters)
                 robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY); // &&
                 //(!robot->measurements.left_switch_level && !robot->measurements.right_switch_level);
 
+#if PAMI_ID == 5
+        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 40)
+        {
+            // Stop the robot
+            robotEnabled = false;
+        }
+#endif
+
         // Serial.println("Compute drivetrain motion");
         // Motion occurs only if match started
         robot->target = robot->motionController->computeDrivetrainMotion(

@@ -1,6 +1,7 @@
 #include <I2CHandler.hpp>
 
 #include <Wire.h>
+#include <parameters.hpp>
 
 #define RIGHT_VLX_ENABLE 33
 #define MIDDLE_VLX_ENABLE 32
@@ -12,9 +13,13 @@
 namespace I2CHandler
 {
 
-    VLXSensor right_sensor;
-    VLXSensor middle_sensor;
-    VLXSensor left_sensor;
+    VL0XSensor right_sensor;
+    VL0XSensor middle_sensor;
+    VL0XSensor left_sensor;
+
+#if PAMI_ID == 5
+    VL1XSensor bottom_sensor;
+#endif
 
     void init_vl53l0x()
     {
@@ -39,6 +44,21 @@ namespace I2CHandler
         digitalWrite(RIGHT_VLX_ENABLE, LOW);
         digitalWrite(LEFT_VLX_ENABLE, LOW);
 
+#if PAMI_ID == 5
+
+        // Init bottom vlx
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        bottom_sensor.init(LEFT_VLX_ADDRESS);
+
+        // Init middle vlx
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        middle_sensor.init(MIDDLE_VLX_ADDRESS);
+
+#else
 
         // Init left vlx
         vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -57,6 +77,7 @@ namespace I2CHandler
         digitalWrite(RIGHT_VLX_ENABLE, HIGH);
         vTaskDelay(50 / portTICK_PERIOD_MS);
         right_sensor.init(VL53L0X_I2C_ADDR);
+#endif
 
     };
 
@@ -69,6 +90,11 @@ namespace I2CHandler
     {
         return std::min(std::min(right_sensor.get_smoothed(), middle_sensor.get_smoothed()), left_sensor.get_smoothed());
     };
+
+    uint16_t get_bottom_smoothed()
+    {
+        return bottom_sensor.get_smoothed();
+    }
 
     int16_t get_smoothed_vlx_side(Side side)
     {
@@ -115,11 +141,15 @@ namespace I2CHandler
         right_sensor.update();
         middle_sensor.update();
         left_sensor.update();
+
+#if PAMI_ID == 5
+        bottom_sensor.update();
+#endif
     };
 
 }
 
-void VLXSensor::init(uint8_t target_i2c_addr)
+void VL0XSensor::init(uint8_t target_i2c_addr)
 {
     if (I2CHandler::i2c_get())
     {
@@ -141,7 +171,7 @@ void VLXSensor::init(uint8_t target_i2c_addr)
     }
 }
 
-void VLXSensor::update()
+void VL0XSensor::update()
 {
     if (I2CHandler::i2c_get())
     {
@@ -149,6 +179,66 @@ void VLXSensor::update()
         {
             current_ = lox_.readRange();
             smoothed_ = adc_.readADC_Avg(current_);
+        }
+
+        // Release i2c
+        I2CHandler::i2c_give();
+    }
+}
+
+void VL1XSensor::init(uint8_t target_i2c_addr)
+{
+    if (I2CHandler::i2c_get())
+    {
+        if (l1x_.begin(target_i2c_addr,
+                        I2CHandler::get_wire(),
+                        true))
+        {
+            // start continuous ranging
+            l1x_.startRanging();
+            is_init_ = true;
+            Serial.println(F("VL53L1X sensor OK!"));
+            
+            Serial.print(F("Sensor ID: 0x"));
+            Serial.println(l1x_.sensorID(), HEX);
+            
+            if (! l1x_.startRanging()) {
+                Serial.print(F("Couldn't start ranging: "));
+                Serial.println(l1x_.vl_status);
+                while (1)       delay(10);
+            }
+            Serial.println(F("Ranging started"));
+            
+            // Valid timing budgets: 15, 20, 33, 50, 100, 200 and 500ms!
+            l1x_.setTimingBudget(20);
+            Serial.print(F("Timing budget (ms): "));
+            Serial.println(l1x_.getTimingBudget());
+        
+        }
+        else
+        {
+            Serial.println(F("Failed to boot VL53L1X"));
+        }
+
+        // Release i2c
+        I2CHandler::i2c_give();
+    }
+}
+
+void VL1XSensor::update()
+{
+    if (I2CHandler::i2c_get())
+    {
+        if (is_init_)
+        {
+            int16_t current_reading = l1x_.distance();
+            //Serial.println(current_reading);
+            if (current_reading > 100)
+            {
+                current_reading = 8000;
+            }
+            current_ = (uint16_t)current_reading;
+            smoothed_ = adc_.readADC_Min(current_);
         }
 
         // Release i2c
