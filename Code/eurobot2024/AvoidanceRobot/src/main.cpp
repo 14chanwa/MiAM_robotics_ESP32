@@ -117,7 +117,7 @@ const float maxLinearBaseSpeed = driveTrainKinematics.forwardKinematics(
                                                          WheelSpeed(maxWheelSpeedRadS, maxWheelSpeedRadS))
                                      .linear; // mm/s
 // Max angular speed ; to tweak
-const float maxAngularBaseSpeed = 2 * M_PI; // rad/s
+const float maxAngularBaseSpeed = M_PI; // rad/s
 
 // void task_async_connect_wifi(void *parameters)
 // {
@@ -268,8 +268,8 @@ void loop()
 
           WheelSpeed newWheelSpeed = driveTrainKinematics.inverseKinematics(
               BaseSpeed(
-                  maxLinearBaseSpeed * y,
-                  maxAngularBaseSpeed * -x // if joystick pushed left, angle should be direct
+                  maxLinearBaseSpeed * x,
+                  maxAngularBaseSpeed * y // if joystick pushed left, angle should be direct
                 ) 
               );
 
