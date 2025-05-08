@@ -42,6 +42,11 @@ void performLowLevel(void* parameters)
 
     long timeStartLoop = 0;
     long timeEndLoop = 0;
+
+#if PAMI_ID == 5
+    long stopTime = 0;
+    bool permanentlyStopped = false;
+#endif
     for(;;)
     {
         timeEndLoop = micros();
@@ -85,9 +90,27 @@ void performLowLevel(void* parameters)
                 //(!robot->measurements.left_switch_level && !robot->measurements.right_switch_level);
 
 #if PAMI_ID == 5
-        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 40)
+        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 35)
         {
+            if (robotEnabled && (millis() - stopTime) < 500)
+            {
+                // Clear the timer
+                stopTime = -1;
+            }
+            else if (!robotEnabled && stopTime < 0)
+            {
+                stopTime = millis();
+            }
+            // Permanently stop check
+            if (stopTime > 0 && (millis() - stopTime) > 500)
+            {
+                permanentlyStopped = true;
+            }
             // Stop the robot
+            robotEnabled = false;
+        }
+        if (permanentlyStopped)
+        {
             robotEnabled = false;
         }
 #endif

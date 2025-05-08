@@ -119,9 +119,9 @@ namespace strategy
 
 #elif PAMI_ID == 3
 
-        startPosition = RobotPosition(1120.0, 1962.5, M_PI);
+        startPosition = RobotPosition(118.0, 1700.0, 0.0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(243.0, 1681.0, M_PI);
+        targetPosition = RobotPosition(1088.0, 1488.0, M_PI);
 
         positions.clear();
         positions.push_back(startPosition);
@@ -129,12 +129,12 @@ namespace strategy
         RobotPosition tmp = targetPosition;
 
         // straight line towards bottom
-        tmp = startPosition;
-        tmp.x -= 400;
-        positions.push_back(tmp);
-        tmp = targetPosition;
-        tmp.x += 400;
-        positions.push_back(tmp);
+        // tmp = startPosition;
+        // tmp.x -= 400;
+        // positions.push_back(tmp);
+        // tmp = targetPosition;
+        // tmp.x += 400;
+        // positions.push_back(tmp);
         positions.push_back(targetPosition);
         
         tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);

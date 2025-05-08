@@ -12,14 +12,83 @@ uint16_t tX = 0, tY = 0;
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
+#define DRAW_MARGIN 10
+#define DRAW_DIMENSIONS 100
+
+// cycle colors
 std::shared_ptr<ButtonDrawable > button_change_color;
+uint color_idx = 0;
+uint16_t colors[] = { TFT_WHITE, TFT_RED, TFT_GREEN, TFT_BLUE, TFT_PURPLE };
+char* color_names[] = { "WHITE", "RED", "GREEN", "BLUE", "PURPLE" };
+const uint number_of_colors = 5;
+
+// brightness control
+std::shared_ptr<ButtonDrawable > button_change_brightness;
+uint brightness_level = 150;
+#define BRIGHTNESS_OFFSET 30;
+
+#include <WiFi.h>
+#include <esp_now.h>
+// Communication protocol
+// Define a data structure
+#define COM_NUM_LED 6
+typedef struct struct_message {
+  uint8_t red[COM_NUM_LED];
+  uint8_t green[COM_NUM_LED];
+  uint8_t blue[COM_NUM_LED];
+  uint8_t brightness;
+} struct_message;
+
+// Create a structured object
+struct_message myData;
+
+// Peer info
+esp_now_peer_info_t peerInfo;
+
+// MAC Address of responder - edit as required
+//uint8_t broadcastAddress[] = {0xA8, 0x42, 0xE3, 0x57, 0xBF, 0x28};
+uint8_t broadcastAddress[] = {0x24, 0xEC, 0x4A, 0x30, 0x83, 0x8C };
+
+// Callback function called when data is sent
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("\r\nLast Packet Send Status:\t");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+}
+
+void send_message()
+{
+    for (uint i=0; i<COM_NUM_LED; i++)
+    {
+        myData.red[i] = (colors[color_idx] & 0xF800) >> 8;
+        myData.green[i] = (colors[color_idx] & 0x7E0) >> 3;
+        myData.blue[i] = (colors[color_idx] & 0x1F) << 3;
+    }
+    myData.brightness = (char)brightness_level;
+
+    // Send message via ESP-NOW
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+    
+    if (result == ESP_OK) {
+        Serial.println("Sending confirmed");
+    }
+    else {
+        Serial.println("Sending error");
+    }
+}
+
 
 void TFTScreen::init()
 {
     
-    Vector2 top_left_corner = Vector2(215, 150);
-    Vector2 dimensions = Vector2(100, 40);
+    Vector2 top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN);
+    Vector2 dimensions = Vector2(DRAW_DIMENSIONS, DRAW_DIMENSIONS);
     button_change_color = std::make_shared<ButtonDrawable >(
+        top_left_corner,
+        dimensions
+    );
+
+    top_left_corner[0] += DRAW_DIMENSIONS + DRAW_MARGIN;
+    button_change_brightness = std::make_shared<ButtonDrawable >(
         top_left_corner,
         dimensions
     );
@@ -39,6 +108,34 @@ void TFTScreen::init()
 
     tft.setCursor(10, 230);
     tft.println("Sketch has been running for");
+
+    
+    
+  // Set ESP32 as a Wi-Fi Station
+  WiFi.mode(WIFI_STA);
+
+  // Initilize ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+
+  // Register the send callback
+  esp_now_register_send_cb(OnDataSent);
+  
+  // Register peer
+  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Add peer        
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }    
+
+  // Send first message
+  send_message();
 }
 
 void TFTScreen::update()
@@ -48,13 +145,23 @@ void TFTScreen::update()
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
     button_change_color->update(
-        "BLUE",
+        color_names[color_idx],
         TFT_BLACK,
         TFT_BLACK,
         2,
-        TFT_BLUE
+        colors[color_idx]
     );
     button_change_color->draw(tft);
+
+    std::string s = std::to_string(brightness_level);
+    button_change_brightness->update(
+        s,
+        TFT_BLACK,
+        TFT_BLACK,
+        2,
+        TFT_DARKGREY
+    );
+    button_change_brightness->draw(tft);
 
     // Update seconds count
     tft.setTextSize(1);
@@ -100,10 +207,31 @@ void TFTScreen::registerTouch()
         Serial.print(", ");
         Serial.println(v[1]);
         
+        bool need_send_message = false;
+        
         if (button_change_color->clicked(v))
         {
             Serial.println("Button clicked");
+            color_idx = (color_idx + 1) % number_of_colors;
+            need_send_message = true;
         }
+
+        if (button_change_brightness->clicked(v))
+        {
+            Serial.println("Button clicked");
+            brightness_level = brightness_level + BRIGHTNESS_OFFSET;
+            if (brightness_level > 255)
+            {
+                brightness_level = 0;
+            }
+            need_send_message = true;
+        }
+
+        if (need_send_message)
+        {
+            send_message();
+        }
+
         delay(30);
     }
 }

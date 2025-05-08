@@ -1,7 +1,7 @@
 #ifndef _PARAMETERS_HEADER
 #define _PARAMETERS_HEADER
 
-#define PAMI_ID 5
+#define PAMI_ID 3
 
 // #define USE_STEPPER_MOTORS
 #define USE_DC_MOTORS

@@ -91,10 +91,12 @@ namespace I2CHandler
         return std::min(std::min(right_sensor.get_smoothed(), middle_sensor.get_smoothed()), left_sensor.get_smoothed());
     };
 
+#if PAMI_ID == 5
     uint16_t get_bottom_smoothed()
     {
         return bottom_sensor.get_smoothed();
     }
+#endif
 
     int16_t get_smoothed_vlx_side(Side side)
     {
