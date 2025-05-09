@@ -1,4 +1,4 @@
-#include "../../include/parameters.hpp"
+#include "../include/parameters.hpp"
 #ifdef USE_DC_MOTORS
 #include <RobotBaseDC.hpp>
 #include <cmath>
@@ -9,15 +9,15 @@
 
 #define STBY 12
 
-#define IN1_A 18
-#define IN2_A 19
+#define IN1_A 16
+#define IN2_A 17
 #define EN_A 27
 
-#define IN1_B 23
-#define IN2_B 15
-#define EN_B 13
+#define IN1_B 32
+#define IN2_B 33
+#define EN_B 14
 
-#define ENCODER_A1 14
+#define ENCODER_A1 13
 #define ENCODER_B1 4
 
 #define ENCODER_A2 34
@@ -42,8 +42,8 @@
 // #define WHEEL_RADIUS_MM 13.5f
 // #define WHEEL_SPACING_MM 32.5f
 // #else 
-#define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM 28.0f
+#define WHEEL_RADIUS_MM (27.0f / 2.0f)
+#define WHEEL_SPACING_MM (65.0f / 2.0f)
 // #endif
 
 // #if PAMI_ID == 5
@@ -71,9 +71,9 @@
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
-#define VELOCITY_KP 0.5f
+#define VELOCITY_KP 0.0f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.1f
+#define VELOCITY_KI 0.0f
 
 int target_rad_s_to_pwm_command(float speed_rad_s)
 {
@@ -121,7 +121,7 @@ RobotWheelDC::RobotWheelDC(
         pwmChannel
     );
     motorPID = new miam::PID(
-        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 255.0 / 2.0
+        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 0.0//255.0 / 2.0
     );
 }
 
@@ -158,7 +158,8 @@ void RobotWheelDC::updateMotorControl(bool motorEnabled)
             
             // convert from rad/s to 0-255
             basePWMTarget_ = target_rad_s_to_pwm_command(targetSpeed_);
-            newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
+            //newPWMTarget_ = round(basePWMTarget_ + PWMcorrection_);
+            newPWMTarget_ = round(basePWMTarget_);
             newPWMTarget_ = (newPWMTarget_ > 0 ? 1 : -1) * std::min(std::abs(newPWMTarget_), 255);
         }
 
@@ -174,6 +175,7 @@ void RobotWheelDC::updateMotorControl(bool motorEnabled)
         {
             motorDriver->stop();
         }
+        log_d("pwmtarget: %i", newPWMTarget_);
         motorDriver->setSpeed(std::abs(newPWMTarget_));
     }
     timeLowLevel_ = currentTime_;

@@ -12,6 +12,8 @@
 #include <WiFi.h>
 #include "secret.hpp"
 
+#define DEADZONE_SIZE 250
+
 // Variables for test data
 int int_value;
 float float_value;
@@ -37,6 +39,8 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
+
+bool sent_stopped = false;
 
 void setup() {
   
@@ -73,15 +77,39 @@ void loop() {
 
   myData.X = analogRead(1);
   myData.Y = analogRead(2);
+
+  Serial.print("myData.X ");
+  Serial.print(myData.X);
+  Serial.print(", myData.Y ");
+  Serial.println(myData.Y);
+
+  bool joystick_triggered = max(abs(myData.X-2048), abs(myData.Y-2048)) > DEADZONE_SIZE;
+
+  if (joystick_triggered || !sent_stopped)
+  {
+    if (!joystick_triggered)
+    {
+      myData.X = 2048;
+      myData.Y = 2048;
+    }
+    // Send message via ESP-NOW
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+    
+    if (result == ESP_OK) {
+      Serial.println("Sending confirmed");
+    }
+    else {
+      Serial.println("Sending error");
+    }
+    if (!sent_stopped)
+    {
+      sent_stopped = true;
+    }
+    if (joystick_triggered)
+    {
+      sent_stopped = false;
+    }
+  }
   
-  // Send message via ESP-NOW
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-   
-  if (result == ESP_OK) {
-    Serial.println("Sending confirmed");
-  }
-  else {
-    Serial.println("Sending error");
-  }
   delay(10);
 }
