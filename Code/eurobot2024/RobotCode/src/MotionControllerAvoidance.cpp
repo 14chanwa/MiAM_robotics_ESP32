@@ -30,7 +30,8 @@ void MotionController::computeAvoidanceTrajectory(DrivetrainMeasurements const& 
 {
     // time
     timeSinceLastAvoidance_ = millis();
-    bool proximitySwitchTriggered = measurements.left_switch_level || measurements.right_switch_level;
+    bool proximitySwitchTriggered = //(measurements.left_switch_level == 1) || 
+        (measurements.right_switch_level == 1);
 
     Serial.println(">>>>>>>> Replanify");
     // try to replanify

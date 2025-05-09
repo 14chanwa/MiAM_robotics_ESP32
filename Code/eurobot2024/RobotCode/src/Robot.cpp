@@ -90,6 +90,12 @@ void performLowLevel(void* parameters)
                 //(!robot->measurements.left_switch_level && !robot->measurements.right_switch_level);
 
 #if PAMI_ID == 5
+        // Ignore front vlx if final approach
+        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
+        {
+            robot->measurements.middle_vlx = 2000;
+        }
+
         if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 35)
         {
             if (robotEnabled && (millis() - stopTime) < 500)

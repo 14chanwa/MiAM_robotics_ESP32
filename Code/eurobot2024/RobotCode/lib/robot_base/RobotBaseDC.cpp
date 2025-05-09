@@ -28,7 +28,7 @@
 /////////////////////////////////////////////
 
 #define MOTOR_REDUCTION_FACTOR 100.0f
-#define MOTOR_RATED_RPM 180.0f
+#define MOTOR_RATED_RPM 280.0f
 #define MOTOR_CONTROL_FREQUENCY_HZ 10000
 
 #define ENCODER_PULSE_PER_REVOLUTION 28.0f
@@ -43,7 +43,7 @@
 // #define WHEEL_SPACING_MM 32.5f
 // #else 
 #define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM 28.0f
+#define WHEEL_SPACING_MM (57.0f / 2.0f)
 // #endif
 
 // #if PAMI_ID == 5

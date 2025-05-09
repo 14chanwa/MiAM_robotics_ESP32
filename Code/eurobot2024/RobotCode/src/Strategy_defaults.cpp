@@ -4,44 +4,67 @@
 #define SLOW_APPROACH_WHEEL_VELOCITY 75.0f
 #define FINAL_TRAJECTORY_DISTANCE_MM 100.0f
 
+// xmin xmax ymin ymax
+#define COORD_ZONE_1 960.0, 1250.0, 1380.0, 1540.0
+#define COORD_ZONE_2 1300.0, 1750.0, 1300.0, 1540.0
+#define COORD_ZONE_3 1740.0, 2000.0, 1380.0, 1540.0
+
+bool robot_position_in_zone(RobotPosition& position, float xmin, float xmax, float ymin, float ymax)
+{
+    return (
+        position.x >= xmin &&
+        position.x <= xmax &&
+        position.y >= ymin &&
+        position.y <= ymax
+    );
+}
+
 namespace strategy
 {
     float get_waiting_time_s()
     {
-        #if PAMI_ID == 2
-            return 1.5;
-        #elif PAMI_ID == 5
-            return 0.0;
-        #else
-            return 0.0;
+        #if PAMI_ID == 2 || PAMI_ID == 4
+            return 4.0;
         #endif
+        return 0.0;
     };
 
     bool position_in_end_zone(RobotPosition position)
     {
+        // #if PAMI_ID == 1
+        // // Top left jardiniere
+        // return position.x <= 150 && position.y >= 1200 && position.y <= 1600; 
+        // #elif PAMI_ID == 3
+        // // top left blue corner
+        // return position.x <= 450 && position.y >= 1550;
+        // #elif PAMI_ID == 4
+        // // Bottom left blue corner
+        // return position.x <= 450 && position.y <= 450;
+        // #elif PAMI_ID == 5
+        // return position.x >= 2550 && position.y >= 760 && position.y <= 1200; 
+        // #else
+
         #if PAMI_ID == 1
-        // Top left jardiniere
-        return position.x <= 150 && position.y >= 1200 && position.y <= 1600; 
+            return robot_position_in_zone(position, COORD_ZONE_3);
+        #elif PAMI_ID == 2
+            return robot_position_in_zone(position, COORD_ZONE_3);
         #elif PAMI_ID == 3
-        // top left blue corner
-        return position.x <= 450 && position.y >= 1550;
+            return robot_position_in_zone(position, COORD_ZONE_2);
         #elif PAMI_ID == 4
-        // Bottom left blue corner
-        return position.x <= 450 && position.y <= 450;
-        #elif PAMI_ID == 5
-        return position.x >= 2550 && position.y >= 760 && position.y <= 1200; 
-        #else
-        return false;
+            return robot_position_in_zone(position, COORD_ZONE_1);
         #endif
+
+        return false;
+        // #endif
     }
 
     bool position_in_avoidance_exclusion(RobotPosition position)
     {
-        #if PAMI_ID == 3 || PAMI_ID == 4 || PAMI_ID == 5
-        return position_in_end_zone(position);
-        #else
+        // #if PAMI_ID == 3 || PAMI_ID == 4 || PAMI_ID == 5
+        // return position_in_end_zone(position);
+        // #else
         return false;
-        #endif
+        // #endif
 
         // #if PAMI_ID == 3
         // // top left blue corner
@@ -69,9 +92,9 @@ namespace strategy
         
 #if PAMI_ID == 1
 
-        startPosition = RobotPosition(35.0, 1600.0, 0);
+        startPosition = RobotPosition(45.0, 1585.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1900.0, 1420.0, M_PI);
+        targetPosition = RobotPosition(1940.0, 1400.0, M_PI);
         
         positions.clear();
         positions.push_back(startPosition);
@@ -82,11 +105,11 @@ namespace strategy
         tmp = startPosition;
         tmp.x += 200;
         positions.push_back(tmp);
-        tmp.x = 550;
-        tmp.y = 1500.0;
+        tmp.x = 840;
+        tmp.y = 1100.0;
         positions.push_back(tmp);
-        tmp.x = 1450.0;
-        tmp.y = 1096.0;
+        tmp.x = 1640.0;
+        tmp.y = 1100.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -109,7 +132,7 @@ namespace strategy
         tmp.x += 150;
         positions.push_back(tmp);
         tmp.x = 1000.0;
-        tmp.y = 1300.0;
+        tmp.y = 1100.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -119,22 +142,22 @@ namespace strategy
 
 #elif PAMI_ID == 3
 
-        startPosition = RobotPosition(118.0, 1700.0, 0.0);
+        startPosition = RobotPosition(45.0, 1745.0, 0.0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1088.0, 1488.0, M_PI);
+        targetPosition = RobotPosition(1670.0, 1470.0, M_PI);
 
         positions.clear();
         positions.push_back(startPosition);
 
         RobotPosition tmp = targetPosition;
 
-        // straight line towards bottom
-        // tmp = startPosition;
-        // tmp.x -= 400;
-        // positions.push_back(tmp);
-        // tmp = targetPosition;
-        // tmp.x += 400;
-        // positions.push_back(tmp);
+        // straight line towards bottomright
+        tmp = startPosition;
+        tmp.x += 300;
+        positions.push_back(tmp);
+        tmp.x = 1000;
+        tmp.y = 1470;
+        positions.push_back(tmp);
         positions.push_back(targetPosition);
         
         tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);

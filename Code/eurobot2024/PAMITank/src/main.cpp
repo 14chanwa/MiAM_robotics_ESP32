@@ -264,8 +264,8 @@ void loop()
         if (remoteStickReading[0] > REMOTE_DEAD_ZONE || remoteStickReading[1] > REMOTE_DEAD_ZONE)
         {
           // Get the angle of the joystick vector
-          float x = (remoteStickReading[0] - 2048.0) / REMOTE_MAX_VALUE;
-          float y = (remoteStickReading[1] - 2048.0) / REMOTE_MAX_VALUE;
+          float x = -(remoteStickReading[1] - 2048.0) / REMOTE_MAX_VALUE;
+          float y = (remoteStickReading[0] - 2048.0) / REMOTE_MAX_VALUE;
           float joystickAngle = atan2f(y, x);
 
           // Get the norm of the joystick vector

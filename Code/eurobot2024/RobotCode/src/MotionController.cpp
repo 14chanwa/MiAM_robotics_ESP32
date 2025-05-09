@@ -138,7 +138,10 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     /// * move is stopped when contact is made with BOTH switches
     if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
     {
-        if (measurements.left_switch_level && measurements.right_switch_level)
+        if (
+            //measurements.left_switch_level == 1 && 
+            measurements.right_switch_level == 1
+        )
         {
             slowDownCoeff_ = 0.0;
             clampedSlowDownCoeff_ = 0.0;
@@ -199,8 +202,10 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
             // check if the trajectory should not be avoided
             currentTrajectories_.front()->isAvoidanceEnabled() &&
-            // the obstacle is not in avoidance exclusion
-            !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+            // // the obstacle is not in avoidance exclusion
+            // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+            // pami has not yet reached destination
+            !strategy::position_in_end_zone(getCurrentPosition()) &&
             // match will not end soon
             100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S
         )
