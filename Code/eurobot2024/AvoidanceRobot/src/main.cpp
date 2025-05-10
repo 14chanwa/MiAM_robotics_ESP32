@@ -185,8 +185,8 @@ void loop()
   if (newMessageReceived)
   {
     lastRemoteControllerMillis = millis();
-    remoteStickReading[0] =  (myData.X - 2048) * 256.0 / 4096.0;
-    remoteStickReading[1] =  (myData.Y - 2048) * 256.0 / 4096.0;
+    remoteStickReading[0] =  -(myData.Y - 2048) * 256.0 / 4096.0;
+    remoteStickReading[1] =  (myData.X - 2048) * 256.0 / 4096.0;
     // Serial.print("New message received");
     newMessageReceived = false;
     needSendCommand = true;
