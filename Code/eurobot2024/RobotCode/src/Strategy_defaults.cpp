@@ -23,8 +23,10 @@ namespace strategy
 {
     float get_waiting_time_s()
     {
-        #if PAMI_ID == 2 || PAMI_ID == 4
-            return 4.0;
+        #if PAMI_ID == 2 
+            return 4.0
+        #elif PAMI_ID == 4
+            return 6.0;
         #endif
         return 0.0;
     };
@@ -118,9 +120,9 @@ namespace strategy
 
 #elif PAMI_ID == 2
 
-        startPosition = RobotPosition(35.0, 1700.0, 0);
+        startPosition = RobotPosition(45.0, 1665.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1500.0, 1400.0, M_PI);
+        targetPosition = RobotPosition(1773.0, 1372.0, M_PI);
         
         positions.clear();
         positions.push_back(startPosition);
@@ -131,8 +133,8 @@ namespace strategy
         tmp = startPosition;
         tmp.x += 150;
         positions.push_back(tmp);
-        tmp.x = 1000.0;
-        tmp.y = 1100.0;
+        tmp.x = 1210.0;
+        tmp.y = 1294.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -165,23 +167,19 @@ namespace strategy
 
 #elif PAMI_ID == 4
 
-        startPosition = RobotPosition(1330.0, 1925.0, -M_PI_2);
+        startPosition = RobotPosition(45.0, 1825.0, 0.0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(225, 225, -M_PI_2-M_PI_4);
+        targetPosition = RobotPosition(1078.0, 1478.0, -M_PI_2-M_PI_4);
         
 
         positions.clear();
         positions.push_back(startPosition);
 
-        RobotPosition tmp = targetPosition;
-
         // straight line towards bottom
-        tmp = startPosition;
-        tmp.y -= 400;
+        RobotPosition tmp = startPosition;
+        tmp.x += 250;
         positions.push_back(tmp);
-        tmp = RobotPosition(1140.0, 1048.0, 0.0);
-        positions.push_back(tmp);
-        tmp = RobotPosition(615.0, 598.0, 0.0);
+        tmp = RobotPosition(776.0, 1424.0, 0.0);
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
