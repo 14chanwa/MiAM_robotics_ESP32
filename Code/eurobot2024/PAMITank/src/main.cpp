@@ -116,7 +116,7 @@ DrivetrainKinematics driveTrainKinematics(
 // const float maxLinearBaseSpeed = driveTrainKinematics.forwardKinematics(
 //                                                          WheelSpeed(maxWheelSpeedRadS, maxWheelSpeedRadS))
 //                                      .linear; // mm/s
-const float maxLinearBaseSpeed = 500.0;
+const float maxLinearBaseSpeed = 150.0;
 // // Max angular speed ; to tweak
 const float maxAngularBaseSpeed = M_PI; // rad/s
 
@@ -261,12 +261,14 @@ void loop()
     {
       if (needSendCommand)
       {
-        if (remoteStickReading[0] > REMOTE_DEAD_ZONE || remoteStickReading[1] > REMOTE_DEAD_ZONE)
+        if (abs(remoteStickReading[0]-2048.0) > REMOTE_DEAD_ZONE || abs(remoteStickReading[1]-2048.0) > REMOTE_DEAD_ZONE)
         {
           // Get the angle of the joystick vector
           float x = -(remoteStickReading[1] - 2048.0) / REMOTE_MAX_VALUE;
           float y = (remoteStickReading[0] - 2048.0) / REMOTE_MAX_VALUE;
           float joystickAngle = atan2f(y, x);
+
+          // log_d("x: %f - y: %f - theta: %f", x, y, joystickAngle);
 
           // Get the norm of the joystick vector
           float joystickNorm = remoteStickReading.norm();
