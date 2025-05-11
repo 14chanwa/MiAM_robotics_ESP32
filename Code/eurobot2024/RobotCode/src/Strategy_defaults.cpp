@@ -27,6 +27,8 @@ namespace strategy
             return 4.0
         #elif PAMI_ID == 4
             return 6.0;
+        #elif PAMI_ID == 3
+            return 1.0;
         #endif
         return 0.0;
     };
@@ -157,8 +159,10 @@ namespace strategy
         tmp = startPosition;
         tmp.x += 300;
         positions.push_back(tmp);
+        tmp.y -= 150;
+        positions.push_back(tmp);
         tmp.x = 1000;
-        tmp.y = 1470;
+        tmp.y = 1430;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
