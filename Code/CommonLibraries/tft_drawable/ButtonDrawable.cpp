@@ -10,7 +10,8 @@ ButtonDrawable::ButtonDrawable(
     text_color_clicked_(TFT_BLACK),
     text_size_(1),
     background_color_(TFT_BLACK),
-    lastDrawingColor(0)
+    lastDrawingColor(0),
+    need_redraw_(true)
 {
 
 }
@@ -33,8 +34,10 @@ void ButtonDrawable::update(
 void ButtonDrawable::draw(TFT_eSPI& target)
 {
     uint16_t drawingColor = is_currently_clicked() ? TFT_WHITE : background_color_;
-    if (drawingColor == lastDrawingColor)
+    if (drawingColor == lastDrawingColor && !need_redraw_)
         return;
+    
+    need_redraw_ = false;
     
     target.fillRect(
         top_left_corner_[0], 
@@ -46,9 +49,23 @@ void ButtonDrawable::draw(TFT_eSPI& target)
     // text
     target.setTextSize(text_size_);
     target.setTextColor(is_currently_clicked() ? text_color_clicked_ : text_color_);
-    target.setCursor(top_left_corner_[0] + 10, 
-        top_left_corner_[1] + 10);
+    target.setCursor(top_left_corner_[0] + 5, 
+        top_left_corner_[1] + 5);
     target.print(text_.c_str());
 
     lastDrawingColor = drawingColor;
+}
+
+void ButtonDrawable::trigger_redraw()
+{
+    need_redraw_ = true;
+}
+
+void ButtonDrawable::draw_text(TFT_eSPI& target, std::string text, char line)
+{
+    target.setTextSize(text_size_);
+    target.setTextColor(is_currently_clicked() ? text_color_clicked_ : text_color_);
+    target.setCursor(top_left_corner_[0] + 5, 
+        top_left_corner_[1] + 5 + 10 * line);
+    target.print(text.c_str());
 }

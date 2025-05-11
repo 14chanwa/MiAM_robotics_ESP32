@@ -13,19 +13,61 @@ uint16_t tX = 0, tY = 0;
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 #define DRAW_MARGIN 10
-#define DRAW_DIMENSIONS 100
+#define DRAW_DIMENSIONS_WIDTH 150
+#define DRAW_DIMENSIONS_HEIGHT 33
 
 // cycle colors
 std::shared_ptr<ButtonDrawable > button_change_color;
 uint color_idx = 0;
-uint16_t colors[] = { TFT_WHITE, TFT_RED, TFT_GREEN, TFT_BLUE, TFT_PURPLE };
-char* color_names[] = { "WHITE", "RED", "GREEN", "BLUE", "PURPLE" };
+uint16_t colors[] = { TFT_GREEN, TFT_WHITE, TFT_RED, TFT_BLUE, TFT_PURPLE };
+char* color_names[] = { "GREEN", "WHITE", "RED", "BLUE", "PURPLE" };
 const uint number_of_colors = 5;
+// uint16_t colors[] = { TFT_GREEN, TFT_WHITE };
+// char* color_names[] = { "GREEN", "WHITE" };
+// const uint number_of_colors = 2;
+
 
 // brightness control
-std::shared_ptr<ButtonDrawable > button_change_brightness;
-uint brightness_level = 150;
+// std::shared_ptr<ButtonDrawable > button_change_brightness;
+uint brightness_level = 255;
 #define BRIGHTNESS_OFFSET 30;
+
+// showcase buttons
+char* showcase_names[] = { "Elec", "Batterie", "Moteurs" };
+char number_of_showcase = 3;
+std::vector<std::shared_ptr<ButtonDrawable > > buttons_showcase;
+
+enum DisplayState
+{
+    NONE,
+    ELEC,
+    BATTERIE,
+    MOTEURS
+};
+DisplayState current_state = DisplayState::NONE;
+
+std::shared_ptr<ButtonDrawable> fakebutton_text;
+
+#define HIGHLIGHTED_COLOR TFT_WHITE
+#define HIDDEN_COLOR TFT_RED
+
+#define NONE_TEXT {"Selectionner un", "composant a gauche"}
+#define NONE_TEXT_NLINES 2
+
+#define ELEC_TEXT {"L'electronique du robot", "est concentree sur cet", "etage."}
+#define ELEC_TEXT_NLINES 3
+#define ELEC_LEDS {0, 1}
+#define ELEC_LEDS_SIZE 2
+
+#define BATTERIE_TEXT {"La batterie du robot", "est une batterie ", "d'outils portatifs."}
+#define BATTERIE_TEXT_NLINES 3
+#define BATTERIE_LEDS {2, 3}
+#define BATTERIE_LEDS_SIZE 2
+
+#define MOTEURS_TEXT {"Automathilde utilise", "des moteurs brushless et", "des drivers maison."}
+#define MOTEURS_TEXT_NLINES 3
+#define MOTEURS_LEDS {4, 5}
+#define MOTEURS_LEDS_SIZE 2
 
 #include <WiFi.h>
 #include <esp_now.h>
@@ -55,14 +97,59 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
+void setColor(struct_message& message, uint led_idx, uint16_t color)
+{
+    message.red[led_idx] = (color & 0xF800) >> 8;
+    message.green[led_idx] = (color & 0x7E0) >> 3;
+    message.blue[led_idx] = (color & 0x1F) << 3;
+}
+
 void send_message()
 {
-    for (uint i=0; i<COM_NUM_LED; i++)
+    if (current_state == DisplayState::NONE)
     {
-        myData.red[i] = (colors[color_idx] & 0xF800) >> 8;
-        myData.green[i] = (colors[color_idx] & 0x7E0) >> 3;
-        myData.blue[i] = (colors[color_idx] & 0x1F) << 3;
+        for (uint i=0; i<COM_NUM_LED; i++)
+        {
+            setColor(myData, i, colors[color_idx]);
+        }
     }
+    else if (current_state == DisplayState::ELEC)
+    {
+        for (uint i=0; i<COM_NUM_LED; i++)
+        {
+            setColor(myData, i, HIDDEN_COLOR);
+        }
+        uint highlighted_leds[] = ELEC_LEDS;
+        for (uint i=0; i < ELEC_LEDS_SIZE; i++)
+        {
+            setColor(myData, highlighted_leds[i], HIGHLIGHTED_COLOR);
+        }
+    }
+    else if (current_state == DisplayState::BATTERIE)
+    {
+        for (uint i=0; i<COM_NUM_LED; i++)
+        {
+            setColor(myData, i, HIDDEN_COLOR);
+        }
+        uint highlighted_leds[] = BATTERIE_LEDS;
+        for (uint i=0; i < BATTERIE_LEDS_SIZE; i++)
+        {
+            setColor(myData, highlighted_leds[i], HIGHLIGHTED_COLOR);
+        }
+    }
+    else if (current_state == DisplayState::MOTEURS)
+    {
+        for (uint i=0; i<COM_NUM_LED; i++)
+        {
+            setColor(myData, i, HIDDEN_COLOR);
+        }
+        uint highlighted_leds[] = MOTEURS_LEDS;
+        for (uint i=0; i < MOTEURS_LEDS_SIZE; i++)
+        {
+            setColor(myData, highlighted_leds[i], HIGHLIGHTED_COLOR);
+        }
+    }
+
     myData.brightness = (char)brightness_level;
 
     // Send message via ESP-NOW
@@ -80,18 +167,36 @@ void send_message()
 void TFTScreen::init()
 {
     
-    Vector2 top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN);
-    Vector2 dimensions = Vector2(DRAW_DIMENSIONS, DRAW_DIMENSIONS);
+    Vector2 top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN * (3+1) + 3 * DRAW_DIMENSIONS_HEIGHT);
+    Vector2 dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, DRAW_DIMENSIONS_HEIGHT);
     button_change_color = std::make_shared<ButtonDrawable >(
         top_left_corner,
         dimensions
     );
 
-    top_left_corner[0] += DRAW_DIMENSIONS + DRAW_MARGIN;
-    button_change_brightness = std::make_shared<ButtonDrawable >(
+    
+    for (char i=0; i<number_of_showcase; i++)
+    {
+        top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN * (1+i) + i * DRAW_DIMENSIONS_HEIGHT);
+        dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, DRAW_DIMENSIONS_HEIGHT);
+        buttons_showcase.push_back(std::make_shared<ButtonDrawable >(
+            top_left_corner,
+            dimensions
+        ));
+    }
+
+    top_left_corner = Vector2(DRAW_MARGIN * 2 + DRAW_DIMENSIONS_WIDTH, DRAW_MARGIN);
+    dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, 5 * DRAW_DIMENSIONS_HEIGHT);
+    fakebutton_text = std::make_shared<ButtonDrawable >(
         top_left_corner,
         dimensions
     );
+    
+    // top_left_corner[0] += DRAW_DIMENSIONS + DRAW_MARGIN;
+    // button_change_brightness = std::make_shared<ButtonDrawable >(
+    //     top_left_corner,
+    //     dimensions
+    // );
 
     // Start the SPI for the touch screen and init the TS library
     mySpi.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
@@ -144,24 +249,108 @@ void TFTScreen::update()
     tft.setTextSize(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    button_change_color->update(
-        color_names[color_idx],
-        TFT_BLACK,
-        TFT_BLACK,
-        2,
-        colors[color_idx]
-    );
+    if (current_state == NONE)
+    {
+        button_change_color->update(
+            color_names[color_idx],
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            colors[color_idx]
+        );
+    }
+    else
+    {
+        button_change_color->update(
+            "< Retour",
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            TFT_PINK
+        );
+    }
     button_change_color->draw(tft);
 
-    std::string s = std::to_string(brightness_level);
-    button_change_brightness->update(
-        s,
+
+
+    for (char i=0; i<number_of_showcase; i++)
+    {
+        uint16_t color = TFT_WHITE;
+        if (current_state != DisplayState::NONE)
+        {
+            if (
+                (i == 0 && current_state == DisplayState::ELEC) ||
+                (i == 1 && current_state == DisplayState::BATTERIE) ||
+                (i == 2 && current_state == DisplayState::MOTEURS)
+            )
+            {
+                color = HIGHLIGHTED_COLOR;
+            }
+            else
+            {
+                color = HIDDEN_COLOR;
+            }
+        }
+        buttons_showcase.at(i)->update(
+            showcase_names[i],
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            color
+        );
+        buttons_showcase.at(i)->draw(tft);
+    }
+
+    fakebutton_text->update(
+        "",
         TFT_BLACK,
         TFT_BLACK,
-        2,
-        TFT_DARKGREY
+        1,
+        TFT_WHITE
     );
-    button_change_brightness->draw(tft);
+    fakebutton_text->draw(tft);
+    if (current_state == DisplayState::ELEC)
+    {
+        char* to_draw[] = ELEC_TEXT;
+        for (char i=0; i<ELEC_TEXT_NLINES; i++)
+        {
+            fakebutton_text->draw_text(tft, to_draw[i], i);
+        }
+    }
+    else if (current_state == DisplayState::BATTERIE)
+    {
+        char* to_draw[] = BATTERIE_TEXT;
+        for (char i=0; i<BATTERIE_TEXT_NLINES; i++)
+        {
+            fakebutton_text->draw_text(tft, to_draw[i], i);
+        }
+    }
+    else if (current_state == DisplayState::MOTEURS)
+    {
+        char* to_draw[] = MOTEURS_TEXT;
+        for (char i=0; i<MOTEURS_TEXT_NLINES; i++)
+        {
+            fakebutton_text->draw_text(tft, to_draw[i], i);
+        }
+    }
+    else
+    {
+        char* to_draw[] = NONE_TEXT;
+        for (char i=0; i<NONE_TEXT_NLINES; i++)
+        {
+            fakebutton_text->draw_text(tft, to_draw[i], i);
+        }
+    }
+
+    // std::string s = std::to_string(brightness_level);
+    // button_change_brightness->update(
+    //     s,
+    //     TFT_BLACK,
+    //     TFT_BLACK,
+    //     2,
+    //     TFT_DARKGREY
+    // );
+    // button_change_brightness->draw(tft);
 
     // Update seconds count
     tft.setTextSize(1);
@@ -212,20 +401,51 @@ void TFTScreen::registerTouch()
         if (button_change_color->clicked(v))
         {
             Serial.println("Button clicked");
-            color_idx = (color_idx + 1) % number_of_colors;
+            if (current_state == DisplayState::NONE)
+            {
+                color_idx = (color_idx + 1) % number_of_colors;
+            }
+            else
+            {
+                current_state = DisplayState::NONE;
+            }
+            fakebutton_text->trigger_redraw();
             need_send_message = true;
         }
 
-        if (button_change_brightness->clicked(v))
+        for (char i=0; i<number_of_showcase; i++)
         {
-            Serial.println("Button clicked");
-            brightness_level = brightness_level + BRIGHTNESS_OFFSET;
-            if (brightness_level > 255)
+            if (buttons_showcase.at(i)->clicked(v))
             {
-                brightness_level = 0;
+                Serial.println("Button clicked");
+                if (i == 0)
+                {
+                    current_state = DisplayState::ELEC;
+                }
+                else if (i == 1)
+                {
+                    current_state = DisplayState::BATTERIE;
+                }
+                else if (i == 2)
+                {
+                    current_state = DisplayState::MOTEURS;
+                }
+                //need_send_message = true;
+                fakebutton_text->trigger_redraw();
             }
             need_send_message = true;
         }
+
+        // if (button_change_brightness->clicked(v))
+        // {
+        //     Serial.println("Button clicked");
+        //     brightness_level = brightness_level + BRIGHTNESS_OFFSET;
+        //     if (brightness_level > 255)
+        //     {
+        //         brightness_level = 0;
+        //     }
+        //     need_send_message = true;
+        // }
 
         if (need_send_message)
         {
