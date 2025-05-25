@@ -6,6 +6,11 @@
 #include <ButtonDrawable.hpp>
 #include <XPT2046_Touchscreen.h>
 
+int randint(int Min, int Max) {
+    return std::rand() % (Max + 1 - Min) + Min;
+}
+
+
 SPIClass mySpi = SPIClass(VSPI);
 XPT2046_Touchscreen ts(XPT2046_CS, XPT2046_IRQ);
 uint16_t tX = 0, tY = 0;
@@ -19,9 +24,9 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 // cycle colors
 std::shared_ptr<ButtonDrawable > button_change_color;
 uint color_idx = 0;
-uint16_t colors[] = { TFT_GREEN, TFT_WHITE, TFT_RED, TFT_BLUE, TFT_PURPLE };
-char* color_names[] = { "GREEN", "WHITE", "RED", "BLUE", "PURPLE" };
-const uint number_of_colors = 5;
+uint16_t colors[] = { TFT_GREEN, TFT_WHITE, TFT_RED, TFT_BLUE, TFT_PURPLE, TFT_ORANGE };
+char* color_names[] = { "GREEN", "WHITE", "RED", "BLUE", "PURPLE", "ORANGE" };
+const uint number_of_colors = 6;
 // uint16_t colors[] = { TFT_GREEN, TFT_WHITE };
 // char* color_names[] = { "GREEN", "WHITE" };
 // const uint number_of_colors = 2;
@@ -44,7 +49,24 @@ enum DisplayState
     BATTERIE,
     MOTEURS
 };
+
+enum BlinkState
+{
+    NORMAL,
+    CHAOTIC
+};
+
+int bpm_modes[] = {30, 90, 120, 180};
+char num_bpm_modes = 4;
+char current_bpm_index = 0;
+char old_bpm_index = 255;
+
 DisplayState current_state = DisplayState::NONE;
+BlinkState current_blink_state = BlinkState::NORMAL;
+long last_blinked = 0;
+
+std::shared_ptr<ButtonDrawable> button_blink_state;
+std::shared_ptr<ButtonDrawable> button_bpm;
 
 std::shared_ptr<ButtonDrawable> fakebutton_text;
 
@@ -103,6 +125,9 @@ void setColor(struct_message& message, uint led_idx, uint16_t color)
     message.green[led_idx] = (color & 0x7E0) >> 3;
     message.blue[led_idx] = (color & 0x1F) << 3;
 }
+
+xSemaphoreHandle xMutex;
+bool need_send_message = false;
 
 void send_message()
 {
@@ -163,9 +188,24 @@ void send_message()
     }
 }
 
+// void task_send_message(void* parameters)
+// {
+//     if (xSemaphoreTake(xMutex, portMAX_DELAY))
+//     {
+//         if (need_send_message)
+//         {
+//             send_message();
+//             need_send_message = false;
+//         }
+//         xSemaphoreGive(xMutex);
+//     }
+//     delay(100);
+// }
+
 
 void TFTScreen::init()
 {
+    xMutex = xSemaphoreCreateMutex();
     
     Vector2 top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN * (3+1) + 3 * DRAW_DIMENSIONS_HEIGHT);
     Vector2 dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, DRAW_DIMENSIONS_HEIGHT);
@@ -184,6 +224,20 @@ void TFTScreen::init()
             dimensions
         ));
     }
+
+    top_left_corner = Vector2(DRAW_MARGIN, DRAW_MARGIN * (1+4) + 4 * DRAW_DIMENSIONS_HEIGHT);
+    dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, DRAW_DIMENSIONS_HEIGHT);
+    button_blink_state = std::make_shared<ButtonDrawable >(
+        top_left_corner,
+        dimensions
+    );
+
+    top_left_corner = Vector2(DRAW_MARGIN * 2 + DRAW_DIMENSIONS_WIDTH, DRAW_MARGIN * (1+4) + 4 * DRAW_DIMENSIONS_HEIGHT);
+    dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, DRAW_DIMENSIONS_HEIGHT);
+    button_bpm = std::make_shared<ButtonDrawable >(
+        top_left_corner,
+        dimensions
+    );
 
     top_left_corner = Vector2(DRAW_MARGIN * 2 + DRAW_DIMENSIONS_WIDTH, DRAW_MARGIN);
     dimensions = Vector2(DRAW_DIMENSIONS_WIDTH, 5 * DRAW_DIMENSIONS_HEIGHT);
@@ -214,33 +268,41 @@ void TFTScreen::init()
     tft.setCursor(10, 230);
     tft.println("Sketch has been running for");
 
-    
-    
-  // Set ESP32 as a Wi-Fi Station
-  WiFi.mode(WIFI_STA);
+    // Set ESP32 as a Wi-Fi Station
+    WiFi.mode(WIFI_STA);
 
-  // Initilize ESP-NOW
-  if (esp_now_init() != ESP_OK) {
+    // Initilize ESP-NOW
+    if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
-  }
+    }
 
-  // Register the send callback
-  esp_now_register_send_cb(OnDataSent);
-  
-  // Register peer
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
-  peerInfo.encrypt = false;
-  
-  // Add peer        
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
-    return;
-  }    
+    // Register the send callback
+    esp_now_register_send_cb(OnDataSent);
 
-  // Send first message
-  send_message();
+    // Register peer
+    memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+    peerInfo.channel = 0;  
+    peerInfo.encrypt = false;
+
+    // Add peer        
+    if (esp_now_add_peer(&peerInfo) != ESP_OK){
+        Serial.println("Failed to add peer");
+        return;
+    }    
+
+    // Send first message
+    send_message();
+
+    // xTaskCreatePinnedToCore(
+    //     task_send_message,
+    //     "task_send_message",
+    //     100000,
+    //     NULL,
+    //     30,
+    //     NULL,
+    //     1
+    // );
 }
 
 void TFTScreen::update()
@@ -249,17 +311,7 @@ void TFTScreen::update()
     tft.setTextSize(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    if (current_state == NONE)
-    {
-        button_change_color->update(
-            color_names[color_idx],
-            TFT_BLACK,
-            TFT_BLACK,
-            2,
-            colors[color_idx]
-        );
-    }
-    else
+    if (current_state != NONE)
     {
         button_change_color->update(
             "< Retour",
@@ -267,6 +319,26 @@ void TFTScreen::update()
             TFT_BLACK,
             2,
             TFT_PINK
+        );
+    }
+    else if (current_blink_state == BlinkState::CHAOTIC)
+    {
+        button_change_color->update(
+            "ALL COLORS",
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            TFT_PINK
+        );
+    }
+    else if (current_state == NONE)
+    {
+        button_change_color->update(
+            color_names[color_idx],
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            colors[color_idx]
         );
     }
     button_change_color->draw(tft);
@@ -342,6 +414,30 @@ void TFTScreen::update()
         }
     }
 
+    button_blink_state->update(
+        current_blink_state == BlinkState::NORMAL ? "Static" : (current_blink_state == BlinkState::CHAOTIC ? "Chaotic" : ""),
+        TFT_BLACK,
+        TFT_BLACK,
+        2,
+        current_blink_state == BlinkState::CHAOTIC ? TFT_RED : TFT_WHITE
+    );
+    button_blink_state->draw(tft);
+
+    std::string new_string = std::string("BPM: ") + std::to_string(bpm_modes[current_bpm_index]);
+    button_bpm->update(
+        new_string,
+        TFT_BLACK,
+        TFT_BLACK,
+        2,
+        current_blink_state == BlinkState::CHAOTIC ? TFT_WHITE : TFT_BLACK
+    );
+    if (old_bpm_index != current_bpm_index)
+    {
+        button_bpm->trigger_redraw();
+        old_bpm_index = current_bpm_index;
+    }
+    button_bpm->draw(tft);
+
     // std::string s = std::to_string(brightness_level);
     // button_change_brightness->update(
     //     s,
@@ -359,6 +455,41 @@ void TFTScreen::update()
     tft.print(millis() / 1000);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print(" seconds.");
+
+    // Update colors
+    if (xSemaphoreTake(xMutex, portMAX_DELAY))
+        {
+        if (current_blink_state == BlinkState::CHAOTIC)
+        {
+            long lhs = (millis() - last_blinked);
+            float rhs = 60.0 * 1000.0 / bpm_modes[current_bpm_index];
+            // Serial.print("lhs: ");
+            // Serial.print(lhs);
+            // Serial.print(", rhs: ");
+            // Serial.println(rhs);
+            if (lhs > rhs)
+            {
+                // Select a new color index (different than the current index)
+                uint newindex = randint(0, number_of_colors);
+                while (newindex == color_idx)
+                {
+                    newindex = randint(0, number_of_colors);
+                }
+                color_idx = newindex;
+                last_blinked = millis();
+                need_send_message = true;
+            }
+        }
+
+        if (need_send_message)
+        {
+            send_message();
+            need_send_message = false;
+        }
+
+        xSemaphoreGive(xMutex);
+    }
+    
 
 }
 
@@ -395,61 +526,98 @@ void TFTScreen::registerTouch()
         Serial.print(v[0]);
         Serial.print(", ");
         Serial.println(v[1]);
-        
-        bool need_send_message = false;
-        
-        if (button_change_color->clicked(v))
-        {
-            Serial.println("Button clicked");
-            if (current_state == DisplayState::NONE)
-            {
-                color_idx = (color_idx + 1) % number_of_colors;
-            }
-            else
-            {
-                current_state = DisplayState::NONE;
-            }
-            fakebutton_text->trigger_redraw();
-            need_send_message = true;
-        }
 
-        for (char i=0; i<number_of_showcase; i++)
+        if (xSemaphoreTake(xMutex, portMAX_DELAY))
         {
-            if (buttons_showcase.at(i)->clicked(v))
+            bool blink_state_clicked = button_blink_state->clicked(v);
+            if (blink_state_clicked)
             {
                 Serial.println("Button clicked");
-                if (i == 0)
+                if (current_blink_state == BlinkState::NORMAL)
                 {
-                    current_state = DisplayState::ELEC;
+                    current_blink_state = BlinkState::CHAOTIC;
                 }
-                else if (i == 1)
+                else
                 {
-                    current_state = DisplayState::BATTERIE;
+                    current_blink_state = BlinkState::NORMAL;
                 }
-                else if (i == 2)
-                {
-                    current_state = DisplayState::MOTEURS;
-                }
-                //need_send_message = true;
-                fakebutton_text->trigger_redraw();
+                current_state = DisplayState::NONE;
+                need_send_message = true;
             }
-            need_send_message = true;
-        }
+            
+            bool button_change_color_clicked = button_change_color->clicked(v);
+            if (blink_state_clicked || button_change_color_clicked)
+            {
+                if (button_change_color_clicked)
+                {
+                    Serial.println("Button clicked");
+                    if (current_state == DisplayState::NONE)
+                    {
+                        color_idx = (color_idx + 1) % number_of_colors;
+                    }
+                    else
+                    {
+                        current_state = DisplayState::NONE;
+                    }
+                    need_send_message = true;
+                }
+                fakebutton_text->trigger_redraw();
+                button_change_color->trigger_redraw();
+            }
 
-        // if (button_change_brightness->clicked(v))
-        // {
-        //     Serial.println("Button clicked");
-        //     brightness_level = brightness_level + BRIGHTNESS_OFFSET;
-        //     if (brightness_level > 255)
-        //     {
-        //         brightness_level = 0;
-        //     }
-        //     need_send_message = true;
-        // }
+            for (char i=0; i<number_of_showcase; i++)
+            {
+                if (buttons_showcase.at(i)->clicked(v))
+                {
+                    Serial.println("Button clicked");
+                    if (current_state == DisplayState::NONE)
+                    {
+                        current_blink_state = BlinkState::NORMAL;
+                        button_blink_state->trigger_redraw();
+                        button_bpm->trigger_redraw();
+                    }
+                    if (i == 0)
+                    {
+                        current_state = DisplayState::ELEC;
+                    }
+                    else if (i == 1)
+                    {
+                        current_state = DisplayState::BATTERIE;
+                    }
+                    else if (i == 2)
+                    {
+                        current_state = DisplayState::MOTEURS;
+                    }
+                    //need_send_message = true;
+                    fakebutton_text->trigger_redraw();
+                    button_change_color->trigger_redraw();
+                }
+                need_send_message = true;
+            }
 
-        if (need_send_message)
-        {
-            send_message();
+            // if (button_change_brightness->clicked(v))
+            // {
+            //     Serial.println("Button clicked");
+            //     brightness_level = brightness_level + BRIGHTNESS_OFFSET;
+            //     if (brightness_level > 255)
+            //     {
+            //         brightness_level = 0;
+            //     }
+            //     need_send_message = true;
+            // }
+
+
+            
+            if (button_bpm->clicked(v))
+            {
+                Serial.println("Button clicked");
+                current_bpm_index = (current_bpm_index + 1) % num_bpm_modes;
+                Serial.print("current index: ");
+                Serial.println(std::to_string(current_bpm_index).c_str());
+                need_send_message = true;
+            }
+            
+            xSemaphoreGive(xMutex);
         }
 
         delay(30);
