@@ -107,7 +107,7 @@ namespace strategy
 
         // straight line towards bottom
         tmp = startPosition;
-        tmp.x += 200;
+        tmp.x += 350;
         positions.push_back(tmp);
         tmp.x = 840;
         tmp.y = 1100.0;
@@ -153,12 +153,11 @@ namespace strategy
         positions.clear();
         positions.push_back(startPosition);
 
-        RobotPosition tmp = targetPosition;
-
-        // straight line towards bottomright
-        tmp = startPosition;
-        tmp.x += 300;
+        RobotPosition tmp = startPosition;
+        tmp.x += 200;
+        tmp.y += 1;
         positions.push_back(tmp);
+        tmp.x += 100;
         tmp.y -= 150;
         positions.push_back(tmp);
         tmp.x = 1000;
@@ -166,7 +165,7 @@ namespace strategy
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
-        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
+        tv = computeTrajectoryRoundedCorner(tc, positions, 150.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
 #elif PAMI_ID == 4

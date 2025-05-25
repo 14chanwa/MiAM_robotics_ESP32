@@ -155,7 +155,10 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     else
     {
 
-        bool proximitySwitchTriggered = measurements.vlx_range_detection_mm < VLX_STOP_RANGE;
+        bool proximitySwitchTriggered = 
+            // do not trigger short range avoidance for the 3 1st seconds
+            (measurements.currentMatchTime >= 87.0f && measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
+            measurements.right_switch_level;
         /// * move is stopped when contact is made with at least ONE OF the switches
         /// and not going backwards
         if (
@@ -207,7 +210,11 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             // pami has not yet reached destination
             !strategy::position_in_end_zone(getCurrentPosition()) &&
             // match will not end soon
-            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S
+            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
+            // do not avoid before 87.0s for all pamis
+            (measurements.currentMatchTime >= 87.0f) &&
+            // do not avoid before 90.0s for PAMI 1
+            (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
         )
         {
             computeAvoidanceTrajectory(measurements);
