@@ -70,26 +70,26 @@ void task_monitor_buttons(void *parameters)
             }
         }
 
-        // Function button toggles pami motor lock
-        buttonEvent = function_button.getEvent();
-        if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
-        {
-            if (Match::getMatchStarted())
-            {
-                Match::stopMatch();
-            }
-            else
-            {
-                Match::startMatch(85.0);
-            }
-            // Match::setStopMotors(!Match::getStopMotors());
-        }
+        // // Function button toggles pami motor lock
+        // buttonEvent = function_button.getEvent();
+        // if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
+        // {
+        //     if (Match::getMatchStarted())
+        //     {
+        //         Match::stopMatch();
+        //     }
+        //     else
+        //     {
+        //         Match::startMatch(85.0);
+        //     }
+        //     // Match::setStopMotors(!Match::getStopMotors());
+        // }
 
         // Switch button starts match
         buttonEvent = start_switch_button.getEvent();
         if (buttonEvent == ButtonEvent::NEW_STATE_HIGH)
         {
-            Match::startMatch(80.0f);
+            Match::startMatch(0.0f);
         }
         else if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
         {

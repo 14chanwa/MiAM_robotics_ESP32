@@ -14,6 +14,7 @@
 #include <SoftwareButton.hpp>
 
 #include <DrivetrainKinematics.h>
+#include <RobotPosition.h>
 
 #include <FastLED.h>
 #define FASTLED_PIN 4
@@ -76,8 +77,13 @@ ControlState currentControlState = CONTROLLED_BY_REMOTE;
 MotorState currentMotorState = POWERED;
 StepperCommunicationState stepperCommunicationState = IDLE;
 
+// Wheel speed readings
+WheelSpeed encoderWheelSpeed;
+long lastMicrosWheelSpeed = 0;
+int32_t oldRightValue = 0;
+int32_t oldLeftValue = 0;
 
-
+miam::RobotPosition currentPosition;
 
 /*
   Tasks
@@ -87,7 +93,9 @@ void task_print_encoders(void *parameters)
 {
   for (;;)
   {
-    log_d("stepper init: %d - right encoder: %d - left encoder: %d", stepper_handler::is_inited(), encoder_handler::getRightValue(), encoder_handler::getLeftValue());
+    log_d("stepper init: %d - right encoder: %d - left encoder: %d - speed right: %f - speed left: %f", 
+      stepper_handler::is_inited(), encoder_handler::getRightValue(), encoder_handler::getLeftValue(), encoderWheelSpeed.right, encoderWheelSpeed.left);
+    log_d("currentPosition: %f, %f, %f", currentPosition.x, currentPosition.y, currentPosition.theta);
     log_d(
       "motorSpeed[RIGHT] %f - motorSpeed[LEFT] %f", 
       wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX], 
@@ -125,6 +133,8 @@ const float maxLinearBaseSpeed = driveTrainKinematics.forwardKinematics(
                                      .linear; // mm/s
 // Max angular speed ; to tweak
 const float maxAngularBaseSpeed = M_PI; // rad/s
+
+const float ENCODER_PULSE_PER_REVOLUTION = 4096.0f;
 
 // void task_async_connect_wifi(void *parameters)
 // {
@@ -196,6 +206,24 @@ void setup()
 
 void loop()
 {
+  // Update wheel speed
+  long newMicrosWheelSpeed = micros();
+  int32_t newLeftValue = encoder_handler::getLeftValue();
+  int32_t newRightValue = encoder_handler::getRightValue();
+
+  encoderWheelSpeed.left = (newLeftValue - oldLeftValue) 
+            / ENCODER_PULSE_PER_REVOLUTION // convert from encoder pulse to encoder revolution
+            * 2.0 * M_PI; // convert from revolution to rad;
+  encoderWheelSpeed.right = (newRightValue - oldRightValue)
+            / ENCODER_PULSE_PER_REVOLUTION // convert from encoder pulse to encoder revolution
+            * 2.0 * M_PI; // convert from revolution to rad;
+
+  oldLeftValue = newLeftValue;
+  oldRightValue = newRightValue;
+  lastMicrosWheelSpeed = newMicrosWheelSpeed;
+  
+  driveTrainKinematics.integratePosition(encoderWheelSpeed, currentPosition, true);
+
   // newMessageReceived = bluetooth_receiver_handler::newMessageReceived();
   bool needSendCommand = false;
   if (newMessageReceived)
@@ -258,7 +286,7 @@ void loop()
   {
     if (millis() - lastRemoteControllerMillis > REMOTE_CONTROLLER_TIMEOUT)
     {
-      log_e("Remote controller timeout");
+      // log_e("Remote controller timeout");
       // Stop the robot
       wheelSpeed_rad_s_[RIGHT_ENCODER_INDEX] = 0;
       wheelSpeed_rad_s_[LEFT_ENCODER_INDEX] = 0;
@@ -282,10 +310,13 @@ void loop()
         if (joystickNorm > REMOTE_DEAD_ZONE)
         {
 
+          // Truncate y measurement
+          y = max(0.0, abs(y) - 0.3) * (y >= 0 ? 1.0 : -1.0);
+
           WheelSpeed newWheelSpeed = driveTrainKinematics.inverseKinematics(
               BaseSpeed(
-                  maxLinearBaseSpeed * x,
-                  maxAngularBaseSpeed * y // if joystick pushed left, angle should be direct
+                  0.8 * maxLinearBaseSpeed * x,
+                  0.8 * maxAngularBaseSpeed * y // if joystick pushed left, angle should be direct
                 ) 
               );
 
@@ -346,7 +377,8 @@ void loop()
       leds[i] = newColor;
     }
     last_led_millis = millis();
-    FastLED.show();  }
+    FastLED.show();  
+  }
 
 
   vTaskDelay(10 / portTICK_PERIOD_MS);
