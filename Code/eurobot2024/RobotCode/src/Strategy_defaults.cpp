@@ -24,7 +24,7 @@ namespace strategy
     float get_waiting_time_s()
     {
         #if PAMI_ID == 2 
-            return 4.0
+            return 4.0;
         #elif PAMI_ID == 4
             return 6.0;
         #elif PAMI_ID == 3
@@ -98,7 +98,7 @@ namespace strategy
 
         startPosition = RobotPosition(45.0, 1585.0, 0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1940.0, 1400.0, M_PI);
+        targetPosition = RobotPosition(1940.0, 1450.0, M_PI);
         
         positions.clear();
         positions.push_back(startPosition);
@@ -172,7 +172,7 @@ namespace strategy
 
         startPosition = RobotPosition(45.0, 1825.0, 0.0);
         motionController->resetPosition(startPosition, true, true, true);
-        targetPosition = RobotPosition(1078.0, 1478.0, -M_PI_2-M_PI_4);
+        targetPosition = RobotPosition(1078.0, 1438.0, -M_PI_2-M_PI_4);
         
 
         positions.clear();
@@ -182,7 +182,7 @@ namespace strategy
         RobotPosition tmp = startPosition;
         tmp.x += 250;
         positions.push_back(tmp);
-        tmp = RobotPosition(776.0, 1424.0, 0.0);
+        tmp = RobotPosition(776.0, 1380.0, 0.0);
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -276,7 +276,7 @@ namespace strategy
 // #endif
 #if PAMI_ID == 5
         // Go forward
-        float distance = 180;
+        float distance = 2300;
         // Movement should be very slow
         tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
         TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
