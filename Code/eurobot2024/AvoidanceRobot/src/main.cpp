@@ -15,6 +15,13 @@
 
 #include <DrivetrainKinematics.h>
 
+#include <FastLED.h>
+#define FASTLED_PIN 4
+#define NUM_LEDS 24
+CRGB leds[NUM_LEDS];
+char current_led_index = 0;
+uint last_led_millis = 0;
+uint millis_led_period = 200;
 
 #include <esp_now.h>
 typedef struct struct_message {
@@ -164,6 +171,15 @@ void setup()
 
   // Print encoder
   xTaskCreate(task_print_encoders, "task_print_encoders", 10000, NULL, 20, NULL);
+
+  FastLED.setBrightness(5);
+  FastLED.addLeds<WS2812, FASTLED_PIN, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+
+  for (uint i=0; i<NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Red;
+  }
+  FastLED.show();
 
   // Steppers
   while (!stepper_handler::is_inited())
@@ -317,6 +333,21 @@ void loop()
     }
     stepperCommunicationState = StepperCommunicationState::IDLE;
   }
+
+  if (millis() - last_led_millis > millis_led_period)
+  {
+    current_led_index = (current_led_index + 1) % NUM_LEDS;
+    for (uint i=0; i<NUM_LEDS; i++)
+    {
+      CRGB newColor = CRGB(
+        255.0 * ((i+current_led_index) % NUM_LEDS) / NUM_LEDS, 
+        255.0 * ((i+current_led_index+8) % NUM_LEDS) / NUM_LEDS, 
+        255.0 * ((i+current_led_index+8*2) % NUM_LEDS) / NUM_LEDS);
+      leds[i] = newColor;
+    }
+    last_led_millis = millis();
+    FastLED.show();  }
+
 
   vTaskDelay(10 / portTICK_PERIOD_MS);
 }
