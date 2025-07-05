@@ -104,7 +104,7 @@ namespace strategy
         tmp.x += 350;
         positions.push_back(tmp);
         tmp.x = 840;
-        tmp.y = 1100.0;
+        tmp.y = 1250.0;
         positions.push_back(tmp);
         tmp.x = 1640.0;
         tmp.y = 1100.0;

@@ -107,8 +107,9 @@ void task_handle_servo(void *parameters)
     for (;;)
     {
         if (Match::getMatchStarted() &&
-            Match::getMatchTimeSeconds() >= 90 &&
-            Match::getMatchTimeSeconds() < 100)
+            Match::getMatchTimeSeconds() >= 85 //&&
+            // Match::getMatchTimeSeconds() < 100
+        )
         {
             if (state)
             {
