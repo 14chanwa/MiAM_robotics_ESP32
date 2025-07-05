@@ -1,27 +1,16 @@
 #include <MessageHandler.hpp>
 #include <MessageReceiver.hpp>
-// #include <WiFiHandler.hpp>
+#include <WiFiHandler.hpp>
 
 #include <Arduino.h>
 
 #include <Robot.hpp>
 #include <parameters.hpp>
 
-#include <PacketSerial.h>
-PacketSerial myPacketSerial;
-HardwareSerial mySerial(1);
-
-#include <CRC.h>
-
-#define TXD1 17
-#define RXD1 16
-
-#include <SerialMessage.hpp>
-
 // message type, id of sender, 3 other floats = 5*4 char
 #define MAX_SIZE_OF_PAMI_REPORT 50
 
-// WiFiClient wifiClient;
+WiFiClient wifiClient;
 
 // MessageReceiver messageReceiver;
 // MessageReceiverUDP messageReceiverUDP;
@@ -53,10 +42,10 @@ HardwareSerial mySerial(1);
 void task_report_broadcast(void *parameters)
 {
     Robot *robot = Robot::getInstance();
-    uint8_t *buffer = new uint8_t[MAX_SIZE_OF_PAMI_REPORT / 4];
+    float *buffer = new float[MAX_SIZE_OF_PAMI_REPORT / 4];
     int sizeOfMessage = 0;
 
-    // wifiClient.setTimeout(1);
+    wifiClient.setTimeout(1);
 
     for (;;)
     {
@@ -70,74 +59,53 @@ void task_report_broadcast(void *parameters)
         }
 
         PamiReportMessage report = robot->get_pami_report();
-        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
-
-        // Send over serial
-        // TODO add crc
+        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
 
 
-        // std::vector<uint8_t > newPayload;
-        // for (uint i=0; i<sizeOfMessage; i++)
-        // {
-        //     newPayload.push_back(buffer[i]);
-        // }
+        bool success = false;
 
-        // SerialMessage newMessage(SerialMessageType::TRANSMIT, newPayload);
-        // int sizeOfSent = newMessage.serialize((uint8_t*)buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
-        
-        // Transfer data over serial
-        // Serial.print("Sending ");
-        // Serial.print(sizeOfMessage);
-        // Serial.println(" over serial");
-        Serial.print("#");
-        myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
+        // Connect to client
+        if (wifiClient.connect(MIAM_SCD_ADDRESS, MIAM_SCD_PORT))
+        {
+            size_t sizeOfSentMessage = wifiClient.write_P((char *)buffer, sizeOfMessage * 4);
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-    }
-}
+            if (sizeOfSentMessage == sizeOfMessage*4)
+                success = true;
 
+            if (!success)
+                Serial.println("Failed to send report to SCD");
+            else
+                Serial.println("Sent report SCD");
 
+            // Wait for reply
 
-// This is our handler callback function.
-// When an encoded packet is received and decoded, it will be delivered here.
-// The `buffer` is a pointer to the decoded byte array. `size` is the number of
-// bytes in the `buffer`.
-void onPacketReceived(const uint8_t* buffer, size_t size)
-{
-    Serial.print("Received message size: ");
-    Serial.println(size);
+            while (wifiClient.connected() && !wifiClient.available())
+            {
+                vTaskDelay(10 / portTICK_PERIOD_MS);
+            }
+            
+            int len = 0;
+            if (wifiClient.available())
+            {
+                len = wifiClient.read((uint8_t *)buffer, MAX_SIZE_OF_PAMI_REPORT);
 
-    // // Check CRC
-    // if (size > 2)
-    // {
-    //     // Check the CRC
-    //     uint8_t challenge_crc = buffer[size-1];
-    //     uint8_t actual_crc = calcCRC8(buffer, size-1);
-        
-    //     if (actual_crc == challenge_crc)
-    //     {
-    //         // First byte = message type ; last byte = crc
-    //         std::shared_ptr<Message> message = Message::parse((const float*)buffer[1], (size-2)/4, 10);
-    //         Robot::getInstance()->notify_new_message(message);
-    //     }
-    //     else
-    //     {
-    //         Serial.println("CRC error");
-    //     }
-    // }
+                Serial.print("Received message size: ");
+                Serial.println(len);
+            }
 
-    std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
-    Robot::getInstance()->notify_new_message(message);
+            wifiClient.stop();
 
+            std::shared_ptr<Message> message = Message::parse(buffer, len/4, 10);
+            robot->notify_new_message(message);
 
-}
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }
+        else
+        {
+            // Use a different delay to try to not query at the same time as other PAMI
+            vTaskDelay(347 / portTICK_PERIOD_MS);
+        }
 
-void task_receive_message(void *parameters)
-{
-    for (;;)
-    {
-        myPacketSerial.update();
-        vTaskDelay(15 / portTICK_PERIOD_MS);;
     }
 }
 
@@ -161,22 +129,9 @@ namespace MessageHandler
 
     void startReportBroadcast()
     {
-        // Initialize packetserial
-        mySerial.begin(115200, SERIAL_8N1, RXD1, TXD1);  // UART setup
-        myPacketSerial.setStream(&mySerial);
-        myPacketSerial.setPacketHandler(&onPacketReceived);
-
         xTaskCreate(
             task_report_broadcast,
             "task_report_broadcast",
-            20000,
-            NULL,
-            30,
-            NULL);
-
-        xTaskCreate(
-            task_receive_message,
-            "task_receive_message",
             20000,
             NULL,
             30,

@@ -19,6 +19,8 @@
 #include <MessageHandler.hpp>
 #include <TelemetryHandler.hpp>
 
+//#define DEBUG_MODE_SIMPLE_TRAJECTORY
+
 
 /////////////////////////////////////////////////////////////////////
 // Tasks
@@ -32,8 +34,12 @@ using namespace miam::trajectory;
 /////////////////////////////////////////////////////////////////////
 
 
+//#define DEBUG_MODE_SIMPLE_TRAJECTORY
+
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("Setup begin");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   Robot::init();
@@ -41,12 +47,10 @@ void setup()
   // start heartbeat
   HeartbeatHandler::start_heartbeat();
 
-
-  Serial.begin(115200);
-  Serial.println("Attempt connect WiFi");
+  // Serial.println("Attempt connect WiFi");
   
-  // connect wifi
-  WiFiHandler::initWiFi();
+  // // connect wifi
+  // WiFiHandler::initWiFi();
 
   // Init i2c peripherals
   I2CHandler::init();
@@ -59,9 +63,10 @@ void setup()
   ServoHandler::init();
   ServoHandler::servoUp();
 
+  Serial.println("Low Level Loop");
   Robot::startLowLevelLoop();
 
-  TelemetryHandler::begin();
+  // TelemetryHandler::begin();
 
 #ifdef DEBUG_MODE_MATCH
   match_started = true;
@@ -85,16 +90,17 @@ void setup()
   }
 #endif 
 #ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
-  taskYIELD();
+  // taskYIELD();
   Robot* robot = Robot::getInstance();
   for (;;)
   {
     Serial.println("Moving...");
-    robot->movement_override = true;
-    strategy::make_a_square(motionController);
+    strategy::go_forward(robot->motionController, 1500);
+    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
+    robot->motionController->waitForTrajectoryFinished();
     // strategy::go_to_zone_3(motionController);
 
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
   }
 #endif
 

@@ -2,7 +2,7 @@
 #include <PAMIStates.hpp>
 #include <Arduino.h>
 
-// #define DEBUG_PAMISTATES
+#define DEBUG_PAMISTATES
 
 #define PAMI_TIMEOUT 2000
 
@@ -22,17 +22,17 @@ void registerMessage(std::shared_ptr<Message > message)
     Serial.println(message->get_sender_id());
     Serial.print("Message type is ");
     Serial.print(message->get_message_type());
-    Serial.print(" expected ");
+    Serial.print("  ");
     Serial.println(MessageType::PAMI_REPORT);
 #endif
-    if (message->get_message_type() == MessageType::PAMI_REPORT && senderID-10 >= 1 && senderID-10 <= 5)
+    if (message->get_message_type() == MessageType::PAMI_REPORT && senderID >= 1 && senderID <= 5)
     {
 #ifdef DEBUG_PAMISTATES
         Serial.println("Registering message");
 #endif
         PamiReportMessage newMessage = *static_cast<PamiReportMessage* >(message.get());
-        pamiReportMessage[senderID-10-1] = newMessage;
-        lastMillisRegisterMessage[senderID-10-1] = millis();
+        pamiReportMessage[senderID-1] = newMessage;
+        lastMillisRegisterMessage[senderID-1] = millis();
     }
 }
 

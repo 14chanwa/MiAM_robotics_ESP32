@@ -10,16 +10,18 @@
 #define LINEAR_KD 0.01f
 #define LINEAR_KI 0.0f
 
-#define TRANSVERSE_KP 0.005f
+#define TRANSVERSE_KP 0.05f
 
-#define ROTATION_KP 0.2f
-#define ROTATION_KD 0.0f
-#define ROTATION_KI 0.0f
+#define ROTATION_KP 0.8f
+#define ROTATION_KD 0.05f
+#define ROTATION_KI 0.02f
 
 #define AVOIDANCE_SLOWDOWN_THRESHOLD 0.35f
 #define MIN_TIME_BETWEEN_AVOIDANCE_MS 2000
 
 #define AVOIDANCE_LIMIT_REMAINING_TIME_S 2.5f
+
+#define VLX_STOP_RANGE 50
 
 using namespace miam::trajectory;
 
@@ -136,7 +138,10 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     /// * move is stopped when contact is made with BOTH switches
     if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
     {
-        if (measurements.left_switch_level && measurements.right_switch_level)
+        if (
+            //measurements.left_switch_level == 1 && 
+            measurements.right_switch_level == 1
+        )
         {
             slowDownCoeff_ = 0.0;
             clampedSlowDownCoeff_ = 0.0;
@@ -150,7 +155,10 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     else
     {
 
-        bool proximitySwitchTriggered = measurements.left_switch_level || measurements.right_switch_level;
+        bool proximitySwitchTriggered = 
+            // do not trigger short range avoidance for the 3 1st seconds
+            (measurements.currentMatchTime >= 87.0f && measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
+            measurements.right_switch_level;
         /// * move is stopped when contact is made with at least ONE OF the switches
         /// and not going backwards
         if (
@@ -197,10 +205,16 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
             // check if the trajectory should not be avoided
             currentTrajectories_.front()->isAvoidanceEnabled() &&
-            // the obstacle is not in avoidance exclusion
-            !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+            // // the obstacle is not in avoidance exclusion
+            // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+            // pami has not yet reached destination
+            !strategy::position_in_end_zone(getCurrentPosition()) &&
             // match will not end soon
-            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S
+            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
+            // do not avoid before 87.0s for all pamis
+            (measurements.currentMatchTime >= 87.0f) &&
+            // do not avoid before 90.0s for PAMI 1
+            (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
         )
         {
             computeAvoidanceTrajectory(measurements);
@@ -597,6 +611,11 @@ bool MotionController::computeMotorTarget(Trajectory *traj,
     // Invert velocity if playing on side::RIGHT side.
     if (isPlayingRightSide_)
         targetSpeed.angular = -targetSpeed.angular;
+
+//     // Invert velocity if using pami TANK (id 5)
+// #if PAMI_ID == 5
+//     targetSpeed.angular = -targetSpeed.angular;
+// #endif
 
     // save target
     targetSpeed_ = targetSpeed;

@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include <PAMIStates.hpp>
 
-// #define DEBUG_LOG
+#define DEBUG_LOG
 
 #ifdef DEBUG_LOG
 #define DEBUG_PRINT(x) Serial.print(x);
@@ -27,8 +27,7 @@ namespace MessageReceiver {
 
     std::vector<float > receivedTrajectory;
     bool stopReceiving_ = false;
-    char* buffer; 
-    char* sendBuffer;
+    uint8_t* sendBuffer;
 
     SemaphoreHandle_t xSemaphore_new_message = NULL;
 
@@ -51,7 +50,8 @@ namespace MessageReceiver {
         DEBUG_PRINT(">>>> Client is connected: ");
         DEBUG_PRINTLN(client->remoteIP());
 
-        std::shared_ptr<Message > message = Message::parse((float*) data, len/4, senderId);
+        std::shared_ptr<Message > message = Message::parse((uint8_t*)data, len);
+        // std::shared_ptr<Message > message = Message::parse((float*) data, len/4, senderId);
 
         // Semaphore is used since shared buffer is used
         if (xSemaphoreTake(xSemaphore_new_message, portMAX_DELAY))
@@ -66,7 +66,7 @@ namespace MessageReceiver {
             {
                 // send a match state message
                 MatchStateMessage newMessage = MatchStateMessage(true, Match::getMatchTimeSeconds(), 10);
-                sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+                sizeToWrite = newMessage.serialize(sendBuffer, SIZE_OF_BUFFER);
             }
             else
             {
@@ -82,13 +82,13 @@ namespace MessageReceiver {
                 {
                     // need to stop the pami: send a matchState
                     MatchStateMessage newMessage = MatchStateMessage(false, 0.0, 10);
-                    sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+                    sizeToWrite = newMessage.serialize(sendBuffer, SIZE_OF_BUFFER);
                 }
                 else
                 {
                     // send a configuration message
                     ConfigurationMessage newMessage = ConfigurationMessage(Match::getSide(), Match::getStopMotors(), 10);
-                    sizeToWrite = newMessage.serialize((float *) sendBuffer, SIZE_OF_BUFFER/4);
+                    sizeToWrite = newMessage.serialize(sendBuffer, SIZE_OF_BUFFER);
                 }
             }
 
@@ -97,19 +97,24 @@ namespace MessageReceiver {
             {
                 DEBUG_PRINT("Connected to: ");
                 DEBUG_PRINTLN(remoteIP);
-                int sizeOfSentMessage = client->add(sendBuffer, sizeToWrite*4);
-                client->send();
-                DEBUG_PRINT("Sent message size: ");
-                DEBUG_PRINT(sizeOfSentMessage);
-                DEBUG_PRINT(" expected ");
-                DEBUG_PRINTLN(sizeToWrite*4);
+                int sizeOfSentMessage = client->add((char*)sendBuffer, sizeToWrite);
+                if (client->send())
+                {
+                    DEBUG_PRINT("Sent message size: ");
+                    DEBUG_PRINT(sizeOfSentMessage);
+                    DEBUG_PRINT(" expected ");
+                    DEBUG_PRINTLN(sizeToWrite);
+                }
+                else
+                {
+                    DEBUG_PRINTLN("Could not send message");
+                }
+                
             }
 
             // Release semaphore
             xSemaphoreGive(xSemaphore_new_message);
         }
-
-        client->close(true);
     }
 
     static void handleDisconnect(void* arg, AsyncClient* client)
@@ -121,6 +126,7 @@ namespace MessageReceiver {
     static void handleTimeOut(void* arg, AsyncClient* client, uint32_t time)
     {
         DEBUG_PRINTLN("handleTimeOut");
+        client->close();
     }
 
     /* server events */
@@ -128,6 +134,7 @@ namespace MessageReceiver {
     {
         DEBUG_PRINTLN("handleNewClient");
         // register events
+        client->setRxTimeout(3);
         client->onData(&handleData, NULL);
         client->onError(&handleError, NULL);
         client->onDisconnect(&handleDisconnect, NULL);
@@ -137,7 +144,7 @@ namespace MessageReceiver {
     void startListening()
     {
         xSemaphore_new_message = xSemaphoreCreateMutex();
-        sendBuffer = new char[SIZE_OF_BUFFER]();
+        sendBuffer = new uint8_t[SIZE_OF_BUFFER]();
 
         server = new AsyncServer(LISTENING_PORT);
         server->onClient(&handleNewClient, NULL);

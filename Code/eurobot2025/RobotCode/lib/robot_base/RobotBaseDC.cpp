@@ -28,7 +28,7 @@
 /////////////////////////////////////////////
 
 #define MOTOR_REDUCTION_FACTOR 100.0f
-#define MOTOR_RATED_RPM 220.0f
+#define MOTOR_RATED_RPM 280.0f
 #define MOTOR_CONTROL_FREQUENCY_HZ 10000
 
 #define ENCODER_PULSE_PER_REVOLUTION 28.0f
@@ -38,16 +38,22 @@
 // Wheel specs
 /////////////////////////////////////////////
 
+// #if PAMI_ID == 5
+// #define WHEEL_RADIUS_MM 13.5f
+// #define WHEEL_SPACING_MM 32.5f
+// #else 
 #define WHEEL_RADIUS_MM 30.0f
+#define WHEEL_SPACING_MM (57.0f / 2.0f)
+// #endif
 
-#if PAMI_ID == 5
-    #define WHEEL_SPACING_MM 42.5f
-#else
-    #define WHEEL_SPACING_MM 41.0f
-#endif
+// #if PAMI_ID == 5
+//     #define WHEEL_SPACING_MM 42.5f
+// #else 
+//     //41.0f
+// #endif
 
 // give 20% overhead
-#define MAX_SPEED_RPM (MOTOR_RATED_RPM)
+#define MAX_SPEED_RPM (MOTOR_RATED_RPM * 0.75)
 #define MAX_SPEED_RAD_S (RPM_TO_RAD_S(MAX_SPEED_RPM))
 
 #define MAX_WHEEL_SPEED_MM_S (MAX_SPEED_RAD_S * WHEEL_RADIUS_MM)
@@ -65,9 +71,9 @@
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
-#define VELOCITY_KP 0.1f
+#define VELOCITY_KP 0.5f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.01f
+#define VELOCITY_KI 0.1f
 
 int target_rad_s_to_pwm_command(float speed_rad_s)
 {
@@ -115,8 +121,7 @@ RobotWheelDC::RobotWheelDC(
         pwmChannel
     );
     motorPID = new miam::PID(
-        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 
-        0.5 * 255.0 / VELOCITY_KP // max integral is 50% of the max control
+        VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 255.0 / 2.0
     );
 }
 
@@ -157,13 +162,17 @@ void RobotWheelDC::updateMotorControl(bool motorEnabled)
             newPWMTarget_ = (newPWMTarget_ > 0 ? 1 : -1) * std::min(std::abs(newPWMTarget_), 255);
         }
 
-        if (newPWMTarget_ >= 0)
+        if (newPWMTarget_ > 0)
         {
             motorDriver->forward();
         }
-        else
+        else if (newPWMTarget_ < 0)
         {
             motorDriver->backward();
+        }
+        else
+        {
+            motorDriver->stop();
         }
         motorDriver->setSpeed(std::abs(newPWMTarget_));
     }

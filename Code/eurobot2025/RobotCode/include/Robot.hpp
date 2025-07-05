@@ -68,6 +68,7 @@ public:
     // Message variables
     std::shared_ptr<Message > newMessage_ = nullptr;
     bool newMessageToRead_ = false;
+    long lastMessageReceivedTime_ = 0;
 };
 
 #endif
