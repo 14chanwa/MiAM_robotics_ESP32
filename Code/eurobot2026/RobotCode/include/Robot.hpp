@@ -22,7 +22,7 @@ public:
     static void startLowLevelLoop();
 
     RobotState get_current_robot_state();
-    PamiReportMessage get_pami_report();
+    FullPamiReportMessage get_pami_report();
     void update_robot_state();
     void notify_new_message(std::shared_ptr<Message >  message);
 

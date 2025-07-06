@@ -8,16 +8,18 @@ PAMIDrawable::PAMIDrawable(uint8_t pami_id, Vector2& top_left_corner, Vector2& d
     pami_id_(pami_id),
     drawing_color_(TFT_BLACK),
     last_updated_millis_(0),
-    last_message_(PamiReportMessage(
+    last_message_(FullPamiReportMessage(
         false, 
         0.0, 
         PlayingSide::BLUE_SIDE, 
-        0.0))
+        0.0,
+        RobotPosition(0, 0, 0),
+        255))
 {
 
 }
 
-void PAMIDrawable::update(PamiReportMessage& message)
+void PAMIDrawable::update(FullPamiReportMessage& message)
 {
     if (message.get_sender_id() != 255)
     {
@@ -53,13 +55,26 @@ void PAMIDrawable::draw(TFT_eSPI& target)
         dimensions_[1],
         drawingColor);
 
-    // battery reading
     if (pami_is_active)
     {
+        // battery reading
         target.setTextSize(1);
         target.setTextColor(TFT_BLACK, drawingColor);
         target.setCursor(top_left_corner_[0] + 10, 
             top_left_corner_[1] + 10);
         target.print(last_message_.batteryReading_);
+
+        // current position
+        target.setCursor(top_left_corner_[0] + 10, 
+            top_left_corner_[1] + 30);
+        target.print(last_message_.currentPosition_.x);
+
+        target.setCursor(top_left_corner_[0] + 10, 
+            top_left_corner_[1] + 40);
+        target.print(last_message_.currentPosition_.y);
+
+        target.setCursor(top_left_corner_[0] + 10, 
+            top_left_corner_[1] + 50);
+        target.print(last_message_.currentPosition_.theta);
     }
 }

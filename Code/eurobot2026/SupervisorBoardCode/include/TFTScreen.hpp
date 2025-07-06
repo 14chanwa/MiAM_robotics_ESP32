@@ -9,7 +9,7 @@ class TFTScreen
 public:
     void init();
     void update(IPAddress localIP);
-    void drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID);
+    void drawPAMI(FullPamiReportMessage pamiReport, uint8_t pamiID);
     void registerTouch();
 
 private:

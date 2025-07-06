@@ -76,6 +76,14 @@ std::shared_ptr<Message > Message::parse(const uint8_t* message, int sizeOfMessa
             return std::make_shared<MatchStateMessage >(message, sizeOfMessage);
         }
     }
+    else if (message_type == MessageType::FULL_MATCH_STATE)
+    {
+        // Check size of payload
+        if (sizeOfMessage == FullMatchStateMessage::get_expected_size())
+        {
+            return std::make_shared<FullMatchStateMessage >(message, sizeOfMessage);
+        }
+    }
     else if (message_type == MessageType::NEW_TRAJECTORY)
     {
         if (sizeOfMessage >= NewTrajectoryMessage::get_expected_size())
@@ -89,6 +97,14 @@ std::shared_ptr<Message > Message::parse(const uint8_t* message, int sizeOfMessa
         if (sizeOfMessage == PamiReportMessage::get_expected_size())
         {
             return std::make_shared<PamiReportMessage >(message, sizeOfMessage);
+        }
+    }
+    else if (message_type == MessageType::FULL_PAMI_REPORT)
+    {
+        // Check size of payload
+        if (sizeOfMessage == FullPamiReportMessage::get_expected_size())
+        {
+            return std::make_shared<FullPamiReportMessage >(message, sizeOfMessage);
         }
     }
 #ifdef DEBUG_MESSAGE
@@ -240,6 +256,46 @@ int MatchStateMessage::serialize(uint8_t* results, int maxsize)
     return byte_index;
 }
 
+
+/* 
+ * FullMatchStateMessage 
+ */
+
+FullMatchStateMessage::FullMatchStateMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
+{
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
+
+    // Read payload
+    if ((bool)read_from_buffer<uint8_t >(buffer, byte_index) == PlayingSide::YELLOW_SIDE)
+    {
+        playingSide_ = PlayingSide::YELLOW_SIDE;
+    }
+    else
+    {
+        playingSide_ = PlayingSide::BLUE_SIDE;
+    }
+    matchStarted_ = (bool)read_from_buffer<uint8_t >(buffer, byte_index);
+    matchTime_ = read_from_buffer<float >(buffer, byte_index);
+}
+
+int FullMatchStateMessage::serialize(uint8_t* results, int maxsize)
+{
+    if (maxsize < get_expected_size()) return -1;
+
+    uint byte_index = 0;
+    Message::write_header(results, byte_index);
+
+    // Side -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)playingSide_, byte_index);
+    // match started -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)matchStarted_, byte_index);
+    // match time -> float
+    write_to_buffer<float>(results, matchTime_, byte_index);
+
+    return byte_index;
+}
+
 /* 
  * ErrorMessage 
  */
@@ -294,5 +350,61 @@ int PamiReportMessage::serialize(uint8_t* results, int maxsize)
     // battery reading -> float
     write_to_buffer<float>(results, batteryReading_, byte_index);
 
+    return byte_index;
+}
+
+
+/* 
+ * FullPamiReportMessage 
+ */
+
+FullPamiReportMessage::FullPamiReportMessage(const uint8_t* buffer, const uint size) : Message(MessageType::ERROR)
+{
+    uint byte_index = 0;
+    Message::read_header(buffer, byte_index);
+
+    // Read payload
+    matchStarted_ = (bool)read_from_buffer<uint8_t >(buffer, byte_index);
+    matchTime_ = read_from_buffer<float >(buffer, byte_index);
+    if ((bool)read_from_buffer<uint8_t >(buffer, byte_index) == PlayingSide::YELLOW_SIDE)
+    {
+        playingSide_ = PlayingSide::YELLOW_SIDE;
+    }
+    else
+    {
+        playingSide_ = PlayingSide::BLUE_SIDE;
+    }
+    batteryReading_ = read_from_buffer<float >(buffer, byte_index);
+    currentPosition_.x = read_from_buffer<float >(buffer, byte_index);
+    currentPosition_.y = read_from_buffer<float >(buffer, byte_index);
+    currentPosition_.theta = read_from_buffer<float >(buffer, byte_index);
+    // currentLinearVelocity_  = read_from_buffer<float >(buffer, byte_index);
+    // currentAngularVelocity_ = read_from_buffer<float >(buffer, byte_index);
+}
+
+int FullPamiReportMessage::serialize(uint8_t* results, int maxsize)
+{
+    Serial.println("serialize");
+    if (maxsize < get_expected_size()) return -1;
+
+    uint byte_index = 0;
+    Message::write_header(results, byte_index);
+
+    // match started -> byte
+    write_to_buffer<uint8_t>(results, (uint8_t)matchStarted_, byte_index);
+    // match time -> float
+    write_to_buffer<float>(results, matchTime_, byte_index);
+    // playing side -> uint8_t
+    write_to_buffer<uint8_t>(results, (uint8_t)playingSide_, byte_index);
+    // battery reading -> float
+    write_to_buffer<float>(results, batteryReading_, byte_index);
+    // robot position & velocity -> 3 floats
+    write_to_buffer<float>(results, currentPosition_.x, byte_index);
+    write_to_buffer<float>(results, currentPosition_.y, byte_index);
+    write_to_buffer<float>(results, currentPosition_.theta, byte_index);
+    // write_to_buffer<float>(results, currentLinearVelocity_, byte_index);
+    // write_to_buffer<float>(results, currentAngularVelocity_, byte_index);
+
+    Serial.println("end");
     return byte_index;
 }

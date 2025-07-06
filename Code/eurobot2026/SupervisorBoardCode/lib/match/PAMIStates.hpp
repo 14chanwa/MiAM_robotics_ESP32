@@ -6,7 +6,7 @@
 namespace PAMIStates
 {
     void registerMessage(std::shared_ptr<Message > message);
-    PamiReportMessage readPAMIMessage(uint8_t pamiID);
+    FullPamiReportMessage readPAMIMessage(uint8_t pamiID);
     long readLastMessageTime();
 }
 

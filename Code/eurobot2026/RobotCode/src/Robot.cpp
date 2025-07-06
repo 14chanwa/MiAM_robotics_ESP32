@@ -537,19 +537,21 @@ bool Robot::matchStarted()
         currentRobotState_ == RobotState::MATCH_ENDED;
 }
 
-PamiReportMessage Robot::get_pami_report()
+FullPamiReportMessage Robot::get_pami_report()
 {
     RobotState state = get_current_robot_state();
     bool matchStarted = state == RobotState::MATCH_STARTED_WAITING ||
         state == RobotState::MATCH_STARTED_ACTION ||
         state == RobotState::MATCH_STARTED_FINAL_APPROACH ||
         state == RobotState::MATCH_ENDED;
+    
     return(
-        PamiReportMessage(
+        FullPamiReportMessage(
             matchStarted, 
             match_current_time_s, 
             motionController->isPlayingRightSide_ ? PlayingSide::YELLOW_SIDE : PlayingSide::BLUE_SIDE, 
             AnalogReadings::get_current_battery_reading(),
+            motionController->getCurrentPosition(),
             PAMI_ID
         )
     );

@@ -19,7 +19,7 @@ HardwareSerial mySerial(1);
 #include <SerialMessage.hpp>
 
 // message type, id of sender, 3 other floats = 5*4 char
-#define MAX_SIZE_OF_PAMI_REPORT 50
+#define MAX_SIZE_OF_PAMI_REPORT 100
 
 // WiFiClient wifiClient;
 
@@ -69,7 +69,7 @@ void task_report_broadcast(void *parameters)
             continue;
         }
 
-        PamiReportMessage report = robot->get_pami_report();
+        FullPamiReportMessage report = robot->get_pami_report();
         sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
 
         // Send over serial
@@ -175,7 +175,7 @@ namespace MessageHandler
         xTaskCreate(
             task_report_broadcast,
             "task_report_broadcast",
-            20000,
+            30000,
             NULL,
             30,
             NULL);
@@ -183,7 +183,7 @@ namespace MessageHandler
         xTaskCreate(
             task_receive_message,
             "task_receive_message",
-            20000,
+            30000,
             NULL,
             30,
             NULL);

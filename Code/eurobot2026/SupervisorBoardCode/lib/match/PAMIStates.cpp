@@ -7,8 +7,8 @@
 #define PAMI_TIMEOUT 2000
 
 long lastMillisRegisterMessage[5] = {0, 0, 0, 0, 0};
-PamiReportMessage default_message = PamiReportMessage(false, 0, PlayingSide::BLUE_SIDE, 255);
-std::vector<PamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message});
+FullPamiReportMessage default_message = FullPamiReportMessage(false, 0.0, PlayingSide::BLUE_SIDE, 0.0, RobotPosition(0, 0, 0), 255);
+std::vector<FullPamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message});
 
 namespace PAMIStates
 {
@@ -23,20 +23,20 @@ void registerMessage(std::shared_ptr<Message > message)
     Serial.print("Message type is ");
     Serial.print(message->get_message_type());
     Serial.print("  ");
-    Serial.println(MessageType::PAMI_REPORT);
+    Serial.println(MessageType::FULL_PAMI_REPORT);
 #endif
-    if (message->get_message_type() == MessageType::PAMI_REPORT && senderID >= 1 && senderID <= 5)
+    if (message->get_message_type() == MessageType::FULL_PAMI_REPORT && senderID >= 1 && senderID <= 5)
     {
 #ifdef DEBUG_PAMISTATES
         Serial.println("Registering message");
 #endif
-        PamiReportMessage newMessage = *static_cast<PamiReportMessage* >(message.get());
+        FullPamiReportMessage newMessage = *static_cast<FullPamiReportMessage* >(message.get());
         pamiReportMessage[senderID-1] = newMessage;
         lastMillisRegisterMessage[senderID-1] = millis();
     }
 }
 
-PamiReportMessage readPAMIMessage(uint8_t pamiID)
+FullPamiReportMessage readPAMIMessage(uint8_t pamiID)
 {
     if (pamiID >= 1 && pamiID <= 5)
     {

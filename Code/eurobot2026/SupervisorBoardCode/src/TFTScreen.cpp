@@ -238,7 +238,7 @@ void TFTScreen::registerTouch()
 }
 
 
-void TFTScreen::drawPAMI(PamiReportMessage pamiReport, uint8_t pamiID)
+void TFTScreen::drawPAMI(FullPamiReportMessage pamiReport, uint8_t pamiID)
 {
    pami_drawables.at(pamiID-1)->update(pamiReport);
    pami_drawables.at(pamiID-1)->draw(tft);

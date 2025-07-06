@@ -3,6 +3,7 @@
 
 #include <Utilities.h>
 #include <memory>
+#include <RobotPosition.h>
 
 /*
 Messages from SCD to PAMI can be of categories:
@@ -16,13 +17,16 @@ Messages from PAMI to SCD can be of categories:
 */
 
 using namespace miam::trajectory;
+using namespace miam;
 
 enum MessageType
 {
     CONFIGURATION = 0,
     NEW_TRAJECTORY = 1,
     MATCH_STATE = 2,
+    FULL_MATCH_STATE = 3,
     PAMI_REPORT = 10,
+    FULL_PAMI_REPORT = 11,
     ERROR = 99
 };
 
@@ -58,6 +62,8 @@ private:
     friend class NewTrajectoryMessage;
     friend class ErrorMessage;
     friend class PamiReportMessage;
+    friend class FullMatchStateMessage;
+    friend class FullPamiReportMessage;
 };
 
 /* Specialized messages */
@@ -111,6 +117,25 @@ public:
     float matchTime_;
 };
 
+// FULL_MATCH_STATE
+class FullMatchStateMessage : public Message
+{
+public:
+    FullMatchStateMessage(PlayingSide playingSide, bool matchStarted, float matchTime, uint8_t senderId = 255) :
+        Message(MessageType::FULL_MATCH_STATE, senderId),
+        playingSide_(playingSide),
+        matchStarted_(matchStarted),
+        matchTime_(matchTime) {};
+    FullMatchStateMessage(const uint8_t* buffer, const uint size);
+    
+    int serialize(uint8_t* results, int maxsize);
+    static uint get_expected_size() { return Message::get_expected_size() + 1 + 1 + 4; }
+
+    PlayingSide playingSide_;
+    bool matchStarted_;
+    float matchTime_;
+};
+
 // ERROR
 class ErrorMessage : public Message
 {
@@ -144,6 +169,43 @@ public:
     float matchTime_;
     PlayingSide playingSide_;
     float batteryReading_;
+};
+
+
+// FULL_PAMI_REPORT
+class FullPamiReportMessage : public Message
+{
+public:
+    FullPamiReportMessage(
+        bool matchStarted, 
+        float matchTime, 
+        PlayingSide playingSide, 
+        float batteryReading,
+        RobotPosition currentPosition,
+        // float currentLinearVelocity,
+        // float currentAngularVelocity,
+        uint8_t senderId = 255
+    ) : Message(MessageType::FULL_PAMI_REPORT, senderId),
+        matchStarted_(matchStarted),
+        matchTime_(matchTime),
+        playingSide_(playingSide),
+        batteryReading_(batteryReading),
+        currentPosition_(currentPosition)//,
+        // currentLinearVelocity_(currentLinearVelocity),
+        // currentAngularVelocity_(currentAngularVelocity) 
+        {};
+    FullPamiReportMessage(const uint8_t* buffer, const uint size);
+    
+    int serialize(uint8_t* results, int maxsize);
+    static uint get_expected_size() { return Message::get_expected_size() + 1 + 4 + 1 + 4 + 3*4; } // + 5: }
+
+    bool matchStarted_;
+    float matchTime_;
+    PlayingSide playingSide_;
+    float batteryReading_;
+    RobotPosition currentPosition_;
+    // float currentLinearVelocity_;
+    // float currentAngularVelocity_;
 };
 
 #endif
