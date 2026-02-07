@@ -310,6 +310,14 @@ void Robot::update_robot_state()
         xSemaphoreGive(xMutex_newMessage);
     }
 
+    if (newMessageRead)
+    {
+        Serial.print("Received new message type ");
+        Serial.println(message->get_message_type());
+        Serial.print("Current robotState ");
+        Serial.println(currentRobotState_);
+    }
+
     // handle transitions
     // WAIT_FOR_CONFIGURATION
     if (currentRobotState_ == RobotState::WAIT_FOR_CONFIGURATION)
