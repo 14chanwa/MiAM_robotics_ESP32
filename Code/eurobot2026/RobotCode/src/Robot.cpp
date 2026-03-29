@@ -43,10 +43,10 @@ void performLowLevel(void* parameters)
     long timeStartLoop = 0;
     long timeEndLoop = 0;
 
-#if PAMI_ID == 5
-    long stopTime = 0;
-    bool permanentlyStopped = false;
-#endif
+// #if PAMI_ID == 5
+//     long stopTime = 0;
+//     bool permanentlyStopped = false;
+// #endif
     for(;;)
     {
         timeEndLoop = micros();
@@ -70,6 +70,10 @@ void performLowLevel(void* parameters)
         robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
         robot->measurements.left_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::LEFT);
         robot->measurements.middle_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::MIDDLE);
+        // Middle sensor is broken
+    #if PAMI_ID == 4
+        robot->measurements.middle_vlx = robot->measurements.left_vlx;
+    #endif
         robot->measurements.right_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::RIGHT);
         robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
         robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
@@ -89,37 +93,37 @@ void performLowLevel(void* parameters)
                 robot->currentRobotState_ == RobotState::MOVING_SETUP_TRAJECTORY); // &&
                 //(!robot->measurements.left_switch_level && !robot->measurements.right_switch_level);
 
-#if PAMI_ID == 5
-        // Ignore front vlx if final approach
-        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
-        {
-            robot->measurements.middle_vlx = 2000;
-        }
+// #if PAMI_ID == 5
+//         // Ignore front vlx if final approach
+//         if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
+//         {
+//             robot->measurements.middle_vlx = 2000;
+//         }
 
-        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 35)
-        {
-            if (robotEnabled && (millis() - stopTime) < 500)
-            {
-                // Clear the timer
-                stopTime = -1;
-            }
-            else if (!robotEnabled && stopTime < 0)
-            {
-                stopTime = millis();
-            }
-            // Permanently stop check
-            if (stopTime > 0 && (millis() - stopTime) > 500)
-            {
-                permanentlyStopped = true;
-            }
-            // Stop the robot
-            robotEnabled = false;
-        }
-        if (permanentlyStopped)
-        {
-            robotEnabled = false;
-        }
-#endif
+//         if (robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH && I2CHandler::get_bottom_smoothed() > 35)
+//         {
+//             if (robotEnabled && (millis() - stopTime) < 500)
+//             {
+//                 // Clear the timer
+//                 stopTime = -1;
+//             }
+//             else if (!robotEnabled && stopTime < 0)
+//             {
+//                 stopTime = millis();
+//             }
+//             // Permanently stop check
+//             if (stopTime > 0 && (millis() - stopTime) > 500)
+//             {
+//                 permanentlyStopped = true;
+//             }
+//             // Stop the robot
+//             robotEnabled = false;
+//         }
+//         if (permanentlyStopped)
+//         {
+//             robotEnabled = false;
+//         }
+// #endif
 
         // Serial.println("Compute drivetrain motion");
         // Motion occurs only if match started

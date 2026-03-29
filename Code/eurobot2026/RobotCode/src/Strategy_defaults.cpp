@@ -9,17 +9,23 @@
 #define COORD_ZONE_2 1300.0, 1750.0, 1300.0, 1540.0
 #define COORD_ZONE_3 1740.0, 2000.0, 1380.0, 1540.0
 
-#define PAMI_1_START 45.0, 1585.0, 0.0
-#define PAMI_2_START 45.0, 1665.0, 0.0
+#define PAMI_1_START 45.0, 1615.0, -M_PI_2
+#define PAMI_2_START 45.0, 1680.0, 0.0
 #define PAMI_3_START 45.0, 1745.0, 0.0
 #define PAMI_4_START 45.0, 1825.0, 0.0
 #define PAMI_5_START 35.0, 1905.0, 0.0
 
-#define PAMI_1_WAIT 6.0
-#define PAMI_2_WAIT 4.0
-#define PAMI_3_WAIT 0.0
-#define PAMI_4_WAIT 1.0
-#define PAMI_5_WAIT 0.0
+#define PAMI_1_GOAL 100, 850, 0
+#define PAMI_2_GOAL 620, 170, 0
+#define PAMI_3_GOAL 730, 860, 0
+#define PAMI_4_GOAL 1683, 1384, 0
+#define PAMI_5_GOAL 1180, 1444, 0
+
+#define PAMI_1_WAIT 0
+#define PAMI_2_WAIT 0.0
+#define PAMI_3_WAIT 1.5
+#define PAMI_4_WAIT 0.0
+#define PAMI_5_WAIT 1.5
 
 bool robot_position_in_zone(RobotPosition& position, float xmin, float xmax, float ymin, float ymax)
 {
@@ -51,15 +57,15 @@ namespace strategy
 
     bool position_in_end_zone(RobotPosition position)
     {
-        #if PAMI_ID == 1
-            return robot_position_in_zone(position, COORD_ZONE_3);
-        #elif PAMI_ID == 2
-            return robot_position_in_zone(position, COORD_ZONE_3);
-        #elif PAMI_ID == 3
-            return robot_position_in_zone(position, COORD_ZONE_2);
-        #elif PAMI_ID == 4
-            return robot_position_in_zone(position, COORD_ZONE_1);
-        #endif
+        // #if PAMI_ID == 1
+        //     return robot_position_in_zone(position, PAMI_1_GOAL);
+        // #elif PAMI_ID == 2
+        //     return robot_position_in_zone(position, PAMI_2_GOAL;
+        // #elif PAMI_ID == 3
+        //     return robot_position_in_zone(position, COORD_ZONE_2);
+        // #elif PAMI_ID == 4
+        //     return robot_position_in_zone(position, COORD_ZONE_1);
+        // #endif
         return false;
     }
 
@@ -97,17 +103,11 @@ namespace strategy
        
     #if PAMI_ID == 3
 
-        targetPosition = RobotPosition(1940.0, 1450.0, M_PI);
+        targetPosition = RobotPosition(PAMI_3_GOAL);
         RobotPosition tmp = targetPosition;
 
         tmp = startPosition;
-        tmp.x += 350;
-        positions.push_back(tmp);
-        tmp.x = 840;
-        tmp.y = 1250.0;
-        positions.push_back(tmp);
-        tmp.x = 1640.0;
-        tmp.y = 1100.0;
+        tmp.x += 150;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -116,14 +116,11 @@ namespace strategy
 
     #elif PAMI_ID == 2
 
-        targetPosition = RobotPosition(1773.0, 1372.0, M_PI);
+        targetPosition = RobotPosition(PAMI_2_GOAL);
 
         RobotPosition tmp = targetPosition;
         tmp = startPosition;
         tmp.x += 150;
-        positions.push_back(tmp);
-        tmp.x = 1210.0;
-        tmp.y = 1294.0;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -133,17 +130,16 @@ namespace strategy
 
     #elif PAMI_ID == 4
 
-        targetPosition = RobotPosition(1670.0, 1470.0, M_PI);
+        targetPosition = RobotPosition(PAMI_4_GOAL);
 
         RobotPosition tmp = startPosition;
         tmp.x += 200;
-        tmp.y += 1;
         positions.push_back(tmp);
-        tmp.x += 100;
-        tmp.y -= 150;
+        tmp.x = 750;
+        tmp.y = 1260;
         positions.push_back(tmp);
-        tmp.x = 1000;
-        tmp.y = 1430;
+        tmp.x = 1590;
+        tmp.y = 1260;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -152,13 +148,9 @@ namespace strategy
 
     #elif PAMI_ID == 1
 
-        targetPosition = RobotPosition(1078.0, 1438.0, -M_PI_2-M_PI_4);
+        targetPosition = RobotPosition(PAMI_1_GOAL);
         
         RobotPosition tmp = startPosition;
-        tmp.x += 250;
-        positions.push_back(tmp);
-        tmp = RobotPosition(776.0, 1380.0, 0.0);
-        positions.push_back(tmp);
         positions.push_back(targetPosition);
         
         tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
@@ -166,16 +158,16 @@ namespace strategy
 
     #elif PAMI_ID == 5
 
-        // PAMI should go slower
-        tc.maxWheelVelocity *= 0.75;
-        tc.maxWheelAcceleration *= 0.75;
+        targetPosition = RobotPosition(PAMI_5_GOAL);
 
         RobotPosition tmp = startPosition;
-        tmp.x += 1300.0;
+        tmp.x += 200;
         positions.push_back(tmp);
-        tmp.y -= 180;
+        tmp.x = 600;
+        tmp.y = 1450;
         positions.push_back(tmp);
-        tv = computeTrajectoryRoundedCorner(tc, positions, 100.0);
+        positions.push_back(targetPosition);
+        tv = computeTrajectoryRoundedCorner(tc, positions, 150.0);
         res.insert(res.end(), tv.begin(), tv.end());
 
     #endif
@@ -213,14 +205,14 @@ namespace strategy
 //         res.push_back(pointTurnTowardsLeft);
 //         currentPosition = res.back()->getEndPoint().position;
 // #endif
-#if PAMI_ID == 5
-        // Go forward
-        float distance = 2300;
-        // Movement should be very slow
-        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
-        TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
-        res.insert(res.end(), sl.begin(), sl.end());
-#endif
+// #if PAMI_ID == 5
+//         // Go forward
+//         float distance = 2300;
+//         // Movement should be very slow
+//         tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
+//         TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
+//         res.insert(res.end(), sl.begin(), sl.end());
+// #endif
 
 //         for (auto traj : res)
 //         {

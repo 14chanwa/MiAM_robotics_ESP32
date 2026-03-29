@@ -32,18 +32,18 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
 
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
-#if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = SLOWDOWN_KEEP_GOING;
-#else
+// #if (PAMI_ID == 4 || PAMI_ID == 5)
+//         coeff = SLOWDOWN_KEEP_GOING;
+// #else
         coeff = 0.0f;
-#endif
+// #endif
     }
     else if (vlx_range_detection_mm < MAX_RANGE)
     {
         coeff = (vlx_range_detection_mm - MIN_RANGE) / (MAX_RANGE - MIN_RANGE);
-#if (PAMI_ID == 4 || PAMI_ID == 5)
-        coeff = std::max(coeff, SLOWDOWN_KEEP_GOING);
-#endif
+// #if (PAMI_ID == 4 || PAMI_ID == 5)
+//         coeff = std::max(coeff, SLOWDOWN_KEEP_GOING);
+// #endif
     }
 
     // if detected point is outside of table (+- 5 cm), keep going
