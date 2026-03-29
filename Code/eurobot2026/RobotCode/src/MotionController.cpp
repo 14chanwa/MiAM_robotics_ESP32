@@ -157,7 +157,7 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
 
         bool proximitySwitchTriggered = 
             // do not trigger short range avoidance for the 3 1st seconds
-            (measurements.currentMatchTime >= 87.0f && measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
+            (measurements.currentMatchTime >= 88.0f && measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
             measurements.right_switch_level;
         /// * move is stopped when contact is made with at least ONE OF the switches
         /// and not going backwards

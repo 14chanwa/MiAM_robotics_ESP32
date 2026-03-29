@@ -70,10 +70,6 @@ void performLowLevel(void* parameters)
         robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
         robot->measurements.left_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::LEFT);
         robot->measurements.middle_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::MIDDLE);
-        // Middle sensor is broken
-    #if PAMI_ID == 4
-        robot->measurements.middle_vlx = robot->measurements.left_vlx;
-    #endif
         robot->measurements.right_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::RIGHT);
         robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
         robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();

@@ -57,6 +57,20 @@ namespace strategy
 
     bool position_in_end_zone(RobotPosition position)
     {
+        RobotPosition goal(
+#if PAMI_ID == 1
+            PAMI_1_GOAL
+#elif PAMI_ID == 2
+            PAMI_2_GOAL
+#elif PAMI_ID == 3
+            PAMI_3_GOAL
+#elif PAMI_ID == 4
+            PAMI_4_GOAL
+#elif PAMI_ID == 5
+            PAMI_5_GOAL
+#endif
+        );
+        return (position - goal).norm() < 300;
         // #if PAMI_ID == 1
         //     return robot_position_in_zone(position, PAMI_1_GOAL);
         // #elif PAMI_ID == 2
@@ -66,7 +80,7 @@ namespace strategy
         // #elif PAMI_ID == 4
         //     return robot_position_in_zone(position, COORD_ZONE_1);
         // #endif
-        return false;
+        // return false;
     }
 
     bool position_in_avoidance_exclusion(RobotPosition position)
