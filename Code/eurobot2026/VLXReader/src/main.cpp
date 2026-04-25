@@ -25,12 +25,13 @@
 
 // How many leds in your strip?
 #define NUM_LEDS 64
-#define DISTANCE_FAR 500
-#define DISTANCE_MID 250
-#define DISTANCE_NEAR 0
+#define DISTANCE_FAR 1000
+#define DISTANCE_MID 500
+#define DISTANCE_NEAR 250
 
 #define LEDS_0_PIN 1
 #define LEDS_1_PIN 2
+#define LEDS_2_PIN 3
 
 long last_time_blink = 0;
 bool debug_led_state = false;
@@ -38,6 +39,7 @@ bool debug_led_state = false;
 CRGB led_debug[1];
 CRGB leds_0[NUM_LEDS];
 CRGB leds_1[NUM_LEDS];
+CRGB leds_2[2];
 
 uint32_t last_ota_time = 0;
 
@@ -135,7 +137,14 @@ void setup()
     FastLED.addLeds<WS2812, 21, GRB>(led_debug, 1);
     FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS);  // GRB ordering is typical
     FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, NUM_LEDS);  // GRB ordering is typical
-    FastLED.setBrightness(10);
+    FastLED.addLeds<WS2812, LEDS_2_PIN, GRB>(leds_2, 2);  // GRB ordering is typical
+
+    // Set decorative leds
+    for (uint i=0; i<2; i++)
+    {
+        leds_2[i] = CRGB::Pink;
+        leds_2[i].nscale8_video(140);
+    }
 
     delay(100);
 }
@@ -164,15 +173,24 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
                 Serial.print(distance);
                 if (distance > DISTANCE_FAR)
                 {
-                    crgb_leds[led_index] = CRGB::Green;
+                    crgb_leds[led_index] = CRGB::Black;
+                    // crgb_leds[led_index] = CRGB::Pink;
+                    // crgb_leds[led_index].nscale8_video(3);
                 }
                 else if (distance > DISTANCE_MID)
                 {
+                    crgb_leds[led_index] = CRGB::Green;
+                    crgb_leds[led_index].nscale8_video(4);
+                }
+                else if (distance > DISTANCE_NEAR)
+                {
                     crgb_leds[led_index] = CRGB::Orange;
+                    crgb_leds[led_index].nscale8_video(4);
                 }
                 else
                 {
                     crgb_leds[led_index] = CRGB::Red;
+                    crgb_leds[led_index].nscale8_video(4);
                 }
                 // else if (distance > DISTANCE_MID)
                 // {
@@ -220,6 +238,7 @@ void loop()
       if (debug_led_state)
       {
         led_debug[0] = CRGB::Green;
+        led_debug[0].nscale8_video(10);
       }
       else
       {
