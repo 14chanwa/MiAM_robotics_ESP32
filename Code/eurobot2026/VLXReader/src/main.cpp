@@ -13,9 +13,15 @@
 
 */
 #include <Arduino.h>
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <ArduinoOTA.h>
+
 #include <Wire.h>
 #include <FastLED.h>
+
 #include <vlx_sensor.hpp>
+#include <secret.hpp>
 
 // How many leds in your strip?
 #define NUM_LEDS 64
@@ -26,25 +32,63 @@
 #define LEDS_0_PIN 1
 #define LEDS_1_PIN 2
 
+long last_time_blink = 0;
+bool debug_led_state = false;
+
+CRGB led_debug[1];
 CRGB leds_0[NUM_LEDS];
 CRGB leds_1[NUM_LEDS];
 
-void task_hello_world(void *)
-{
-    while(true)
-    {
-        Serial.println("Hello");
-        delay(1000);
-        Serial.println("World");
-        delay(1000);
-    }
-}
+uint32_t last_ota_time = 0;
 
 VLXSensor vlx_sensor_0(0);
 VLXSensor vlx_sensor_1(1);
 
 void setup()
 {
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+    ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH) {
+        type = "sketch";
+      } else {  // U_SPIFFS
+        type = "filesystem";
+      }
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      if (millis() - last_ota_time > 500) {
+        Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+        last_ota_time = millis();
+      }
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+        Serial.println("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+        Serial.println("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+        Serial.println("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+        Serial.println("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+        Serial.println("End Failed");
+      }
+    });
+
+    ArduinoOTA.begin();
+
+
     uint8_t sda = 8;
     uint8_t scl = 9;
     uint32_t frequency = 400000;
@@ -88,6 +132,7 @@ void setup()
 
 
     // Setup leds
+    FastLED.addLeds<WS2812, 21, GRB>(led_debug, 1);
     FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS);  // GRB ordering is typical
     FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, NUM_LEDS);  // GRB ordering is typical
     FastLED.setBrightness(10);
@@ -105,10 +150,11 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
     {
         for (int x = imageWidth - 1 ; x >= 0 ; x--)
         {
-            if (x+y >= NUM_LEDS)
+            uint led_index = x+imageWidth*(imageWidth-1)-y;
+            if (led_index >= NUM_LEDS)
             {
                 Serial.print("Indice invalide: ");
-                Serial.println(x+y);
+                Serial.println(led_index);
                 continue;
             }
             Serial.print("\t");
@@ -118,15 +164,15 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
                 Serial.print(distance);
                 if (distance > DISTANCE_FAR)
                 {
-                    crgb_leds[x + y] = CRGB::Green;
+                    crgb_leds[led_index] = CRGB::Green;
                 }
                 else if (distance > DISTANCE_MID)
                 {
-                    crgb_leds[x + y] = CRGB::Orange;
+                    crgb_leds[led_index] = CRGB::Orange;
                 }
                 else
                 {
-                    crgb_leds[x + y] = CRGB::Red;
+                    crgb_leds[led_index] = CRGB::Red;
                 }
                 // else if (distance > DISTANCE_MID)
                 // {
@@ -140,7 +186,7 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
           else
           {
               Serial.print("*");
-              crgb_leds[x + y] = CRGB::Black;
+              crgb_leds[led_index] = CRGB::Black;
           }
           
         }
@@ -168,10 +214,27 @@ void loop()
         res |= true;
     }
 
+    // debug led
+    if (millis() - last_time_blink > 1000)
+    {
+      if (debug_led_state)
+      {
+        led_debug[0] = CRGB::Green;
+      }
+      else
+      {
+        led_debug[0] = CRGB::Black;
+      }
+      debug_led_state = !debug_led_state;
+      last_time_blink = millis();
+      res |= true;
+    }
+
     if (res)
     {
       FastLED.show();
     }
 
-    delay(10); // Small delay between polling
+    ArduinoOTA.handle();
+    delay(20); // Small delay between polling
 }

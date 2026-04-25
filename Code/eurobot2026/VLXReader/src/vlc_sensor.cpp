@@ -84,6 +84,7 @@ bool VLXSensor::init()
 
 bool VLXSensor::update()
 {
+    switch_i2c(i2c_channel);
     // Poll sensor for new data
     if (vlx_sensor->isDataReady() == true)
     {
