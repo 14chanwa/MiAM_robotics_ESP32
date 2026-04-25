@@ -15,64 +15,163 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <FastLED.h>
-#include <vlx_sensor_and_display.hpp>
+#include <vlx_sensor.hpp>
 
+// How many leds in your strip?
+#define NUM_LEDS 64
+#define DISTANCE_FAR 500
+#define DISTANCE_MID 250
+#define DISTANCE_NEAR 0
+
+#define LEDS_0_PIN 1
+#define LEDS_1_PIN 2
+
+CRGB leds_0[NUM_LEDS];
+CRGB leds_1[NUM_LEDS];
 
 void task_hello_world(void *)
 {
-  while(true)
-  {
-    Serial.println("Hello");
-    delay(1000);
-    Serial.println("World");
-    delay(1000);
-  }
+    while(true)
+    {
+        Serial.println("Hello");
+        delay(1000);
+        Serial.println("World");
+        delay(1000);
+    }
 }
 
-VLXSensorAndDisplay vlx_sensor_and_display(0, 1);
+VLXSensor vlx_sensor_0(0);
+VLXSensor vlx_sensor_1(1);
 
 void setup()
 {
-  uint8_t sda = 8;
-  uint8_t scl = 9;
-  uint32_t frequency = 400000;
+    uint8_t sda = 8;
+    uint8_t scl = 9;
+    uint32_t frequency = 400000;
 
-  Serial.begin(115200);
-  Serial.println("MiAM!!!");
+    Serial.begin(115200);
+    Serial.println("MiAM!!!");
 
-  // xTaskCreatePinnedToCore(
-  //   task_hello_world,
-  //   "task_hello_world",
-  //   10000,
-  //   NULL,
-  //   1,          // priorité basse
-  //   NULL,
-  //   0           // core 0
-  // );
+    // xTaskCreatePinnedToCore(
+    //   task_hello_world,
+    //   "task_hello_world",
+    //   10000,
+    //   NULL,
+    //   1,          // priorité basse
+    //   NULL,
+    //   0           // core 0
+    // );
 
-  FastLED.setBrightness(10);
-  Wire.begin(sda, scl, frequency); //This resets to 100kHz I2C
-  //Wire.setClock(400000); //Sensor has max I2C freq of 400kHz 
+    Wire.begin(sda, scl, frequency); //This resets to 100kHz I2C
+    //Wire.setClock(400000); //Sensor has max I2C freq of 400kHz 
 
-  bool init_vlx = vlx_sensor_and_display.init();
-  if (init_vlx)
-  {
-    Serial.println("VLX init OK");
-  }
-  else
-  {
+    bool init_vlx = vlx_sensor_0.init();
+    if (init_vlx)
+    {
+        Serial.println("VLX init OK");
+    }
+    else
+    {
 
-    Serial.println("VLX init failed");
-  }
-  delay(100);
+        Serial.println("VLX init failed");
+    }
+
+    init_vlx = vlx_sensor_1.init();
+    if (init_vlx)
+    {
+        Serial.println("VLX init OK");
+    }
+    else
+    {
+        Serial.println("VLX init failed");
+    }
+
+
+    // Setup leds
+    FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS);  // GRB ordering is typical
+    FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, NUM_LEDS);  // GRB ordering is typical
+    FastLED.setBrightness(10);
+
+    delay(100);
 }
 
+void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds)
+{
+
+    int imageWidth = 8;
+    //The ST library returns the data transposed from zone mapping shown in datasheet
+    //Pretty-print data with increasing y, decreasing x to reflect reality
+    for (int y = 0 ; y <= imageWidth * (imageWidth - 1) ; y += imageWidth)
+    {
+        for (int x = imageWidth - 1 ; x >= 0 ; x--)
+        {
+            if (x+y >= NUM_LEDS)
+            {
+                Serial.print("Indice invalide: ");
+                Serial.println(x+y);
+                continue;
+            }
+            Serial.print("\t");
+            if (measurement_data.target_status[x + y] == 5 || measurement_data.target_status[x + y] == 9)
+            {
+                int distance = measurement_data.distance_mm[x + y];
+                Serial.print(distance);
+                if (distance > DISTANCE_FAR)
+                {
+                    crgb_leds[x + y] = CRGB::Green;
+                }
+                else if (distance > DISTANCE_MID)
+                {
+                    crgb_leds[x + y] = CRGB::Orange;
+                }
+                else
+                {
+                    crgb_leds[x + y] = CRGB::Red;
+                }
+                // else if (distance > DISTANCE_MID)
+                // {
+                //   crgb_leds[x + y] = (DISTANCE_FAR-distance) * CRGB::Orange + (distance) * CRGB::Green;
+                // }
+                // else
+                // {
+                //   crgb_leds[x + y] = (DISTANCE_MID-distance) * CRGB::Red + (distance) * CRGB::Orange;
+                // }
+          }
+          else
+          {
+              Serial.print("*");
+              crgb_leds[x + y] = CRGB::Black;
+          }
+          
+        }
+        Serial.println();
+    }
+    Serial.println();
+}
+
+bool res;
 
 void loop()
 {
-  
-  vlx_sensor_and_display.update();
-  FastLED.show();
 
-  delay(10); //Small delay between polling
+    res = false;
+    
+    if (vlx_sensor_0.update())
+    {
+        update_leds_from_data(vlx_sensor_0.measurement_data, leds_0);
+        res |= true;  
+    }
+
+    if (vlx_sensor_1.update())
+    {
+        update_leds_from_data(vlx_sensor_1.measurement_data, leds_1);
+        res |= true;
+    }
+
+    if (res)
+    {
+      FastLED.show();
+    }
+
+    delay(10); // Small delay between polling
 }

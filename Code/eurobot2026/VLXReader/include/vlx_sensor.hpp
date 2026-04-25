@@ -5,22 +5,18 @@
 #include <SparkFun_VL53L5CX_Library.h> //http://librarymanager/All#SparkFun_VL53L5CX
 #include <FastLED.h>
 
-class VLXSensorAndDisplay
+class VLXSensor
 {
 public:
     SparkFun_VL53L5CX* vlx_sensor;
     VL53L5CX_ResultsData measurement_data;
     uint8_t i2c_channel;
-
-    uint8_t led_data_pin;
-    CRGB* leds;
     
     int imageResolution;
     int imageWidth;
 
-    VLXSensorAndDisplay(
-        uint8_t i2c_channel_,
-        uint8_t led_data_pin_
+    VLXSensor(
+        uint8_t i2c_channel_
     ) ;
 
     bool init();
