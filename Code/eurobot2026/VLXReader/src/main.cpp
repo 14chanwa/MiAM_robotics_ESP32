@@ -22,12 +22,17 @@
 
 #include <vlx_sensor.hpp>
 #include <secret.hpp>
+#include <vector>
+#include <algorithm>
 
 // How many leds in your strip?
 #define NUM_LEDS 64
 #define DISTANCE_FAR 1000
 #define DISTANCE_MID 500
 #define DISTANCE_NEAR 250
+#define DISTANCE_MAX 3000
+
+#define OFFSET_ARM_ROWS 3
 
 #define LEDS_0_PIN 1
 #define LEDS_1_PIN 2
@@ -37,9 +42,9 @@ long last_time_blink = 0;
 bool debug_led_state = false;
 
 CRGB led_debug[1];
-CRGB leds_0[NUM_LEDS];
-CRGB leds_1[NUM_LEDS];
-CRGB leds_2[2];
+CRGB leds_0[NUM_LEDS*2];
+CRGB leds_1[2];
+CRGB leds_2[1];
 
 uint32_t last_ota_time = 0;
 
@@ -135,23 +140,24 @@ void setup()
 
     // Setup leds
     FastLED.addLeds<WS2812, 21, GRB>(led_debug, 1);
-    FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS);  // GRB ordering is typical
-    FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, NUM_LEDS);  // GRB ordering is typical
-    FastLED.addLeds<WS2812, LEDS_2_PIN, GRB>(leds_2, 2);  // GRB ordering is typical
+    FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS*2);  // GRB ordering is typical
+    FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, 2);  // GRB ordering is typical
+    FastLED.addLeds<WS2812, LEDS_2_PIN, GRB>(leds_2, 1);  // GRB ordering is typical
 
     // Set decorative leds
     for (uint i=0; i<2; i++)
     {
-        leds_2[i] = CRGB::Pink;
-        leds_2[i].nscale8_video(140);
+        leds_1[i] = CRGB::Pink;
+        leds_1[i].nscale8_video(140);
     }
 
     delay(100);
 }
 
-void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds)
+int update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds)
 {
-
+    // Update nearest distance
+    std::vector<int > distances;
     int imageWidth = 8;
     //The ST library returns the data transposed from zone mapping shown in datasheet
     //Pretty-print data with increasing y, decreasing x to reflect reality
@@ -170,6 +176,16 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
             if (measurement_data.target_status[x + y] == 5 || measurement_data.target_status[x + y] == 9)
             {
                 int distance = measurement_data.distance_mm[x + y];
+
+                // Row index starting bottom of image
+                int yprime = int(floor(y / imageWidth));
+
+                // Ignore bottom rows: possibly elephant
+                if ((yprime > OFFSET_ARM_ROWS) || (distance >= DISTANCE_NEAR))
+                {
+                    distances.push_back(distance);
+                }
+
                 Serial.print(distance);
                 if (distance > DISTANCE_FAR)
                 {
@@ -189,7 +205,14 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
                 }
                 else
                 {
-                    crgb_leds[led_index] = CRGB::Red;
+                    if (yprime <= OFFSET_ARM_ROWS)
+                    {
+                        crgb_leds[led_index] = CRGB::Blue;
+                    }
+                    else
+                    {
+                        crgb_leds[led_index] = CRGB::Red;
+                    }
                     crgb_leds[led_index].nscale8_video(4);
                 }
                 // else if (distance > DISTANCE_MID)
@@ -211,24 +234,73 @@ void update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_led
         Serial.println();
     }
     Serial.println();
+
+    // Update nearest distance
+    // Only update if 3 points are resolved
+    int nearest_distance = DISTANCE_MAX;
+    if (distances.size() >= 3)
+    {
+        std::sort(distances.begin(), distances.end());
+        if (distances.at(2) < nearest_distance)
+        {
+            nearest_distance = distances.at(2);
+        }
+    }
+    return nearest_distance;
 }
 
 bool res;
 
+void update_nearest_distance_led(int nearest_distance)
+{
+    // set the proximity led to the right color
+    if (nearest_distance < DISTANCE_NEAR)
+    {
+      leds_2[0] = CRGB::Red;
+      leds_2[0].nscale8_video(10);
+    }
+    else if (nearest_distance < DISTANCE_MID)
+    {
+      leds_2[0] = CRGB::Orange;
+      leds_2[0].nscale8_video(10);
+    }
+    else if (nearest_distance < DISTANCE_FAR)
+    {
+      leds_2[0] = CRGB::Green;
+      leds_2[0].nscale8_video(10);
+    }
+    else
+    {
+      leds_2[0] = CRGB::Black;
+    }
+}
+
+int nearest_distance;
+
 void loop()
 {
-
     res = false;
+    nearest_distance = DISTANCE_MAX;
     
     if (vlx_sensor_0.update())
     {
-        update_leds_from_data(vlx_sensor_0.measurement_data, leds_0);
+        int dist = update_leds_from_data(vlx_sensor_0.measurement_data, leds_0);
+        if (dist < nearest_distance)
+        {
+          nearest_distance = dist;
+          update_nearest_distance_led(nearest_distance);
+        }
         res |= true;  
     }
 
     if (vlx_sensor_1.update())
     {
-        update_leds_from_data(vlx_sensor_1.measurement_data, leds_1);
+        int dist = update_leds_from_data(vlx_sensor_1.measurement_data, &(leds_0[NUM_LEDS]));
+        if (dist < nearest_distance)
+        {
+          nearest_distance = dist;
+          update_nearest_distance_led(nearest_distance);
+        }
         res |= true;
     }
 
