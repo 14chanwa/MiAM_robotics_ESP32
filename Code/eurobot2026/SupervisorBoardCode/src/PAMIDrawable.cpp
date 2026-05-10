@@ -60,20 +60,20 @@ void PAMIDrawable::draw(TFT_eSPI& target)
         // battery reading
         target.setTextSize(1);
         target.setTextColor(TFT_BLACK, drawingColor);
-        target.setCursor(top_left_corner_[0] + 10, 
+        target.setCursor(top_left_corner_[0] + 2, 
             top_left_corner_[1] + 10);
         target.print(last_message_.batteryReading_);
 
         // current position
-        target.setCursor(top_left_corner_[0] + 10, 
+        target.setCursor(top_left_corner_[0] + 2, 
             top_left_corner_[1] + 30);
         target.print(last_message_.currentPosition_.x);
 
-        target.setCursor(top_left_corner_[0] + 10, 
+        target.setCursor(top_left_corner_[0] + 2, 
             top_left_corner_[1] + 40);
         target.print(last_message_.currentPosition_.y);
 
-        target.setCursor(top_left_corner_[0] + 10, 
+        target.setCursor(top_left_corner_[0] + 2, 
             top_left_corner_[1] + 50);
         target.print(last_message_.currentPosition_.theta);
     }

@@ -16,6 +16,9 @@ namespace Match
 
     void setSide(PlayingSide playingSide);
     PlayingSide getSide();
+
+    bool getDebugMode();
+    void setDebugMode(bool value);
 }
 
 #endif

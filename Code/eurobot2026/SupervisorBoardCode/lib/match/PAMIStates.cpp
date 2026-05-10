@@ -5,8 +5,9 @@
 #define DEBUG_PAMISTATES
 
 #define PAMI_TIMEOUT 2000
+#define MAX_PAMI_ID 6
 
-long lastMillisRegisterMessage[5] = {0, 0, 0, 0, 0};
+long lastMillisRegisterMessage[MAX_PAMI_ID] = {0, 0, 0, 0, 0, 0};
 FullPamiReportMessage default_message = FullPamiReportMessage(false, 0.0, PlayingSide::BLUE_SIDE, 0.0, RobotPosition(0, 0, 0), 255);
 std::vector<FullPamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message});
 
@@ -25,7 +26,7 @@ void registerMessage(std::shared_ptr<Message > message)
     Serial.print("  ");
     Serial.println(MessageType::FULL_PAMI_REPORT);
 #endif
-    if (message->get_message_type() == MessageType::FULL_PAMI_REPORT && senderID >= 1 && senderID <= 5)
+    if (message->get_message_type() == MessageType::FULL_PAMI_REPORT && senderID >= 1 && senderID <= MAX_PAMI_ID)
     {
 #ifdef DEBUG_PAMISTATES
         Serial.println("Registering message");
@@ -38,7 +39,7 @@ void registerMessage(std::shared_ptr<Message > message)
 
 FullPamiReportMessage readPAMIMessage(uint8_t pamiID)
 {
-    if (pamiID >= 1 && pamiID <= 5)
+    if (pamiID >= 1 && pamiID <= MAX_PAMI_ID)
     {
         if (millis() - lastMillisRegisterMessage[pamiID-1] <= PAMI_TIMEOUT)
         {
@@ -51,7 +52,7 @@ FullPamiReportMessage readPAMIMessage(uint8_t pamiID)
 long readLastMessageTime()
 {
     long maxValue = lastMillisRegisterMessage[0];
-    for (char i = 1; i<5; i++)
+    for (uint i = 1; i<=MAX_PAMI_ID; i++)
         maxValue = std::max(maxValue, lastMillisRegisterMessage[i]);
     return maxValue;
 }

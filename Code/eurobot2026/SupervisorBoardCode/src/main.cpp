@@ -89,7 +89,14 @@ void task_monitor_buttons(void *parameters)
         buttonEvent = start_switch_button.getEvent();
         if (buttonEvent == ButtonEvent::NEW_STATE_HIGH)
         {
-            Match::startMatch(0.0f);
+            if (Match::getDebugMode())
+            {
+                Match::startMatch(83.0f);
+            }
+            else
+            {
+                Match::startMatch(0.0f);
+            }
         }
         else if (buttonEvent == ButtonEvent::NEW_STATE_LOW)
         {

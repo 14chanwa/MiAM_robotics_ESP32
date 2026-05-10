@@ -13,18 +13,21 @@
 // #define DEBUG_TFT_SCREEN
 
 #define PAMI_RECT_XSIZE 100
-#define PAMI_RECT_YSIZE 100
+#define PAMI_RECT_YSIZE 60
+
+#define MAX_PAMI_ID 6
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 std::vector<std::shared_ptr<PAMIDrawable > > pami_drawables;
 std::shared_ptr<ButtonDrawable > button_change_color;
+std::shared_ptr<ButtonDrawable > button_debug_mode;
 
 void TFTScreen::init()
 {
     // Create PAMIs
     pami_drawables.clear();
-    for (uint i=1; i<=5; i++)
+    for (uint i=1; i<=MAX_PAMI_ID; i++)
     {
         uint8_t gridX;
         uint8_t gridY;
@@ -50,6 +53,10 @@ void TFTScreen::init()
                 gridX = 1;
                 gridY = 1;
                 break;
+            case 6:
+                gridX = 2;
+                gridY = 1;
+                break;
         };
 
         Vector2 top_left_corner(5 + gridX * (PAMI_RECT_XSIZE + 5), 5 + gridY * (PAMI_RECT_YSIZE + 5));
@@ -60,12 +67,24 @@ void TFTScreen::init()
     }
 
     // Button change color
-    Vector2 top_left_corner(215, 150);
-    Vector2 dimensions(PAMI_RECT_XSIZE, 40);
-    button_change_color = std::make_shared<ButtonDrawable >(
-        top_left_corner,
-        dimensions
-    );
+    {
+        Vector2 top_left_corner(5 + 1 * (PAMI_RECT_XSIZE + 5), 25 + 2 * (PAMI_RECT_YSIZE + 5));
+        Vector2 dimensions(PAMI_RECT_XSIZE, 40);
+        button_change_color = std::make_shared<ButtonDrawable >(
+            top_left_corner,
+            dimensions
+        );
+
+    }
+    {
+        Vector2 top_left_corner(5 + 2 * (PAMI_RECT_XSIZE + 5), 25 + 2 * (PAMI_RECT_YSIZE + 5));
+        Vector2 dimensions(PAMI_RECT_XSIZE, 40);
+        button_debug_mode = std::make_shared<ButtonDrawable >(
+            top_left_corner,
+            dimensions
+        );
+    }
+    
 
     tft.init(); 
     tft.setRotation(3); 
@@ -91,11 +110,11 @@ void TFTScreen::update(IPAddress localIP)
     // Update match time
     tft.setTextSize(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(230, 120);
+    tft.setCursor(15 + 0 * (PAMI_RECT_XSIZE + 5), 40 + 2 * (PAMI_RECT_YSIZE + 5));
     if (Match::getMatchStarted())
     {
         tft.print("      ");
-        tft.setCursor(230, 120);
+        tft.setCursor(15 + 0 * (PAMI_RECT_XSIZE + 5), 40 + 2 * (PAMI_RECT_YSIZE + 5));
         tft.print(Match::getMatchTimeSeconds());
     }
     else
@@ -126,6 +145,30 @@ void TFTScreen::update(IPAddress localIP)
     }
 
     button_change_color->draw(tft);
+
+    // Update current side
+    if (Match::getDebugMode())
+    {
+        button_debug_mode->update(
+            "DEBUG",
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            TFT_RED
+        );
+    }
+    else
+    {
+        button_debug_mode->update(
+            "Match",
+            TFT_BLACK,
+            TFT_BLACK,
+            2,
+            TFT_LIGHTGREY
+        );
+    }
+
+    button_debug_mode->draw(tft);
 
     // tft.setCursor(230, 150);
     // if (Match::getSide() == PlayingSide::BLUE_SIDE)
@@ -231,6 +274,19 @@ void TFTScreen::registerTouch()
             else
             {
                 Match::setSide(PlayingSide::YELLOW_SIDE);
+            }
+        }
+
+        if (button_debug_mode->clicked(v))
+        {
+            Serial.println("Button DEBUG clicked");
+            if (Match::getDebugMode())
+            {
+                Match::setDebugMode(false);
+            }
+            else
+            {
+                Match::setDebugMode(true);
             }
         }
         delay(30);
