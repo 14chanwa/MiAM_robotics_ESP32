@@ -1,20 +1,20 @@
 #include <MessageHandler.hpp>
 #include <MessageReceiver.hpp>
-// #include <WiFiHandler.hpp>
+#include <WiFiHandler.hpp>
 
 #include <Arduino.h>
 
 #include <Robot.hpp>
 #include <parameters.hpp>
 
-#include <PacketSerial.h>
-PacketSerial myPacketSerial;
-HardwareSerial mySerial(1);
+// #include <PacketSerial.h>
+// PacketSerial myPacketSerial;
+// HardwareSerial mySerial(1);
 
-#include <CRC.h>
+// #include <CRC.h>
 
-#define TXD1 17
-#define RXD1 16
+// #define TXD1 17
+// #define RXD1 16
 
 #include <SerialMessage.hpp>
 
@@ -24,7 +24,7 @@ HardwareSerial mySerial(1);
 // WiFiClient wifiClient;
 
 // MessageReceiver messageReceiver;
-// MessageReceiverUDP messageReceiverUDP;
+// // MessageReceiverUDP messageReceiverUDP;
 
 // void task_messageReceiver(void* parameters)
 // {
@@ -60,43 +60,43 @@ void task_report_broadcast(void *parameters)
 
     for (;;)
     {
-        // if the robot is in match, stop listening to save processing power
-        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
-            robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
-        {
-            taskYIELD();
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        FullPamiReportMessage report = robot->get_pami_report();
-        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
-
-        // Send over serial
-        // TODO add crc
-
-
-        // std::vector<uint8_t > newPayload;
-        // for (uint i=0; i<sizeOfMessage; i++)
+        // // if the robot is in match, stop listening to save processing power
+        // if (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
+        //     robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
         // {
-        //     newPayload.push_back(buffer[i]);
+        //     taskYIELD();
+        //     vTaskDelay(500 / portTICK_PERIOD_MS);
+        //     continue;
         // }
 
-        // SerialMessage newMessage(SerialMessageType::TRANSMIT, newPayload);
-        // int sizeOfSent = newMessage.serialize((uint8_t*)buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
+        // FullPamiReportMessage report = robot->get_pami_report();
+        // sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
+
+        // // Send over serial
+        // // TODO add crc
+
+
+        // // std::vector<uint8_t > newPayload;
+        // // for (uint i=0; i<sizeOfMessage; i++)
+        // // {
+        // //     newPayload.push_back(buffer[i]);
+        // // }
+
+        // // SerialMessage newMessage(SerialMessageType::TRANSMIT, newPayload);
+        // // int sizeOfSent = newMessage.serialize((uint8_t*)buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
         
-        // Transfer data over serial
-        // Serial.print("Sending ");
-        // Serial.print(sizeOfMessage);
-        // Serial.println(" over serial");
-        Serial.println("Sending message");
-        for (uint i=0; i<sizeOfMessage; i++)
-        {
-            Serial.print(buffer[i]);
-            Serial.print(" ");
-        }
-        Serial.println();
-        myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
+        // // Transfer data over serial
+        // // Serial.print("Sending ");
+        // // Serial.print(sizeOfMessage);
+        // // Serial.println(" over serial");
+        // Serial.println("Sending message");
+        // for (uint i=0; i<sizeOfMessage; i++)
+        // {
+        //     Serial.print(buffer[i]);
+        //     Serial.print(" ");
+        // }
+        // Serial.println();
+        // myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
 
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
@@ -104,88 +104,88 @@ void task_report_broadcast(void *parameters)
 
 
 
-// This is our handler callback function.
-// When an encoded packet is received and decoded, it will be delivered here.
-// The `buffer` is a pointer to the decoded byte array. `size` is the number of
-// bytes in the `buffer`.
-void onPacketReceived(const uint8_t* buffer, size_t size)
-{
-    Serial.print("Received message size: ");
-    Serial.println(size);
+// // This is our handler callback function.
+// // When an encoded packet is received and decoded, it will be delivered here.
+// // The `buffer` is a pointer to the decoded byte array. `size` is the number of
+// // bytes in the `buffer`.
+// void onPacketReceived(const uint8_t* buffer, size_t size)
+// {
+//     Serial.print("Received message size: ");
+//     Serial.println(size);
 
-    // // Check CRC
-    // if (size > 2)
-    // {
-    //     // Check the CRC
-    //     uint8_t challenge_crc = buffer[size-1];
-    //     uint8_t actual_crc = calcCRC8(buffer, size-1);
+//     // // Check CRC
+//     // if (size > 2)
+//     // {
+//     //     // Check the CRC
+//     //     uint8_t challenge_crc = buffer[size-1];
+//     //     uint8_t actual_crc = calcCRC8(buffer, size-1);
         
-    //     if (actual_crc == challenge_crc)
-    //     {
-    //         // First byte = message type ; last byte = crc
-    //         std::shared_ptr<Message> message = Message::parse((const float*)buffer[1], (size-2)/4, 10);
-    //         Robot::getInstance()->notify_new_message(message);
-    //     }
-    //     else
-    //     {
-    //         Serial.println("CRC error");
-    //     }
-    // }
+//     //     if (actual_crc == challenge_crc)
+//     //     {
+//     //         // First byte = message type ; last byte = crc
+//     //         std::shared_ptr<Message> message = Message::parse((const float*)buffer[1], (size-2)/4, 10);
+//     //         Robot::getInstance()->notify_new_message(message);
+//     //     }
+//     //     else
+//     //     {
+//     //         Serial.println("CRC error");
+//     //     }
+//     // }
 
-    std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
-    Robot::getInstance()->notify_new_message(message);
+//     std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
+//     Robot::getInstance()->notify_new_message(message);
 
 
-}
+// }
 
-void task_receive_message(void *parameters)
-{
-    for (;;)
-    {
-        myPacketSerial.update();
-        vTaskDelay(15 / portTICK_PERIOD_MS);;
-    }
-}
+// void task_receive_message(void *parameters)
+// {
+//     for (;;)
+//     {
+//         myPacketSerial.update();
+//         vTaskDelay(15 / portTICK_PERIOD_MS);;
+//     }
+// }
 
 namespace MessageHandler
 {
 
-    // void startListening()
+    void startListening()
+    {
+        // messageReceiver.begin();
+        // messageReceiverUDP.begin();
+
+        // xTaskCreate(
+        //     task_messageReceiver,
+        //     "task_messageReceiver",
+        //     50000,
+        //     NULL,
+        //     40,
+        //     NULL
+        // );
+    }
+
+    // void startReportBroadcast()
     // {
-    //     messageReceiver.begin();
-    //     messageReceiverUDP.begin();
+    //     // Initialize packetserial
+    //     mySerial.begin(115200, SERIAL_8N1, RXD1, TXD1);  // UART setup
+    //     myPacketSerial.setStream(&mySerial);
+    //     myPacketSerial.setPacketHandler(&onPacketReceived);
 
     //     xTaskCreate(
-    //         task_messageReceiver,
-    //         "task_messageReceiver",
-    //         50000,
+    //         task_report_broadcast,
+    //         "task_report_broadcast",
+    //         30000,
     //         NULL,
-    //         40,
-    //         NULL
-    //     );
+    //         30,
+    //         NULL);
+
+    //     xTaskCreate(
+    //         task_receive_message,
+    //         "task_receive_message",
+    //         30000,
+    //         NULL,
+    //         30,
+    //         NULL);
     // }
-
-    void startReportBroadcast()
-    {
-        // Initialize packetserial
-        mySerial.begin(115200, SERIAL_8N1, RXD1, TXD1);  // UART setup
-        myPacketSerial.setStream(&mySerial);
-        myPacketSerial.setPacketHandler(&onPacketReceived);
-
-        xTaskCreate(
-            task_report_broadcast,
-            "task_report_broadcast",
-            30000,
-            NULL,
-            30,
-            NULL);
-
-        xTaskCreate(
-            task_receive_message,
-            "task_receive_message",
-            30000,
-            NULL,
-            30,
-            NULL);
-    }
 }

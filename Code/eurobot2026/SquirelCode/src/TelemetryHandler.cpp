@@ -5,8 +5,7 @@
 
 #include <AnalogReadings.hpp>
 #include <I2CHandler.hpp>
-#include <RobotBaseDC.hpp>
-#include <RobotBaseStepper.hpp>
+#include <RobotBaseSTS.hpp>
 
 #ifdef SEND_TELEPLOT_UDP
 
@@ -100,42 +99,42 @@ void logTelemetry(void* parameters)
     #else
     #ifdef SEND_SERIAL
 
-    if (xSemaphoreTake(xMutex_Serial, portMAX_DELAY))
+    if (xSemaphoreTake(robot->xMutex_Serial, portMAX_DELAY))
     {
       // print_battery();
-      leftRobotWheel->logTelemetry();
-      rightRobotWheel->logTelemetry();
+      robot->robotBase->getLeftWheel()->printToSerial();
+      robot->robotBase->getRightWheel()->printToSerial();
       Serial.print(">targetSpeed.linear:");
-      Serial.println(motionController->targetSpeed_.linear);
+      Serial.println(robot->motionController->targetSpeed_.linear);
       Serial.print(">targetSpeed.angular:");
-      Serial.println(motionController->targetSpeed_.angular);
+      Serial.println(robot->motionController->targetSpeed_.angular);
       // Serial.print(">currentPosition_:");
       // Serial.print(motionController->currentPosition_.x);
       // Serial.print(":");
       // Serial.print(motionController->currentPosition_.y);
       // Serial.println("|xy");
       Serial.print(">currentPosition.x:");
-      Serial.println(motionController->currentPosition_.x);
+      Serial.println(robot->motionController->getCurrentPosition().x);
       Serial.print(">currentPosition.y:");
-      Serial.println(motionController->currentPosition_.y);
+      Serial.println(robot->motionController->getCurrentPosition().y);
       Serial.print(">currentPosition.theta:");
-      Serial.println(motionController->currentPosition_.theta);
+      Serial.println(robot->motionController->getCurrentPosition().theta);
       // Serial.print(">targetPoint.position:");
       // Serial.print(motionController->targetPoint.position.x);
       // Serial.print(":");
       // Serial.print(motionController->targetPoint.position.y);
       // Serial.println("|xy");
       Serial.print(">targetPoint.position.x:");
-      Serial.println(motionController->targetPoint.position.x);
+      Serial.println(robot->motionController->targetPoint.position.x);
       Serial.print(">targetPoint.position.y:");
-      Serial.println(motionController->targetPoint.position.y);
+      Serial.println(robot->motionController->targetPoint.position.y);
       Serial.print(">targetPoint.position.theta:");
-      Serial.println(motionController->targetPoint.position.theta);
+      Serial.println(robot->motionController->targetPoint.position.theta);
       Serial.print(">targetPoint.linearVelocity:");
-      Serial.println(motionController->targetPoint.linearVelocity);
+      Serial.println(robot->motionController->targetPoint.linearVelocity);
       Serial.print(">targetPoint.angularVelocity:");
-      Serial.println(motionController->targetPoint.angularVelocity);
-      xSemaphoreGive(xMutex_Serial);  // release the mutex
+      Serial.println(robot->motionController->targetPoint.angularVelocity);
+      xSemaphoreGive(robot->xMutex_Serial);  // release the mutex
     }
     #endif
     #endif

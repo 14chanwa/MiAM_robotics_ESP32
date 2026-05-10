@@ -40,7 +40,7 @@ class AbstractRobotWheel
         void setWheelSpeed(float speed);
         
          // get current in rad/s
-        float getWheelSpeed(); // in rad/s
+        virtual float getWheelSpeed(); // in rad/s
 
         // print variables to serial
         virtual void printToSerial() = 0;

@@ -1,8 +1,7 @@
 #include <Robot.hpp>
 #include <parameters.hpp>
 
-#include <RobotBaseDC.hpp>
-#include <RobotBaseStepper.hpp>
+#include <RobotBaseSTS.hpp>
 
 #include <AnalogReadings.hpp>
 #include <ServoHandler.hpp>
@@ -187,6 +186,8 @@ Robot::Robot()
     robotBase = RobotBaseStepper::getInstance();
     #endif
     #endif
+    robotBase = RobotBaseSTS::getInstance();
+    Serial.println("RobotBaseSTS::getInstance() OK");
 
     // init robot base
     Serial.println("Create robot base");

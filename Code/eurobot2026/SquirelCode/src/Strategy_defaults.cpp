@@ -66,7 +66,7 @@ namespace strategy
             PAMI_3_GOAL
 #elif PAMI_ID == 4
             PAMI_4_GOAL
-#elif PAMI_ID == 5
+#else
             PAMI_5_GOAL
 #endif
         );
