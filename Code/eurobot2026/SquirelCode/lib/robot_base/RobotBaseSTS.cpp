@@ -7,10 +7,10 @@
 // Motor & encoder specs
 /////////////////////////////////////////////
 
-#define SERVO_STEP_PER_TURN 5000
+#define SERVO_STEP_PER_TURN 4000
 #define SERVO_MAX_STEPS_S 10000
 
-#define MOTOR_RATED_RPM 50.0f
+#define MOTOR_RATED_RPM 60.0f
 
 /////////////////////////////////////////////
 // Wheel specs
@@ -51,7 +51,7 @@
 // Wheel PID parameters
 #define VELOCITY_KP 0.05f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.1f
+#define VELOCITY_KI 0.2f
 
 int target_rad_s_to_steps_s(float speed_rad_s)
 {

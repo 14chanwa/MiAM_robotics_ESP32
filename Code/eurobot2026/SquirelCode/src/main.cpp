@@ -85,7 +85,7 @@
 #include <TelemetryHandler.hpp>
 
 //#define DEBUG_MODE_SIMPLE_TRAJECTORY
-#define DEBUG_MODE_SERVO
+//#define DEBUG_MODE_SERVO
 
 #include "esp_log.h"
 static const char* TAG = "main.cpp";
@@ -176,22 +176,23 @@ void setup()
 
   for (;;)
   {
+    ServoHandler::armPositionUp();
     DEBUG_PRINTLN("Moving...");
-    strategy::go_forward(robot->motionController, 1500);
-    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
-    robot->motionController->waitForTrajectoryFinished();
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    // strategy::go_forward(robot->motionController, 1000);
+    // robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
+    // robot->motionController->waitForTrajectoryFinished();
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    // strategy::go_to_zone_3(motionController);
-    strategy::go_forward(robot->motionController, -1500);
-    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
-    robot->motionController->waitForTrajectoryFinished();
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-    // strategy::make_a_square(robot->motionController);
+    // // strategy::go_to_zone_3(motionController);
+    // strategy::go_forward(robot->motionController, -1000);
     // robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
     // robot->motionController->waitForTrajectoryFinished();
     // vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+    strategy::make_a_square(robot->motionController);
+    robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
+    robot->motionController->waitForTrajectoryFinished();
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
   }
 #endif
 #ifdef DEBUG_MODE_SERVO

@@ -10,7 +10,9 @@ namespace ServoHandler
     // void servoDown();
 
     void armPositionUp();
+    void armPositionUpHorizontal();
     void armPositionDown();
+    void armPositionMid();
     void armPositionFold();
     void pumpOn();
     void pumpOff();

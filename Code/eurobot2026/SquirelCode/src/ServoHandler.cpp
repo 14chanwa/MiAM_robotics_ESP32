@@ -2,13 +2,15 @@
 #include <ServoHandler.hpp>
 #include <RobotServos.hpp>
 
-#define SERVO_3_POSITION_FOLD 757
+#define SERVO_3_POSITION_FOLD 650
 #define SERVO_3_POSITION_UP 650
-#define SERVO_3_POSITION_DOWN 819
+#define SERVO_3_POSITION_DOWN 830
+#define SERVO_3_POSITION_MID (SERVO_3_POSITION_UP + SERVO_3_POSITION_DOWN) / 2
 
-#define SERVO_4_POSITION_FOLD 700
+#define SERVO_4_POSITION_FOLD 755
 #define SERVO_4_POSITION_UP 580
 #define SERVO_4_POSITION_DOWN 467
+#define SERVO_4_POSITION_MID (SERVO_4_POSITION_UP + SERVO_4_POSITION_DOWN) / 2
 
 #define PUMP_GPIO 22
 
@@ -24,19 +26,42 @@ namespace ServoHandler
     void armPositionUp()
     {
         RobotServos::set_servo_position(3, SERVO_3_POSITION_UP);
+        delay(10);
         RobotServos::set_servo_position(4, SERVO_4_POSITION_UP);
+        delay(10);
     }
+
+    void armPositionMid()
+    {
+        RobotServos::set_servo_position(3, SERVO_3_POSITION_MID);
+        delay(10);
+        RobotServos::set_servo_position(4, SERVO_4_POSITION_MID);
+        delay(10);
+    }
+
+    void armPositionUpHorizontal()
+    {
+        RobotServos::set_servo_position(3, SERVO_3_POSITION_UP);
+        delay(10);
+        RobotServos::set_servo_position(4, SERVO_4_POSITION_DOWN);
+        delay(10);
+    }
+
 
     void armPositionDown()
     {
         RobotServos::set_servo_position(3, SERVO_3_POSITION_DOWN);
+        delay(10);
         RobotServos::set_servo_position(4, SERVO_4_POSITION_DOWN);
+        delay(10);
     }
 
     void armPositionFold()
     {
         RobotServos::set_servo_position(3, SERVO_3_POSITION_FOLD);
+        delay(10);
         RobotServos::set_servo_position(4, SERVO_4_POSITION_FOLD);
+        delay(10);
     }
     
     void pumpOn()

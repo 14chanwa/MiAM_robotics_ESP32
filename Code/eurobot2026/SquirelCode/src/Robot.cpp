@@ -29,18 +29,14 @@ Robot* Robot::getInstance()
     return &instance;
 }
 
-// void performStrategy(void* parameters)
-// {
-//     Robot* robot = Robot::getInstance();
+void performStrategy(void* parameters)
+{
+    Robot* robot = Robot::getInstance();
 
-//     strategy::perform_strategy(
-//         robot->motionController,
-//         strategy::get_waiting_time_s(), 
-//         robot->saved_trajectory_vector
-//     );
-//     DEBUG_PRINTLN("Strategy ended");
-//     vTaskDelete( NULL );
-// }
+    strategy::perform_strategy();
+    DEBUG_PRINTLN("Strategy ended");
+    vTaskDelete( NULL );
+}
 
 void performLowLevel(void* parameters)
 {
@@ -438,23 +434,31 @@ void Robot::update_robot_state()
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
 #endif
 
-            TrajectoryVector tv;
+            // TrajectoryVector tv;
 
-            // Query alternative if road is blocked
-            // get measurement
-            if (I2CHandler::get_smoothed_vl53l0x() <= 600.0f)
-            {
-                tv.clear();
-                tv = strategy::get_alternative_trajectory(motionController);
-            }
-            else
-            {
-                // Sets travel to objective
-                motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
-                tv = saved_trajectory_vector;
-            }
+            // // Query alternative if road is blocked
+            // // get measurement
+            // if (I2CHandler::get_smoothed_vl53l0x() <= 600.0f)
+            // {
+            //     tv.clear();
+            //     tv = strategy::get_alternative_trajectory(motionController);
+            // }
+            // else
+            // {
+            //     // Sets travel to objective
+            //     motionController->resetPosition(saved_trajectory_vector.getCurrentPoint(0.0f).position, true, true, true);
+            //     tv = saved_trajectory_vector;
+            // }
 
-            motionController->setTrajectoryToFollow(tv);
+            // motionController->setTrajectoryToFollow(tv);
+            xTaskCreate(
+                performStrategy,
+                "performStrategy",
+                20000,
+                NULL,
+                20,
+                NULL
+            );
             currentRobotState_ = RobotState::MATCH_STARTED_ACTION;
         }
     }

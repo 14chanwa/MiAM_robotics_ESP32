@@ -12,6 +12,7 @@ namespace strategy
     void go_forward(MotionController* motionController, float distance);
 
     void turn_around(MotionController* motionController, float angle);
+    void turn_to_angle(MotionController* motionController, float angle);
 
     void go_to_point(MotionController* motionController, RobotPosition targetPoint);
 
@@ -19,11 +20,7 @@ namespace strategy
 
     void go_to_zone_3(MotionController* motionController);
 
-    void perform_strategy(
-        MotionController *motionController,
-        float waiting_time_before_start_s, 
-        TrajectoryVector trajectory_to_objective
-    );
+    void perform_strategy();
 
     TrajectoryVector get_default_trajectory(MotionController* motionController);
     TrajectoryVector get_alternative_trajectory(MotionController* motionController);

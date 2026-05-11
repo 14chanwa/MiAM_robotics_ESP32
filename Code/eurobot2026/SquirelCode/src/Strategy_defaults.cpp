@@ -1,5 +1,6 @@
 #include <Strategy.hpp>
 #include <parameters.hpp>
+#include <ServoHandler.hpp>
 
 #define SLOW_APPROACH_WHEEL_VELOCITY 75.0f
 #define FINAL_TRAJECTORY_DISTANCE_MM 100.0f
@@ -9,11 +10,7 @@
 #define COORD_ZONE_2 1300.0, 1750.0, 1300.0, 1540.0
 #define COORD_ZONE_3 1740.0, 2000.0, 1380.0, 1540.0
 
-#define PAMI_1_START 45.0, 1615.0, -M_PI_2
-#define PAMI_2_START 45.0, 1680.0, 0.0
-#define PAMI_3_START 45.0, 1745.0, 0.0
-#define PAMI_4_START 45.0, 1825.0, 0.0
-#define PAMI_5_START 35.0, 1905.0, 0.0
+#define PAMI_6_START 680.0, 1860.0, 0.0
 
 #define PAMI_1_GOAL 100, 850, 0
 #define PAMI_2_GOAL 620, 170, 0
@@ -99,21 +96,19 @@ namespace strategy
         std::vector<RobotPosition > positions;
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
 
-    #if PAMI_ID == 1
-        startPosition = RobotPosition(PAMI_1_START);
-    #elif PAMI_ID == 2
-       startPosition = RobotPosition(PAMI_2_START);
-    #elif PAMI_ID == 3
-       startPosition = RobotPosition(PAMI_3_START);
-    #elif PAMI_ID == 4
-       startPosition = RobotPosition(PAMI_4_START);
-    #elif PAMI_ID == 5
-       startPosition = RobotPosition(PAMI_5_START);  
-    #endif
+       startPosition = RobotPosition(PAMI_6_START);
 
         motionController->resetPosition(startPosition, true, true, true);
         positions.clear();
         positions.push_back(startPosition);
+        RobotPosition tmp = startPosition;
+        tmp.x += 100;
+        positions.push_back(tmp);
+        positions.push_back(RobotPosition(992, 1850, 0));
+
+        tv = computeTrajectoryRoundedCorner(tc, positions, 200.0);
+        res.insert(res.end(), tv.begin(), tv.end());
+
        
     #if PAMI_ID == 3
 
