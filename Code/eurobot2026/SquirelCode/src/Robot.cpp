@@ -1,6 +1,7 @@
 #include <Robot.hpp>
 #include <parameters.hpp>
 
+#include <RobotServos.hpp>
 #include <RobotBaseSTS.hpp>
 
 #include <AnalogReadings.hpp>
@@ -14,6 +15,12 @@ using namespace miam::trajectory;
 #define FUNNY_ACTION_SERVO_PERIOD 500
 bool funny_action_state = false;
 long funny_action_timer = 0;
+
+#include "esp_log.h"
+static const char* TAG = "Robot.cpp";
+
+#define DEBUG_PRINT(x) ESP_LOGV(TAG, "%s", x)
+#define DEBUG_PRINTLN(x) ESP_LOGV(TAG, "%s", x)
 
 
 Robot* Robot::getInstance() 
@@ -31,7 +38,7 @@ Robot* Robot::getInstance()
 //         strategy::get_waiting_time_s(), 
 //         robot->saved_trajectory_vector
 //     );
-//     Serial.println("Strategy ended");
+//     DEBUG_PRINTLN("Strategy ended");
 //     vTaskDelete( NULL );
 // }
 
@@ -62,9 +69,9 @@ void performLowLevel(void* parameters)
         // update match state
         robot->update_robot_state();
         
-        // Serial.println("Update sensors");
+        // DEBUG_PRINTLN("Update sensors");
         robot->robotBase->updateSensors();
-        // Serial.println("Get measurements");
+        // DEBUG_PRINTLN("Get measurements");
         robot->measurements = robot->robotBase->getMeasurements();
         robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
         robot->measurements.left_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::LEFT);
@@ -120,7 +127,7 @@ void performLowLevel(void* parameters)
 //         }
 // #endif
 
-        // Serial.println("Compute drivetrain motion");
+        // DEBUG_PRINTLN("Compute drivetrain motion");
         // Motion occurs only if match started
         robot->target = robot->motionController->computeDrivetrainMotion(
             robot->measurements, 
@@ -131,11 +138,11 @@ void performLowLevel(void* parameters)
             (robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH) && (robot->currentRobotState_ != RobotState::MOVING_SETUP_TRAJECTORY) 
         );
 
-        // Serial.println("Set base speed");
+        // DEBUG_PRINTLN("Set base speed");
         robot->robotBase->setBaseSpeed(robot->target);
 
         // update motor control
-        // Serial.println("Update motor control");
+        // DEBUG_PRINTLN("Update motor control");
         robot->robotBase->updateControl(robotEnabled);
 
         // handle servo: servo is down iff
@@ -153,22 +160,23 @@ void performLowLevel(void* parameters)
             }
             if (funny_action_state)
             {
-                ServoHandler::servoDown();
+                //ServoHandler::servoDown();
             }
             else
             {
-                ServoHandler::servoUp();
+                //ServoHandler::servoUp();
             }
         }
         else
         {
-            ServoHandler::servoUp();
+            //ServoHandler::servoUp();
+            //ServoHandler::armPositionFold();
         }
 
         // update sensors
         AnalogReadings::update();
 
-        // Serial.println("Register time");
+        // DEBUG_PRINTLN("Register time");
         timeEndLoop = micros();
         robot->dt_lowLevel_ms = (timeEndLoop - timeStartLoop) / 1000.0;
 
@@ -179,6 +187,9 @@ void performLowLevel(void* parameters)
 
 Robot::Robot()
 {
+    // Init STS
+    RobotServos::init();
+
     #ifdef USE_DC_MOTORS
     robotBase = RobotBaseDC::getInstance();
     #else 
@@ -187,10 +198,10 @@ Robot::Robot()
     #endif
     #endif
     robotBase = RobotBaseSTS::getInstance();
-    Serial.println("RobotBaseSTS::getInstance() OK");
+    DEBUG_PRINTLN("RobotBaseSTS::getInstance() OK");
 
     // init robot base
-    Serial.println("Create robot base");
+    DEBUG_PRINTLN("Create robot base");
     robotBase->setup();
 
     // Init preferences
@@ -210,16 +221,16 @@ Robot::Robot()
     duration_of_saved_traj = -1; //preferences.getFloat("traj_duration", -1);
     // if (length_of_saved_traj_float > 0)
     // {
-    //   Serial.print("Reading saved traj of length ");
-    //   Serial.print(length_of_saved_traj_float);
-    //   Serial.print(", duration ");
-    //   Serial.println(duration_of_saved_traj);
+    //   DEBUG_PRINT("Reading saved traj of length ");
+    //   DEBUG_PRINT(length_of_saved_traj_float);
+    //   DEBUG_PRINT(", duration ");
+    //   DEBUG_PRINTLN(duration_of_saved_traj);
     //   saved_trajectory = new float[length_of_saved_traj_float]();
     //   preferences.getBytes("traj_coord", saved_trajectory, length_of_saved_traj_float*4);
-    //   Serial.print("First float ");
-    //   Serial.println(saved_trajectory[0]);
-    //   Serial.print("Last float ");
-    //   Serial.println(saved_trajectory[length_of_saved_traj_float-1]);
+    //   DEBUG_PRINT("First float ");
+    //   DEBUG_PRINTLN(saved_trajectory[0]);
+    //   DEBUG_PRINT("Last float ");
+    //   DEBUG_PRINTLN(saved_trajectory[length_of_saved_traj_float-1]);
 
     //   std::vector<TrajectoryPoint > tp_vec;
     //   TrajectoryPoint tp;
@@ -239,7 +250,7 @@ Robot::Robot()
     // }
     // else
     // {
-        Serial.println("Load default trajectory");
+        DEBUG_PRINTLN("Load default trajectory");
         saved_trajectory_vector = strategy::get_default_trajectory(motionController);
         // // Transform into SampledTrajectory
         // float duration = saved_trajectory_vector.getDuration();
@@ -277,7 +288,7 @@ void Robot::init()
 void Robot::startLowLevelLoop()
 {
     // begin low level loop
-    Serial.println("Launch low level loop");
+    DEBUG_PRINTLN("Launch low level loop");
     xTaskCreatePinnedToCore(
         performLowLevel, 
         "performLowLevel",
@@ -313,10 +324,10 @@ void Robot::update_robot_state()
 
     if (newMessageRead)
     {
-        Serial.print("Received new message type ");
-        Serial.println(message->get_message_type());
-        Serial.print("Current robotState ");
-        Serial.println(currentRobotState_);
+        DEBUG_PRINT("Received new message type ");
+        DEBUG_PRINTLN(message->get_message_type());
+        DEBUG_PRINT("Current robotState ");
+        DEBUG_PRINTLN(currentRobotState_);
     }
 
     // handle transitions
@@ -327,7 +338,7 @@ void Robot::update_robot_state()
         if (newMessageRead && message->get_message_type() == MessageType::FULL_MATCH_STATE)
         {
             FullMatchStateMessage* fullMatchStateMessage = static_cast<FullMatchStateMessage* >(message.get());
-            Serial.println(">> WAIT_FOR_CONFIGURATION -> WAIT_FOR_MATCH_START");
+            DEBUG_PRINTLN(">> WAIT_FOR_CONFIGURATION -> WAIT_FOR_MATCH_START");
             // Blue side is left side
             // So right side is yellow
             motionController->isPlayingRightSide_ = fullMatchStateMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
@@ -346,7 +357,7 @@ void Robot::update_robot_state()
         if (newMessageRead && message->get_message_type() == MessageType::NEW_TRAJECTORY)
         {
             NewTrajectoryMessage* newTrajectoryMessage = static_cast<NewTrajectoryMessage* >(message.get());
-            Serial.println(">> WAIT_FOR_MATCH_START -> MOVING_TRAJECTORY_SETUP");
+            DEBUG_PRINTLN(">> WAIT_FOR_MATCH_START -> MOVING_TRAJECTORY_SETUP");
             // Reset position
             motionController->resetPosition(newTrajectoryMessage->newTrajectory_.getCurrentPoint(0).position, true, true, true);
             // Set new trajectory new trajectory
@@ -362,14 +373,14 @@ void Robot::update_robot_state()
             if (fullMatchStateMessage->matchStarted_)
             {
                 FullMatchStateMessage* matchStateMessage = static_cast<FullMatchStateMessage* >(message.get());
-                Serial.println(">> WAIT_FOR_MATCH_START -> MATCH_STARTED_WAITING");
+                DEBUG_PRINTLN(">> WAIT_FOR_MATCH_START -> MATCH_STARTED_WAITING");
                 match_current_time_s = matchStateMessage->matchTime_;
                 currentRobotState_ = RobotState::MATCH_STARTED_WAITING;
             }
             // WAIT_FOR_MATCH_START
             else
             {
-                Serial.println(">> WAIT_FOR_MATCH_START -> WAIT_FOR_MATCH_START");
+                DEBUG_PRINTLN(">> WAIT_FOR_MATCH_START -> WAIT_FOR_MATCH_START");
                 // Blue side is left side
                 // So right side is yellow
                 motionController->isPlayingRightSide_ = fullMatchStateMessage->playingSide_ == PlayingSide::YELLOW_SIDE;
@@ -389,7 +400,7 @@ void Robot::update_robot_state()
         // WAIT_FOR_MATCH_START
         if (motionController->isTrajectoryFinished())
         {
-            Serial.println(">> MOVING_SETUP_TRAJECTORY -> WAIT_FOR_MATCH_START");
+            DEBUG_PRINTLN(">> MOVING_SETUP_TRAJECTORY -> WAIT_FOR_MATCH_START");
             currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
         }
     }
@@ -407,14 +418,14 @@ void Robot::update_robot_state()
             // If match started, update time
             if (matchStateMessage->matchStarted_)
             {
-                Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_WAITING");
+                DEBUG_PRINTLN(">> MATCH_STARTED_WAITING -> MATCH_STARTED_WAITING");
                 match_current_time_s = matchStateMessage->matchTime_;
                 currentRobotState_ = RobotState::MATCH_STARTED_WAITING;
             }
             // If match not started, update state
             else
             {
-                Serial.println(">> MATCH_STARTED_WAITING -> WAIT_FOR_MATCH_START");
+                DEBUG_PRINTLN(">> MATCH_STARTED_WAITING -> WAIT_FOR_MATCH_START");
                 currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
             }
         }
@@ -422,7 +433,7 @@ void Robot::update_robot_state()
         // MATCH_STARTED_ACTION
         else if (match_current_time_s >= MATCH_PAMI_START_TIME_S + strategy::get_waiting_time_s())
         {
-            Serial.println(">> MATCH_STARTED_WAITING -> MATCH_STARTED_ACTION");
+            DEBUG_PRINTLN(">> MATCH_STARTED_WAITING -> MATCH_STARTED_ACTION");
 #ifdef USE_STEPPER_MOTORS
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
 #endif
@@ -454,7 +465,7 @@ void Robot::update_robot_state()
         // MATCH_ENDED
         if (match_current_time_s >= 100.0)
         {
-            Serial.println(">> MATCH_STARTED_ACTION -> MATCH_ENDED");
+            DEBUG_PRINTLN(">> MATCH_STARTED_ACTION -> MATCH_ENDED");
             motionController->clearTrajectories();
 #ifdef USE_STEPPER_MOTORS
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(true);
@@ -469,14 +480,14 @@ void Robot::update_robot_state()
         {
             // if (motionController->wasTrajectoryFollowingSuccessful())
             // {
-                Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_FINAL_APPROACH");
+                DEBUG_PRINTLN(">> MATCH_STARTED_ACTION -> MATCH_STARTED_FINAL_APPROACH");
                 TrajectoryVector tv = strategy::get_final_action_trajectory(motionController);
                 motionController->setTrajectoryToFollow(tv);
                 currentRobotState_ = RobotState::MATCH_STARTED_FINAL_APPROACH;
             // }
             // else
             // {
-            //     Serial.println(">> MATCH_STARTED_ACTION -> MATCH_STARTED_ACTION");
+            //     DEBUG_PRINTLN(">> MATCH_STARTED_ACTION -> MATCH_STARTED_ACTION");
             //     // Attempt straight line + point turn
             //     TrajectoryConfig tc = motionController->getTrajectoryConfig();
             //     RobotPosition curPos(motionController->getCurrentPosition());
@@ -500,7 +511,7 @@ void Robot::update_robot_state()
         // MATCH_ENDED
         if (match_current_time_s >= 100.0)
         {
-            Serial.println(">> MATCH_STARTED_FINAL_APPROACH -> MATCH_ENDED");
+            DEBUG_PRINTLN(">> MATCH_STARTED_FINAL_APPROACH -> MATCH_ENDED");
             motionController->clearTrajectories();
             currentRobotState_ = RobotState::MATCH_ENDED;
         }
@@ -515,7 +526,7 @@ void Robot::update_robot_state()
             // If match not started, update state
             if (!matchStateMessage->matchStarted_)
             {
-                Serial.println(">> MATCH_ENDED -> WAIT_FOR_MATCH_START");
+                DEBUG_PRINTLN(">> MATCH_ENDED -> WAIT_FOR_MATCH_START");
 #ifdef USE_STEPPER_MOTORS
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(false);
 #endif
@@ -529,7 +540,7 @@ void Robot::notify_new_message(std::shared_ptr<Message > message)
 {
     if (xSemaphoreTake(xMutex_newMessage, portMAX_DELAY))
     {
-        Serial.println("Notifying new message");
+        DEBUG_PRINTLN("Notifying new message");
         newMessage_ = message;
         newMessageToRead_ = true;
         lastMessageReceivedTime_ = millis();

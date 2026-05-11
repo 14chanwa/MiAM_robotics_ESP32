@@ -33,6 +33,6 @@
 /////////////////////////////////////////////
 
 #define MATCH_DURATION_S 100.0f
-#define MATCH_PAMI_START_TIME_S 85.0f
+#define MATCH_PAMI_START_TIME_S 0.0f
 
 #endif

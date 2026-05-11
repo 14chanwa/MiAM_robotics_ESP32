@@ -1,14 +1,7 @@
 #include "../../include/parameters.hpp"
 #include <RobotBaseSTS.hpp>
+#include <RobotServos.hpp>
 #include <cmath>
-#include <STSServoDriver.h>
-
-#define SERVO_DIR_PIN 5
-#define RXD2 16
-#define TXD2 17
-
-STSServoDriver servos;
-HardwareSerial serial2(2);
 
 /////////////////////////////////////////////
 // Motor & encoder specs
@@ -76,8 +69,6 @@ float servo_step_s_to_rad_s(int step_s)
             * (2.0 * M_PI);
 }
 
-SemaphoreHandle_t servoSemaphore = NULL;
-
 RobotWheelSTS::RobotWheelSTS(
     byte servo_id,
     std::string prefix,
@@ -87,11 +78,8 @@ RobotWheelSTS::RobotWheelSTS(
     motorPID = new miam::PID(
         VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 2.0
     );
-    if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
-        // Set the servo to velocity mode.
-        servos.setMode(servo_id_, STSMode::VELOCITY);
-        xSemaphoreGive(servoSemaphore);
-    }
+    // Init servo
+    RobotServos::init_servo_id_velocity(servo_id_);
 }
 
 void RobotWheelSTS::updateMotorControl(bool motorEnabled)
@@ -121,16 +109,13 @@ void RobotWheelSTS::updateMotorControl(bool motorEnabled)
             newTarget_ = (newTarget_ > 0 ? 1 : -1) * std::min(std::abs(newTarget_), SERVO_MAX_STEPS_S);
 
         }
-        if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
-            // inverted ?
-            int targetToSend = newTarget_;
-            if (inverted_)
-            {
-                targetToSend = -targetToSend;
-            }
-            servos.setTargetVelocity(servo_id_, targetToSend);
-            xSemaphoreGive(servoSemaphore);
+        // inverted ?
+        int targetToSend = newTarget_;
+        if (inverted_)
+        {
+            targetToSend = -targetToSend;
         }
+        RobotServos::set_servo_velocity(servo_id_, targetToSend);
     }
     timeLowLevel_ = currentTime_;
 }
@@ -155,12 +140,7 @@ void RobotWheelSTS::printToSerial()
 
 void RobotWheelSTS::updateEncoderSpeed()
 {
-    
-    int currentSpeed = 0;
-    if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
-        currentSpeed = servos.getCurrentSpeed(servo_id_);
-        xSemaphoreGive(servoSemaphore);
-    }
+    int currentSpeed = RobotServos::get_current_speed(servo_id_);
     // inverted ?
     if (inverted_)
     {
@@ -179,13 +159,6 @@ float RobotWheelSTS::getWheelSpeed()
 
 RobotBaseSTS::RobotBaseSTS()
 {
-    servoSemaphore = xSemaphoreCreateMutex();
-    serial2.setPins(RXD2, TXD2);
-    
-    if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
-        servos.init(SERVO_DIR_PIN, &serial2);
-        xSemaphoreGive(servoSemaphore);
-    }
     rightWheel_ = new RobotWheelSTS(1, "right_", false);
     leftWheel_ = new RobotWheelSTS(2, "left_", true);
 }

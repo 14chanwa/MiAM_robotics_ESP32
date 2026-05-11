@@ -4,9 +4,9 @@
 // //
 // // This code will simply make the servo move in circle from (0, 180, 360)deg.
 
-// #include "STSServoDriver.h"
+// #include "RobotServos.h"
 
-// STSServoDriver servos;
+// RobotServos servos;
 
 // // ID of the servo currently being tested.
 // byte SERVO_ID = 1;
@@ -85,7 +85,13 @@
 #include <TelemetryHandler.hpp>
 
 //#define DEBUG_MODE_SIMPLE_TRAJECTORY
+#define DEBUG_MODE_SERVO
 
+#include "esp_log.h"
+static const char* TAG = "main.cpp";
+
+#define DEBUG_PRINT(x) ESP_LOGI(TAG, "%s", x)
+#define DEBUG_PRINTLN(x) ESP_LOGI(TAG, "%s", x)
 
 /////////////////////////////////////////////////////////////////////
 // Tasks
@@ -108,35 +114,36 @@ void setup()
   digitalWrite(5, LOW);
 
   Serial.begin(115200);
-  Serial.println("Setup begin");
+  DEBUG_PRINTLN("Setup begin");
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   Robot::init();
-  Serial.println("Robot::init() OK");
+  DEBUG_PRINTLN("Robot::init() OK");
 
   // start heartbeat
   HeartbeatHandler::start_heartbeat();
-  Serial.println("HeartbeatHandler::start_heartbeat() OK");
+  DEBUG_PRINTLN("HeartbeatHandler::start_heartbeat() OK");
 
-  // Serial.println("Attempt connect WiFi");
+  // DEBUG_PRINTLN("Attempt connect WiFi");
   
   // connect wifi
   WiFiHandler::initWiFi();
 
   // Init i2c peripherals
   // I2CHandler::init();
-  // Serial.println("I2CHandler::init OK");
+  // DEBUG_PRINTLN("I2CHandler::init OK");
 
   // analog readings: monitor battery and infrared captors
   AnalogReadings::init();
-  Serial.println("AnalogReadings::init() OK");
+  DEBUG_PRINTLN("AnalogReadings::init() OK");
 
   // init the ServoHandler
   ServoHandler::init();
-  Serial.println("ServoHandler::init() OK");
-  ServoHandler::servoUp();
+  DEBUG_PRINTLN("ServoHandler::init() OK");
+  ServoHandler::armPositionFold();
+  ServoHandler::pumpOff();
 
-  Serial.println("Low Level Loop");
+  DEBUG_PRINTLN("Low Level Loop");
   Robot::startLowLevelLoop();
 
   // TelemetryHandler::begin();
@@ -146,30 +153,30 @@ void setup()
   match_started = true;
   match_current_time_s = 85.0f;  
 #endif
-#ifdef DEBUG_MODE_SERVO
-  taskYIELD();
-  for(;;)
-  {
-    // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-    //   ServoHandler::servoWrite(posDegrees);
-    //   // Serial.println(posDegrees);
-    //   delay(20);
-    // }
-    Serial.println("Up");
-    ServoHandler::servoUp();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-    Serial.println("Down");
-    ServoHandler::servoDown();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-  }
-#endif 
+// #ifdef DEBUG_MODE_SERVO
+//   taskYIELD();
+//   for(;;)
+//   {
+//     // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
+//     //   ServoHandler::servoWrite(posDegrees);
+//     //   // DEBUG_PRINTLN(posDegrees);
+//     //   delay(20);
+//     // }
+//     DEBUG_PRINTLN("Up");
+//     ServoHandler::servoUp();
+//     vTaskDelay(3000 / portTICK_PERIOD_MS);
+//     DEBUG_PRINTLN("Down");
+//     ServoHandler::servoDown();
+//     vTaskDelay(3000 / portTICK_PERIOD_MS);
+//   }
+// #endif 
 #ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
   // taskYIELD();
   Robot* robot = Robot::getInstance();
 
   for (;;)
   {
-    Serial.println("Moving...");
+    DEBUG_PRINTLN("Moving...");
     strategy::go_forward(robot->motionController, 1500);
     robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
     robot->motionController->waitForTrajectoryFinished();
@@ -185,6 +192,32 @@ void setup()
     // robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
     // robot->motionController->waitForTrajectoryFinished();
     // vTaskDelay(5000 / portTICK_PERIOD_MS);
+  }
+#endif
+#ifdef DEBUG_MODE_SERVO
+  DEBUG_PRINTLN("DEBUG MODE SERVO");
+  // taskYIELD();
+  Robot* robot = Robot::getInstance();
+  DEBUG_PRINTLN("FOLD");
+  ServoHandler::armPositionFold();
+  delay(1000);
+
+  for (;;)
+  {
+    DEBUG_PRINTLN("UP");
+    ServoHandler::armPositionUp();
+    DEBUG_PRINTLN("PUMP ON");
+    ServoHandler::pumpOn();
+    delay(5000);
+    DEBUG_PRINTLN("DOWN");
+    ServoHandler::armPositionDown();
+    delay(5000);
+    DEBUG_PRINTLN("UP");
+    ServoHandler::armPositionUp();
+    delay(5000);
+    DEBUG_PRINTLN("PUMP OFF");
+    ServoHandler::pumpOff();
+    delay(5000);
   }
 #endif
 

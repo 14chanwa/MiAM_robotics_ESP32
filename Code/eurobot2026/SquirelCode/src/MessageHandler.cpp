@@ -25,6 +25,12 @@ SemaphoreHandle_t xSemaphore = NULL;
 #define MAX_SIZE_OF_PAMI_REPORT 100
 
 
+#include "esp_log.h"
+static const char* TAG = "Robot.cpp";
+
+#define DEBUG_PRINT(x) ESP_LOGV(TAG, "%s", x)
+#define DEBUG_PRINTLN(x) ESP_LOGV(TAG, "%s", x)
+
 void task_report_broadcast(void *parameters)
 {
     Robot *robot = Robot::getInstance();
@@ -37,14 +43,14 @@ void task_report_broadcast(void *parameters)
     {
         if (!client.connected())
         {
-            Serial.println(">> client not connected");
+            DEBUG_PRINTLN(">> client not connected");
             if (client.connect(serverAddress, TCP_SERVER_PORT)) 
             {
-                Serial.println("connected to server");
+                DEBUG_PRINTLN("connected to server");
             }
             else
             {
-                Serial.println("could not connect to server");
+                DEBUG_PRINTLN("could not connect to server");
             }
         }
 
@@ -60,21 +66,21 @@ void task_report_broadcast(void *parameters)
         FullPamiReportMessage report = robot->get_pami_report();
         sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
 
-        Serial.println("Sending message");
+        DEBUG_PRINTLN("Sending message");
         for (uint i=0; i<sizeOfMessage; i++)
         {
-            Serial.print(buffer[i]);
-            Serial.print(" ");
+            DEBUG_PRINT(buffer[i]);
+            DEBUG_PRINT(" ");
         }
-        Serial.println();
+        DEBUG_PRINTLN();
 
         if(xSemaphoreTake(xSemaphore, portMAX_DELAY))
         {
-            Serial.println(sizeOfMessage);
+            DEBUG_PRINTLN(sizeOfMessage);
 
             int sizeOfSent = client.write(buffer, sizeOfMessage);
             if (sizeOfSent <= 0) {
-                Serial.println("[ERROR] Send data failed");
+                DEBUG_PRINTLN("[ERROR] Send data failed");
             }
 
             xSemaphoreGive(xSemaphore);
@@ -82,7 +88,7 @@ void task_report_broadcast(void *parameters)
         }
         else
         {
-            Serial.println("taskSendDataToServer: Semaphore not taken");
+            DEBUG_PRINTLN("taskSendDataToServer: Semaphore not taken");
         }
 
         int size = 0;
@@ -92,11 +98,11 @@ void task_report_broadcast(void *parameters)
         }
         if (size < 0)
         {
-            Serial.println("[ERROR] Receive data failed");
+            DEBUG_PRINTLN("[ERROR] Receive data failed");
         }
         else if (size > 0)
         {
-            Serial.print("[CLIENT] Receive data from server: ");
+            // DEBUG_PRINT("[CLIENT] Receive data from server: ");
             std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
             Robot::getInstance()->notify_new_message(message);
         }
