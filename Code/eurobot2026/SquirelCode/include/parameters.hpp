@@ -16,7 +16,7 @@
 #define MIAM_SCD_PORT 778
 #define SEND_SERIAL
 
-// #define ENABLE_OTA_UPDATE
+#define ENABLE_OTA_UPDATE
 
 // #define DEBUG_MODE_MATCH
 // #define DEBUG_MODE_SERVO

@@ -384,7 +384,6 @@ FullPamiReportMessage::FullPamiReportMessage(const uint8_t* buffer, const uint s
 
 int FullPamiReportMessage::serialize(uint8_t* results, int maxsize)
 {
-    Serial.println("serialize");
     if (maxsize < get_expected_size()) return -1;
 
     uint byte_index = 0;
@@ -405,6 +404,5 @@ int FullPamiReportMessage::serialize(uint8_t* results, int maxsize)
     // write_to_buffer<float>(results, currentLinearVelocity_, byte_index);
     // write_to_buffer<float>(results, currentAngularVelocity_, byte_index);
 
-    Serial.println("end");
     return byte_index;
 }

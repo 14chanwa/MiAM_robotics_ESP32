@@ -3,52 +3,27 @@
 #include <WiFiHandler.hpp>
 
 #include <Arduino.h>
+#include <CRC8.h>
 
 #include <Robot.hpp>
 #include <parameters.hpp>
 
-// #include <PacketSerial.h>
-// PacketSerial myPacketSerial;
-// HardwareSerial mySerial(1);
 
-// #include <CRC.h>
+#define MAX_SEND_SIZE 512
+#define MAX_RECV_SIZE 512
+#define TCP_SERVER_PORT 778
 
-// #define TXD1 17
-// #define RXD1 16
+WiFiClient client;
+IPAddress serverAddress(MIAM_SCD_ADDRESS);
 
-#include <SerialMessage.hpp>
+// Access to data wifi tx is protected using a mutex
+// It is accessed in taskSerialMonitor and taskSendDataToServer
+SemaphoreHandle_t xSemaphore = NULL;
+
 
 // message type, id of sender, 3 other floats = 5*4 char
 #define MAX_SIZE_OF_PAMI_REPORT 100
 
-// WiFiClient wifiClient;
-
-// MessageReceiver messageReceiver;
-// // MessageReceiverUDP messageReceiverUDP;
-
-// void task_messageReceiver(void* parameters)
-// {
-//     Robot* robot = Robot::getInstance();
-//     for (;;)
-//     {
-//         Serial.println(">> TCP receiver standby...");
-//         std::shared_ptr<Message > message = messageReceiver.receive();
-//         Serial.println("TCP received message");
-//         robot->notify_new_message(message);
-//     }
-// }
-
-// void task_messageReceiverUDP(void* parameters)
-// {
-//     Robot* robot = Robot::getInstance();
-//     for (;;)
-//     {
-//         Serial.println(">> UDP receiver standby...");
-//         std::shared_ptr<Message > message = messageReceiverUDP.receive();
-//         Serial.println("UDP received message");
-//         robot->notify_new_message(message);
-//     }
-// }
 
 void task_report_broadcast(void *parameters)
 {
@@ -56,136 +31,93 @@ void task_report_broadcast(void *parameters)
     uint8_t *buffer = new uint8_t[MAX_SIZE_OF_PAMI_REPORT / 4];
     int sizeOfMessage = 0;
 
-    // wifiClient.setTimeout(1);
+    client.setTimeout(1);
 
     for (;;)
     {
-        // // if the robot is in match, stop listening to save processing power
-        // if (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
-        //     robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
-        // {
-        //     taskYIELD();
-        //     vTaskDelay(500 / portTICK_PERIOD_MS);
-        //     continue;
-        // }
+        if (!client.connected())
+        {
+            Serial.println(">> client not connected");
+            if (client.connect(serverAddress, TCP_SERVER_PORT)) 
+            {
+                Serial.println("connected to server");
+            }
+            else
+            {
+                Serial.println("could not connect to server");
+            }
+        }
 
-        // FullPamiReportMessage report = robot->get_pami_report();
-        // sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
+        // if the robot is in match, stop listening to save processing power
+        if (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
+            robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH)
+        {
+            taskYIELD();
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+            continue;
+        }
 
-        // // Send over serial
-        // // TODO add crc
+        FullPamiReportMessage report = robot->get_pami_report();
+        sizeOfMessage = report.serialize(buffer, MAX_SIZE_OF_PAMI_REPORT);
 
+        Serial.println("Sending message");
+        for (uint i=0; i<sizeOfMessage; i++)
+        {
+            Serial.print(buffer[i]);
+            Serial.print(" ");
+        }
+        Serial.println();
 
-        // // std::vector<uint8_t > newPayload;
-        // // for (uint i=0; i<sizeOfMessage; i++)
-        // // {
-        // //     newPayload.push_back(buffer[i]);
-        // // }
+        if(xSemaphoreTake(xSemaphore, portMAX_DELAY))
+        {
+            Serial.println(sizeOfMessage);
 
-        // // SerialMessage newMessage(SerialMessageType::TRANSMIT, newPayload);
-        // // int sizeOfSent = newMessage.serialize((uint8_t*)buffer, MAX_SIZE_OF_PAMI_REPORT / 4);
-        
-        // // Transfer data over serial
-        // // Serial.print("Sending ");
-        // // Serial.print(sizeOfMessage);
-        // // Serial.println(" over serial");
-        // Serial.println("Sending message");
-        // for (uint i=0; i<sizeOfMessage; i++)
-        // {
-        //     Serial.print(buffer[i]);
-        //     Serial.print(" ");
-        // }
-        // Serial.println();
-        // myPacketSerial.send((uint8_t*)buffer, sizeOfMessage);
+            int sizeOfSent = client.write(buffer, sizeOfMessage);
+            if (sizeOfSent <= 0) {
+                Serial.println("[ERROR] Send data failed");
+            }
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+            xSemaphoreGive(xSemaphore);
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+        }
+        else
+        {
+            Serial.println("taskSendDataToServer: Semaphore not taken");
+        }
+
+        int size = 0;
+        while (client.available() > 0 && size < MAX_RECV_SIZE)
+        {
+            buffer[size++] = client.read();
+        }
+        if (size < 0)
+        {
+            Serial.println("[ERROR] Receive data failed");
+        }
+        else if (size > 0)
+        {
+            Serial.print("[CLIENT] Receive data from server: ");
+            std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
+            Robot::getInstance()->notify_new_message(message);
+        }
+
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }
 
 
-
-// // This is our handler callback function.
-// // When an encoded packet is received and decoded, it will be delivered here.
-// // The `buffer` is a pointer to the decoded byte array. `size` is the number of
-// // bytes in the `buffer`.
-// void onPacketReceived(const uint8_t* buffer, size_t size)
-// {
-//     Serial.print("Received message size: ");
-//     Serial.println(size);
-
-//     // // Check CRC
-//     // if (size > 2)
-//     // {
-//     //     // Check the CRC
-//     //     uint8_t challenge_crc = buffer[size-1];
-//     //     uint8_t actual_crc = calcCRC8(buffer, size-1);
-        
-//     //     if (actual_crc == challenge_crc)
-//     //     {
-//     //         // First byte = message type ; last byte = crc
-//     //         std::shared_ptr<Message> message = Message::parse((const float*)buffer[1], (size-2)/4, 10);
-//     //         Robot::getInstance()->notify_new_message(message);
-//     //     }
-//     //     else
-//     //     {
-//     //         Serial.println("CRC error");
-//     //     }
-//     // }
-
-//     std::shared_ptr<Message> message = Message::parse(buffer, size, 10);
-//     Robot::getInstance()->notify_new_message(message);
-
-
-// }
-
-// void task_receive_message(void *parameters)
-// {
-//     for (;;)
-//     {
-//         myPacketSerial.update();
-//         vTaskDelay(15 / portTICK_PERIOD_MS);;
-//     }
-// }
-
 namespace MessageHandler
 {
-
-    void startListening()
+    void startReportBroadcast()
     {
-        // messageReceiver.begin();
-        // messageReceiverUDP.begin();
+        xSemaphore = xSemaphoreCreateMutex();
 
-        // xTaskCreate(
-        //     task_messageReceiver,
-        //     "task_messageReceiver",
-        //     50000,
-        //     NULL,
-        //     40,
-        //     NULL
-        // );
+        xTaskCreate(
+            task_report_broadcast,
+            "task_report_broadcast",
+            30000,
+            NULL,
+            30,
+            NULL);
     }
-
-    // void startReportBroadcast()
-    // {
-    //     // Initialize packetserial
-    //     mySerial.begin(115200, SERIAL_8N1, RXD1, TXD1);  // UART setup
-    //     myPacketSerial.setStream(&mySerial);
-    //     myPacketSerial.setPacketHandler(&onPacketReceived);
-
-    //     xTaskCreate(
-    //         task_report_broadcast,
-    //         "task_report_broadcast",
-    //         30000,
-    //         NULL,
-    //         30,
-    //         NULL);
-
-    //     xTaskCreate(
-    //         task_receive_message,
-    //         "task_receive_message",
-    //         30000,
-    //         NULL,
-    //         30,
-    //         NULL);
-    // }
 }

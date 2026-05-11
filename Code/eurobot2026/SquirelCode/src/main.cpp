@@ -99,7 +99,7 @@ using namespace miam::trajectory;
 /////////////////////////////////////////////////////////////////////
 
 
-#define DEBUG_MODE_SIMPLE_TRAJECTORY
+// #define DEBUG_MODE_SIMPLE_TRAJECTORY
 
 void setup()
 {
@@ -120,8 +120,8 @@ void setup()
 
   // Serial.println("Attempt connect WiFi");
   
-  // // connect wifi
-  // WiFiHandler::initWiFi();
+  // connect wifi
+  WiFiHandler::initWiFi();
 
   // Init i2c peripherals
   // I2CHandler::init();
@@ -139,7 +139,8 @@ void setup()
   Serial.println("Low Level Loop");
   Robot::startLowLevelLoop();
 
-  TelemetryHandler::begin();
+  // TelemetryHandler::begin();
+  MessageHandler::startReportBroadcast();
 
 #ifdef DEBUG_MODE_MATCH
   match_started = true;
@@ -188,7 +189,6 @@ void setup()
 #endif
 
   // MessageHandler::startListening();
-  MessageHandler::startReportBroadcast();
 }
 
 void loop()

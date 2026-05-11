@@ -37,6 +37,7 @@
 #define LEDS_0_PIN 1
 #define LEDS_1_PIN 2
 #define LEDS_2_PIN 3
+#define LEDS_3_PIN 4
 
 long last_time_blink = 0;
 bool debug_led_state = false;
@@ -45,6 +46,7 @@ CRGB led_debug[1];
 CRGB leds_0[NUM_LEDS*2];
 CRGB leds_1[2];
 CRGB leds_2[1];
+CRGB leds_3[2];
 
 uint32_t last_ota_time = 0;
 
@@ -143,12 +145,15 @@ void setup()
     FastLED.addLeds<WS2812, LEDS_0_PIN, GRB>(leds_0, NUM_LEDS*2);  // GRB ordering is typical
     FastLED.addLeds<WS2812, LEDS_1_PIN, GRB>(leds_1, 2);  // GRB ordering is typical
     FastLED.addLeds<WS2812, LEDS_2_PIN, GRB>(leds_2, 1);  // GRB ordering is typical
+    FastLED.addLeds<WS2812, LEDS_3_PIN, GRB>(leds_3, 2);  // GRB ordering is typical
 
     // Set decorative leds
     for (uint i=0; i<2; i++)
     {
         leds_1[i] = CRGB::Pink;
         leds_1[i].nscale8_video(140);
+        leds_3[i] = CRGB::Red;
+        leds_3[i].nscale8_video(50);
     }
 
     delay(100);

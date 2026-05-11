@@ -45,21 +45,12 @@ namespace WiFiHandler
         Serial.print("[OLD] ESP32 Board MAC Address:  ");
         Serial.println(WiFi.macAddress());
         
-        // ESP32 Board add-on before version < 1.0.5
-        //esp_wifi_set_mac(ESP_IF_WIFI_STA, &newMACAddress[0]);
-        
         // ESP32 Board add-on after version > 1.0.5
         uint8_t newMACAddress[] = WIFI_MAC_ADDRESS;
         esp_wifi_set_mac(WIFI_IF_STA, &newMACAddress[0]);
         
         Serial.print("[NEW] ESP32 Board MAC Address:  ");
         Serial.println(WiFi.macAddress());
-
-        // // Configure WiFi with static ip
-        // if (!WiFi.config(WIFI_LOCAL_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_PRIMARY_DNS, WIFI_SECONDARY_DNS))
-        // {
-        //     Serial.println("Failed to configure WiFi");
-        // }
 
         WiFi.begin(WIFI_SSID, WIFI_PASS);
         Serial.print("Connecting to WiFi ..");
@@ -94,59 +85,6 @@ namespace WiFiHandler
         );
         #endif
 
-        // // Register callback in case WiFi disconnects
-        // WiFi.onEvent(WiFiStationDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     }
 
-
-//     bool sendTCPMessage(char* message, uint message_size, IPAddress ip_addr, uint port)
-//     {
-// #ifdef USE_WIFI_CLIENT_API
-
-//     #ifdef USE_TIMEOUT
-//         wifiClient.setTimeout(1);
-//     #endif
-
-//         // Connect to client
-//         if (wifiClient.connect(ip_addr, port))
-//         {
-//             size_t sizeOfSentMessage = wifiClient.write_P(message, message_size);
-//             wifiClient.stop();
-//             if (sizeOfSentMessage == message_size)
-//                 return true;
-//         }
-//         return false; 
-// #else
-//         // creating socket 
-//         int clientSocket = socket(AF_INET, SOCK_STREAM, 0); 
-  
-//         // Serial.print("Address: ");
-//         // Serial.println(ip_addr.toString().c_str());
-
-//         // specifying the address 
-//         sockaddr_in serverAddress; 
-//         serverAddress.sin_family = AF_INET; 
-//         serverAddress.sin_port = htons(port); 
-//         serverAddress.sin_addr.s_addr = inet_addr(ip_addr.toString().c_str());
-
-//         // connect to server
-//         if (connect(clientSocket, (struct sockaddr*)&serverAddress, 
-//             sizeof(serverAddress)))
-//         {
-//             // Serial.println("Connected");
-//             // sending data 
-//             size_t sizeOfSentMessage = send(clientSocket, message, message_size, 0); 
-
-//             if (sizeOfSentMessage == message_size)
-//             {
-//                 return true;
-//             }
-            
-//             // closing socket 
-//             close(clientSocket);            
-//         }
-
-//         return false;
-// #endif
-//     }
 }
