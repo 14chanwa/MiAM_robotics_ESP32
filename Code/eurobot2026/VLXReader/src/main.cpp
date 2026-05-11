@@ -19,6 +19,7 @@
 
 #include <Wire.h>
 #include <FastLED.h>
+#include <PacketSerial.h>
 
 #include <vlx_sensor.hpp>
 #include <secret.hpp>
@@ -53,8 +54,24 @@ uint32_t last_ota_time = 0;
 VLXSensor vlx_sensor_0(0);
 VLXSensor vlx_sensor_1(1);
 
+#define SERIAL_PRINT(x)
+#define SERIAL_PRINTF(x, y)
+#define SERIAL_PRINTLN(x)
+
+// Com with rpi
+PacketSerial myPacketSerial;
+uint8_t buffer[100];
+
+void onPacketReceived(const uint8_t* buffer, size_t size)
+{
+
+}
+
+
 void setup()
 {
+    myPacketSerial.begin(1000000);
+    myPacketSerial.setPacketHandler(&onPacketReceived);
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -69,29 +86,29 @@ void setup()
       }
 
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
+      SERIAL_PRINTLN("Start updating " + type);
     })
     .onEnd([]() {
-      Serial.println("\nEnd");
+      SERIAL_PRINTLN("\nEnd");
     })
     .onProgress([](unsigned int progress, unsigned int total) {
       if (millis() - last_ota_time > 500) {
-        Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+        SERIAL_PRINTF("Progress: %u%%\n", (progress / (total / 100)));
         last_ota_time = millis();
       }
     })
     .onError([](ota_error_t error) {
-      Serial.printf("Error[%u]: ", error);
+      SERIAL_PRINTF("Error[%u]: ", error);
       if (error == OTA_AUTH_ERROR) {
-        Serial.println("Auth Failed");
+        SERIAL_PRINTLN("Auth Failed");
       } else if (error == OTA_BEGIN_ERROR) {
-        Serial.println("Begin Failed");
+        SERIAL_PRINTLN("Begin Failed");
       } else if (error == OTA_CONNECT_ERROR) {
-        Serial.println("Connect Failed");
+        SERIAL_PRINTLN("Connect Failed");
       } else if (error == OTA_RECEIVE_ERROR) {
-        Serial.println("Receive Failed");
+        SERIAL_PRINTLN("Receive Failed");
       } else if (error == OTA_END_ERROR) {
-        Serial.println("End Failed");
+        SERIAL_PRINTLN("End Failed");
       }
     });
 
@@ -102,8 +119,8 @@ void setup()
     uint8_t scl = 9;
     uint32_t frequency = 400000;
 
-    Serial.begin(115200);
-    Serial.println("MiAM!!!");
+    //Serial.begin(115200);
+    SERIAL_PRINTLN("MiAM!!!");
 
     // xTaskCreatePinnedToCore(
     //   task_hello_world,
@@ -121,22 +138,22 @@ void setup()
     bool init_vlx = vlx_sensor_0.init();
     if (init_vlx)
     {
-        Serial.println("VLX init OK");
+        SERIAL_PRINTLN("VLX init OK");
     }
     else
     {
 
-        Serial.println("VLX init failed");
+        SERIAL_PRINTLN("VLX init failed");
     }
 
     init_vlx = vlx_sensor_1.init();
     if (init_vlx)
     {
-        Serial.println("VLX init OK");
+        SERIAL_PRINTLN("VLX init OK");
     }
     else
     {
-        Serial.println("VLX init failed");
+        SERIAL_PRINTLN("VLX init failed");
     }
 
 
@@ -173,11 +190,11 @@ int update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds
             uint led_index = x+imageWidth*(imageWidth-1)-y;
             if (led_index >= NUM_LEDS)
             {
-                Serial.print("Indice invalide: ");
-                Serial.println(led_index);
+                SERIAL_PRINT("Indice invalide: ");
+                SERIAL_PRINTLN(led_index);
                 continue;
             }
-            Serial.print("\t");
+            SERIAL_PRINT("\t");
             if (measurement_data.target_status[x + y] == 5 || measurement_data.target_status[x + y] == 9)
             {
                 int distance = measurement_data.distance_mm[x + y];
@@ -191,7 +208,7 @@ int update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds
                     distances.push_back(distance);
                 }
 
-                Serial.print(distance);
+                SERIAL_PRINT(distance);
                 if (distance > DISTANCE_FAR)
                 {
                     crgb_leds[led_index] = CRGB::Black;
@@ -231,14 +248,14 @@ int update_leds_from_data(VL53L5CX_ResultsData measurement_data, CRGB* crgb_leds
           }
           else
           {
-              Serial.print("*");
+              SERIAL_PRINT("*");
               crgb_leds[led_index] = CRGB::Black;
           }
           
         }
-        Serial.println();
+        SERIAL_PRINTLN();
     }
-    Serial.println();
+    SERIAL_PRINTLN();
 
     // Update nearest distance
     // Only update if 3 points are resolved
@@ -309,6 +326,10 @@ void loop()
         res |= true;
     }
 
+    // Send nearest distance over serial
+    memcpy(&(buffer[0]), &nearest_distance, sizeof(int));
+    myPacketSerial.send(buffer, sizeof(int));
+
     // debug led
     if (millis() - last_time_blink > 1000)
     {
@@ -332,5 +353,7 @@ void loop()
     }
 
     ArduinoOTA.handle();
+    myPacketSerial.update();
+
     delay(20); // Small delay between polling
 }

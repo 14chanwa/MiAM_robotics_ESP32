@@ -1,5 +1,8 @@
 #include <vlx_sensor.hpp>
 
+#define SERIAL_PRINT(x)
+#define SERIAL_PRINTF(x, y)
+#define SERIAL_PRINTLN(x)
 
 void switch_i2c(int channel) {
 
@@ -24,7 +27,7 @@ bool VLXSensor::init()
     switch_i2c(i2c_channel);
     if (!vlx_sensor->begin(0x29, Wire))
     {
-        Serial.println("VL53L5CX init failed");
+        SERIAL_PRINTLN("VL53L5CX init failed");
         return false;
     }
 
@@ -38,12 +41,12 @@ bool VLXSensor::init()
         int frequency = vlx_sensor->getRangingFrequency();
         if (frequency > 0)
         {
-        Serial.print("Ranging frequency set to ");
-        Serial.print(frequency);
-        Serial.println(" Hz.");
+        SERIAL_PRINT("Ranging frequency set to ");
+        SERIAL_PRINT(frequency);
+        SERIAL_PRINTLN(" Hz.");
         }
         else
-        Serial.println(F("Error recovering ranging frequency."));
+        SERIAL_PRINTLN(F("Error recovering ranging frequency."));
     }
     else
     {
@@ -59,21 +62,21 @@ bool VLXSensor::init()
         switch (mode)
         {
         case SF_VL53L5CX_RANGING_MODE::AUTONOMOUS:
-            Serial.println(F("Ranging mode set to autonomous."));
+            SERIAL_PRINTLN(F("Ranging mode set to autonomous."));
             break;
 
         case SF_VL53L5CX_RANGING_MODE::CONTINUOUS:
-            Serial.println(F("Ranging mode set to continuous."));
+            SERIAL_PRINTLN(F("Ranging mode set to continuous."));
             break;
 
         default:
-            Serial.println(F("Error recovering ranging mode."));
+            SERIAL_PRINTLN(F("Error recovering ranging mode."));
             break;
         }
     }
     else
     {
-        Serial.println(F("Cannot set ranging mode requested. Freezing..."));
+        SERIAL_PRINTLN(F("Cannot set ranging mode requested. Freezing..."));
         return false;
     }
 
