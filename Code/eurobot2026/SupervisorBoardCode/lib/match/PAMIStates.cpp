@@ -9,7 +9,7 @@
 
 long lastMillisRegisterMessage[MAX_PAMI_ID] = {0, 0, 0, 0, 0, 0};
 FullPamiReportMessage default_message = FullPamiReportMessage(false, 0.0, PlayingSide::BLUE_SIDE, 0.0, RobotPosition(0, 0, 0), 255);
-std::vector<FullPamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message});
+std::vector<FullPamiReportMessage > pamiReportMessage({default_message, default_message, default_message, default_message, default_message, default_message});
 
 namespace PAMIStates
 {
