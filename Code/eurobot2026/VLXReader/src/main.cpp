@@ -327,8 +327,9 @@ void loop()
     }
 
     // Send nearest distance over serial
-    memcpy(&(buffer[0]), &nearest_distance, sizeof(int));
-    myPacketSerial.send(buffer, sizeof(int));
+    int32_t valeur_test = nearest_distance;
+    memcpy(&(buffer[0]), &valeur_test, sizeof(int32_t));
+    myPacketSerial.send(buffer, sizeof(int32_t));
 
     // debug led
     if (millis() - last_time_blink > 1000)
