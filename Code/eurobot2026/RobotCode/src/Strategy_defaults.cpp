@@ -27,6 +27,23 @@
 #define PAMI_4_WAIT 0.0
 #define PAMI_5_WAIT 1.5
 
+RobotPosition strategy::get_goal()
+{
+    return RobotPosition(
+#if PAMI_ID == 1
+        PAMI_1_GOAL
+#elif PAMI_ID == 2
+        PAMI_2_GOAL
+#elif PAMI_ID == 3
+        PAMI_3_GOAL
+#elif PAMI_ID == 4
+        PAMI_4_GOAL
+#elif PAMI_ID == 5
+        PAMI_5_GOAL
+#endif
+    );
+}
+
 bool robot_position_in_zone(RobotPosition& position, float xmin, float xmax, float ymin, float ymax)
 {
     return (

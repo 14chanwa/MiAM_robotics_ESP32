@@ -214,7 +214,9 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
             // do not avoid before 87.0s for all pamis
             (measurements.currentMatchTime >= 87.0f) &&
             // do not avoid before 90.0s for PAMI 1
-            (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
+            (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f) &&
+            // do not avoid if less than 20cm from objective
+            ((strategy::get_goal() - getCurrentPosition()).norm() > 300)
         )
         {
             computeAvoidanceTrajectory(measurements);

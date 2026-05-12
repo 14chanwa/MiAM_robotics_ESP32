@@ -158,7 +158,7 @@ void performLowLevel(void* parameters)
             }
             else
             {
-                ServoHandler::servoUp();
+                ServoHandler::servoDownUp();
             }
         }
         else

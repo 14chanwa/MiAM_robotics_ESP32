@@ -9,6 +9,8 @@
 
 namespace strategy
 {
+    RobotPosition get_goal();
+
     void go_forward(MotionController* motionController, float distance);
 
     void turn_around(MotionController* motionController, float angle);

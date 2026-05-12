@@ -20,6 +20,7 @@
 #include <TelemetryHandler.hpp>
 
 //#define DEBUG_MODE_SIMPLE_TRAJECTORY
+//#define DEBUG_MODE_SERVO
 
 
 /////////////////////////////////////////////////////////////////////
@@ -73,7 +74,8 @@ void setup()
   match_current_time_s = 85.0f;  
 #endif
 #ifdef DEBUG_MODE_SERVO
-  taskYIELD();
+  //taskYIELD();
+  Robot* robot = Robot::getInstance();
   for(;;)
   {
     // for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
@@ -81,12 +83,8 @@ void setup()
     //   // Serial.println(posDegrees);
     //   delay(20);
     // }
-    Serial.println("Up");
-    ServoHandler::servoUp();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-    Serial.println("Down");
-    ServoHandler::servoDown();
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    robot->currentRobotState_ = RobotState::MATCH_ENDED;
+    taskYIELD();
   }
 #endif 
 #ifdef DEBUG_MODE_SIMPLE_TRAJECTORY
