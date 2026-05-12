@@ -343,6 +343,9 @@ void Robot::update_robot_state()
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(configurationMessage->stopMotors_);
 #endif
             currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
+
+            // Reset servo
+            ServoHandler::armPositionFold();
         }
     }
 
@@ -534,6 +537,9 @@ void Robot::update_robot_state()
 #ifdef USE_STEPPER_MOTORS
             static_cast<RobotBaseStepper*>(robotBase)->setBlockWheels(false);
 #endif
+
+                // Reset servo
+                ServoHandler::armPositionFold();
                 currentRobotState_ = RobotState::WAIT_FOR_MATCH_START;
             }
         }

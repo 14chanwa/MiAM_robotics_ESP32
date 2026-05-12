@@ -43,8 +43,8 @@ namespace strategy
 
         // Fetch first caisse
         strategy::go_forward(motionController, 250);
-        strategy::turn_around(motionController, M_PI / 4);
-        strategy::go_forward(motionController, 30);
+        strategy::turn_around(motionController, M_PI / 6);
+        strategy::go_forward(motionController, 10);
 
         ServoHandler::pumpOn();
         ServoHandler::armPositionDown();
@@ -69,14 +69,26 @@ namespace strategy
         strategy::turn_to_angle(motionController, 0);
 
         // Recalage
+        strategy::turn_to_angle(motionController, 0);
         strategy::go_forward(motionController, -130);
         targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 615;
+        targetPosition.x = 660;
         targetPosition.theta = 0;
         delay(500);
         motionController->setCurrentPosition(targetPosition);
 
+        strategy::go_forward(motionController, 100);
+        strategy::turn_to_angle(motionController, -M_PI_2);
+        strategy::go_forward(motionController, -130);
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.y = 1950;
+        targetPosition.theta = -M_PI_2;
+        delay(500);
+        motionController->setCurrentPosition(targetPosition);
+        strategy::go_forward(motionController, 100);
+
         // Aller chercher la 2e caisse
+        strategy::turn_to_angle(motionController, 0);
         targetPosition = motionController->getCurrentPosition();
         targetPosition.x += 275;
         strategy::go_to_point(motionController, targetPosition);
@@ -117,15 +129,26 @@ namespace strategy
 
         // Virer les caisses noires
         strategy::go_forward(motionController, 10);
-        strategy::turn_to_angle(motionController, M_PI / 3);
+        strategy::turn_to_angle(motionController, -3* M_PI / 2);
         strategy::go_forward(motionController, 50);
 
         ServoHandler::armPositionMid();
-        strategy::turn_around(motionController, -M_PI_4);
+        strategy::turn_around(motionController, -M_PI_2);
         strategy::turn_around(motionController, M_PI_4);
         delay(500);
         ServoHandler::armPositionUp();
         delay(500);
+
+        // Recalage
+        strategy::go_forward(motionController, -150);
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.y = 615;
+        targetPosition.theta = M_PI;
+        delay(500);
+        motionController->setCurrentPosition(targetPosition);
+
+        strategy::go_forward(motionController, 115);
+        //strategy::turn_around(motionController, -M_PI / 8);
 
         ServoHandler::pumpOn();
         ServoHandler::armPositionDown();
@@ -133,15 +156,9 @@ namespace strategy
         ServoHandler::armPositionUp();
 
         strategy::go_forward(motionController, -100);
-        strategy::turn_to_angle(motionController, M_PI);
+        strategy::turn_around(motionController, M_PI_2);
 
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 610;
-        tv = computeTrajectoryStraightLineToPoint(tc, motionController->getCurrentPosition(), targetPosition);
-        res.insert(res.end(), tv.begin(), tv.end());
-
-        motionController->setTrajectoryToFollow(tv);
-        motionController->waitForTrajectoryFinished();
+        strategy::go_forward(motionController, 50);
 
         ServoHandler::pumpOff();
         ServoHandler::armPositionUpHorizontal();
