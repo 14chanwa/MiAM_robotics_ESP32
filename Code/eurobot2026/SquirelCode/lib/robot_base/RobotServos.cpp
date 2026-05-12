@@ -68,3 +68,13 @@ int RobotServos::get_current_speed(byte servo_id)
     }
     return currentSpeed;
 }
+
+int RobotServos::get_current_position(byte servo_id)
+{
+    int currentPosition = 0;
+    if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
+        currentPosition = servos.getCurrentPosition(servo_id);
+        xSemaphoreGive(servoSemaphore);
+    }
+    return currentPosition;
+}

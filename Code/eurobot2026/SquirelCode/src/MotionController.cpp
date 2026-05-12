@@ -31,7 +31,7 @@
 
 #define AVOIDANCE_LIMIT_REMAINING_TIME_S 2.5f
 
-#define VLX_STOP_RANGE 50
+#define VLX_STOP_RANGE 100
 
 using namespace miam::trajectory;
 
@@ -141,33 +141,33 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
     DrivetrainTarget target;
 
 
-    // If the PAMI is performing a slow approach, ignore slowdown coefficient
-    /// Enables or disables slow approach :
-    /// * speed is very slow
-    /// * vlx is not taken into account
-    /// * move is stopped when contact is made with BOTH switches
-    if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
-    {
-        if (
-            //measurements.left_switch_level == 1 && 
-            measurements.right_switch_level == 1
-        )
-        {
-            slowDownCoeff_ = 0.0;
-            clampedSlowDownCoeff_ = 0.0;
-        }
-        else
-        {
-            slowDownCoeff_ = 1.0;
-            clampedSlowDownCoeff_ = 1.0;
-        }
-    }
-    else
-    {
+    // // If the PAMI is performing a slow approach, ignore slowdown coefficient
+    // /// Enables or disables slow approach :
+    // /// * speed is very slow
+    // /// * vlx is not taken into account
+    // /// * move is stopped when contact is made with BOTH switches
+    // if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
+    // {
+    //     if (
+    //         //measurements.left_switch_level == 1 && 
+    //         measurements.right_switch_level == 1
+    //     )
+    //     {
+    //         slowDownCoeff_ = 0.0;
+    //         clampedSlowDownCoeff_ = 0.0;
+    //     }
+    //     else
+    //     {
+    //         slowDownCoeff_ = 1.0;
+    //         clampedSlowDownCoeff_ = 1.0;
+    //     }
+    // }
+    // else
+    // {
 
         bool proximitySwitchTriggered = 
             // do not trigger short range avoidance for the 3 1st seconds
-            (measurements.currentMatchTime >= 88.0f && measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
+            (measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
             measurements.right_switch_level;
         /// * move is stopped when contact is made with at least ONE OF the switches
         /// and not going backwards
@@ -197,39 +197,39 @@ DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurement
         obstaclePosition.x += obstacle_distance * std::cos(obstaclePosition.theta);
         obstaclePosition.y += obstacle_distance * std::sin(obstaclePosition.theta);
 
-        // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
-        // also add a delay so as not to constantly replanify
-        // take into accound trajectory labelled not avoidance
-        // and also no avoidance if in final zone
+        // // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
+        // // also add a delay so as not to constantly replanify
+        // // take into accound trajectory labelled not avoidance
+        // // and also no avoidance if in final zone
 
-        if (
-            // avoidance conditions are satisfied
-            (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered) &&
-            // basic movement conditions are satisfied (based on PAMI state)
-            hasMatchStarted && enableAvoidance && 
-            // there is a trajectory to be followed
-            !currentTrajectories_.empty() && 
-            // // do not perform multiple avoidance
-            // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
-            // do not perform avoidance if last one was too recent
-            millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
-            // check if the trajectory should not be avoided
-            currentTrajectories_.front()->isAvoidanceEnabled() &&
-            // // the obstacle is not in avoidance exclusion
-            // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
-            // pami has not yet reached destination
-            !strategy::position_in_end_zone(getCurrentPosition()) &&
-            // match will not end soon
-            100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
-            // do not avoid before 87.0s for all pamis
-            (measurements.currentMatchTime >= 87.0f) &&
-            // do not avoid before 90.0s for PAMI 1
-            (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
-        )
-        {
-            computeAvoidanceTrajectory(measurements);
-        }
-    }
+        // if (
+        //     // avoidance conditions are satisfied
+        //     (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered) &&
+        //     // basic movement conditions are satisfied (based on PAMI state)
+        //     hasMatchStarted && enableAvoidance && 
+        //     // there is a trajectory to be followed
+        //     !currentTrajectories_.empty() && 
+        //     // // do not perform multiple avoidance
+        //     // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+        //     // do not perform avoidance if last one was too recent
+        //     millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
+        //     // check if the trajectory should not be avoided
+        //     currentTrajectories_.front()->isAvoidanceEnabled() &&
+        //     // // the obstacle is not in avoidance exclusion
+        //     // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+        //     // pami has not yet reached destination
+        //     !strategy::position_in_end_zone(getCurrentPosition()) &&
+        //     // match will not end soon
+        //     100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
+        //     // do not avoid before 87.0s for all pamis
+        //     (measurements.currentMatchTime >= 87.0f) &&
+        //     // do not avoid before 90.0s for PAMI 1
+        //     (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
+        // )
+        // {
+        //     computeAvoidanceTrajectory(measurements);
+        // }
+    //}
 
     changeMotionControllerState();
 

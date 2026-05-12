@@ -14,7 +14,7 @@
 #define SERVO_4_POSITION_DOWN 467
 #define SERVO_4_POSITION_MID (SERVO_4_POSITION_UP + SERVO_4_POSITION_DOWN) / 2
 
-#define PUMP_GPIO 22
+#define PUMP_GPIO 18
 
 namespace ServoHandler
 {

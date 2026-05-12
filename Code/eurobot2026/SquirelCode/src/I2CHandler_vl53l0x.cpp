@@ -10,6 +10,7 @@
 #define LEFT_VLX_ADDRESS 0x31
 #define MIDDLE_VLX_ADDRESS 0x30
 
+
 namespace I2CHandler
 {
 
@@ -23,61 +24,44 @@ namespace I2CHandler
 
     void init_vl53l0x()
     {
-        pinMode(RIGHT_VLX_ENABLE, OUTPUT);
-        pinMode(MIDDLE_VLX_ENABLE, OUTPUT);
-        pinMode(LEFT_VLX_ENABLE, OUTPUT);
+        // pinMode(RIGHT_VLX_ENABLE, OUTPUT);
+        // pinMode(MIDDLE_VLX_ENABLE, OUTPUT);
+        // pinMode(LEFT_VLX_ENABLE, OUTPUT);
 
-        // Reset all vlx : low, high, low
-        digitalWrite(MIDDLE_VLX_ENABLE, LOW);
-        digitalWrite(RIGHT_VLX_ENABLE, LOW);
-        digitalWrite(LEFT_VLX_ENABLE, LOW);
+        // // Reset all vlx : low, high, low
+        // digitalWrite(MIDDLE_VLX_ENABLE, LOW);
+        // digitalWrite(RIGHT_VLX_ENABLE, LOW);
+        // digitalWrite(LEFT_VLX_ENABLE, LOW);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        // vTaskDelay(10 / portTICK_PERIOD_MS);
 
-        digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
-        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
-        digitalWrite(LEFT_VLX_ENABLE, HIGH);
+        // digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
+        // digitalWrite(RIGHT_VLX_ENABLE, HIGH);
+        // digitalWrite(LEFT_VLX_ENABLE, HIGH);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        // vTaskDelay(10 / portTICK_PERIOD_MS);
 
-        digitalWrite(MIDDLE_VLX_ENABLE, LOW);
-        digitalWrite(RIGHT_VLX_ENABLE, LOW);
-        digitalWrite(LEFT_VLX_ENABLE, LOW);
+        // digitalWrite(MIDDLE_VLX_ENABLE, LOW);
+        // digitalWrite(RIGHT_VLX_ENABLE, LOW);
+        // digitalWrite(LEFT_VLX_ENABLE, LOW);
 
-#if PAMI_ID == 5
-
-        // Init bottom vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        bottom_sensor.init(LEFT_VLX_ADDRESS);
+        // // Init left vlx
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // digitalWrite(LEFT_VLX_ENABLE, HIGH);
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // left_sensor.init(LEFT_VLX_ADDRESS);
 
         // Init middle vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        middle_sensor.init(MIDDLE_VLX_ADDRESS);
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        middle_sensor.init(0x29);
 
-#else
-
-        // Init left vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(LEFT_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        left_sensor.init(LEFT_VLX_ADDRESS);
-
-        // Init middle vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(MIDDLE_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        middle_sensor.init(MIDDLE_VLX_ADDRESS);
-
-        // Init right vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        right_sensor.init(VL53L0X_I2C_ADDR);
-#endif
+        // // Init right vlx
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // digitalWrite(RIGHT_VLX_ENABLE, HIGH);
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // right_sensor.init(VL53L0X_I2C_ADDR);
 
     };
 
@@ -158,9 +142,7 @@ void VL0XSensor::init(uint8_t target_i2c_addr)
 {
     if (I2CHandler::i2c_get())
     {
-        if (lox_.begin(target_i2c_addr, true,
-                        I2CHandler::get_wire(),
-                        Adafruit_VL53L0X::VL53L0X_SENSE_DEFAULT))
+        if (lox_.begin())
         {
             // start continuous ranging
             lox_.startRangeContinuous(20);

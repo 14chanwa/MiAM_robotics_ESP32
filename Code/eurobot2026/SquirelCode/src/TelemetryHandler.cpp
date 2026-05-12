@@ -43,7 +43,7 @@ void logTelemetry(void* parameters)
       // teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
       // teleplot.update("targetPoint.linear", robot->motionController->targetPoint.linearVelocity);
       // teleplot.update("targetPoint.angular", robot->motionController->targetPoint.angularVelocity);
-      // teleplot.update("clampedSlowDownCoeff_", robot->motionController->clampedSlowDownCoeff_);
+      teleplot.update("clampedSlowDownCoeff_", robot->motionController->clampedSlowDownCoeff_);
       // // teleplot.update("dt_period_ms", dt_period_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       // // teleplot.update("dt_lowLevel_ms", dt_lowLevel_ms, "", 0, TELEPLOT_FLAG_NOPLOT);
       // teleplot.update("battery_reading", AnalogReadings::get_current_battery_reading(), "", 0, TELEPLOT_FLAG_NOPLOT);

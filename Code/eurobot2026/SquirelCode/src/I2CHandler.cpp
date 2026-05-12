@@ -3,6 +3,9 @@
 #include <WiFi.h>
 #include <Robot.hpp>
 
+#define I2C_SDA 21
+#define I2C_SCL 22
+
 SemaphoreHandle_t xMutex_I2C = NULL;
 TwoWire* current_wire = nullptr;
 
@@ -49,8 +52,8 @@ namespace I2CHandler
     {
         Serial.println("Begin Wire");
         xMutex_I2C = xSemaphoreCreateMutex();  // crete a mutex object
-        Wire.begin(SDA, SCL, 400000);
-        current_wire = &Wire;
+        // Wire.begin(SDA, SCL, 400000);
+        // current_wire = &Wire;
         Serial.println("Init VL53L0X");
         I2CHandler::init_vl53l0x();
         // Serial.println("Init SSD1306");

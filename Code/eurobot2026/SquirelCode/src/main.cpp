@@ -130,8 +130,8 @@ void setup()
   WiFiHandler::initWiFi();
 
   // Init i2c peripherals
-  // I2CHandler::init();
-  // DEBUG_PRINTLN("I2CHandler::init OK");
+  I2CHandler::init();
+  DEBUG_PRINTLN("I2CHandler::init OK");
 
   // analog readings: monitor battery and infrared captors
   AnalogReadings::init();
