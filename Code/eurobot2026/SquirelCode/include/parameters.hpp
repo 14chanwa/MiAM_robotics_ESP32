@@ -10,11 +10,11 @@
 // Set MAC address manually for router to allocate static IPs
 #define WIFI_MAC_ADDRESS {0xAA, 0xAB, 0xAC, 0xAD, 0x00, PAMI_ID}
 
-//#define SEND_TELEPLOT_UDP
-#define MIAM_BROADCAST_ADDRESS "10.42.0.255"//"42.42.0.255"
+#define SEND_TELEPLOT_UDP
+#define MIAM_BROADCAST_ADDRESS "42.42.0.255"//"42.42.0.255"
 #define MIAM_SCD_ADDRESS IPAddress(42, 42, 0, 10)
 #define MIAM_SCD_PORT 778
-#define SEND_SERIAL
+//#define SEND_SERIAL
 
 #define ENABLE_OTA_UPDATE
 

@@ -7,6 +7,34 @@
 #include <PointTurn.h>
 #include <MotionController.hpp>
 
+class StrategyPlanner
+{
+public:
+    StrategyPlanner();
+
+    void clear() {
+        trajectory_.clear();
+    };
+
+    void go_forward(float distance);
+    void turn_around(float angle);
+    void turn_to_angle(float angle);
+    void go_to_point(RobotPosition targetPoint);
+
+    void execute();
+
+    TrajectoryVector get_trajectory() {
+        return trajectory_;
+    };
+
+    void add_to_trajectory(TrajectoryVector tv);
+    RobotPosition get_last_position();
+
+    MotionController* motionController;
+    TrajectoryVector trajectory_;
+    TrajectoryConfig tc;
+};
+
 namespace strategy
 {
     void go_forward(MotionController* motionController, float distance);

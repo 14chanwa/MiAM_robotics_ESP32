@@ -8,14 +8,17 @@
 /////////////////////////////////////////////////////////////////////
 
 TrajectoryVector traj;
-#define PAMI_6_START 680.0, 1860.0, 0.0
+#define PAMI_6_START 680.0, 1900.0, 0.0
 
 namespace strategy
 {
     void perform_strategy()
     {
+        StrategyPlanner planner;
+
         Robot* robot = Robot::getInstance();
         MotionController* motionController = robot->motionController;
+
         RobotPosition startPosition;
         RobotPosition targetPosition;
 
@@ -23,12 +26,13 @@ namespace strategy
 
         TrajectoryVector tv;
         std::vector<RobotPosition > positions;
-        TrajectoryConfig tc = motionController->getTrajectoryConfig();
+
 
         startPosition = RobotPosition(PAMI_6_START);
         ServoHandler::armPositionUp();
 
         motionController->resetPosition(startPosition, true, true, true);
+        
         positions.clear();
         // positions.push_back(startPosition);
         // positions.push_back(RobotPosition(895, 1926, 0));
@@ -42,90 +46,133 @@ namespace strategy
         // motionController->waitForTrajectoryFinished();
 
         // Fetch first caisse
-        strategy::go_forward(motionController, 250);
-        strategy::turn_around(motionController, M_PI / 6);
-        strategy::go_forward(motionController, 10);
-
-        ServoHandler::pumpOn();
-        ServoHandler::armPositionDown();
-        delay(3000);
-        ServoHandler::armPositionUp();
-
-        strategy::go_forward(motionController, -50);
-        strategy::turn_around(motionController, -M_PI / 2.1); // Make it turn counter clockwise
-        strategy::turn_to_angle(motionController, M_PI);
-
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 636;
-        strategy::go_to_point(motionController, targetPosition);
-
-        ServoHandler::pumpOff();
-        ServoHandler::armPositionUpHorizontal();
-        delay(500);
-        ServoHandler::armPositionDown();
-        delay(1000);
-        ServoHandler::armPositionUpHorizontal();
-        strategy::go_forward(motionController, -100);
-        strategy::turn_to_angle(motionController, 0);
+        planner.go_forward(390);
+        planner.turn_around(-M_PI_2);
+        planner.execute();
 
         // Recalage
-        strategy::turn_to_angle(motionController, 0);
-        strategy::go_forward(motionController, -130);
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 660;
-        targetPosition.theta = 0;
-        delay(500);
-        motionController->setCurrentPosition(targetPosition);
-
-        strategy::go_forward(motionController, 100);
-        strategy::turn_to_angle(motionController, -M_PI_2);
-        strategy::go_forward(motionController, -130);
+        planner.go_forward(-60);
+        planner.execute();
         targetPosition = motionController->getCurrentPosition();
         targetPosition.y = 1950;
         targetPosition.theta = -M_PI_2;
         delay(500);
-        motionController->setCurrentPosition(targetPosition);
-        strategy::go_forward(motionController, 100);
+        motionController->resetPosition(targetPosition, true, true, true);
 
-        // Aller chercher la 2e caisse
-        strategy::turn_to_angle(motionController, 0);
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x += 275;
-        strategy::go_to_point(motionController, targetPosition);
-        strategy::turn_around(motionController, M_PI / 5);
-        strategy::go_forward(motionController, 50);
+        // Fetch first caisse
+        planner.go_forward(70);
+        planner.execute();
 
         ServoHandler::pumpOn();
+        ServoHandler::armPositionMid();
+        delay(500);
         ServoHandler::armPositionDown();
-        delay(3000);
-        ServoHandler::armPositionUp();
+        delay(2000);
+        ServoHandler::armPositionUpWithCrate();
 
-        strategy::go_forward(motionController, -100);
-        strategy::turn_around(motionController, -M_PI / 2.1); // Make it turn counter clockwise
-        strategy::turn_to_angle(motionController, M_PI);
+        planner.go_forward(-20);
+        planner.execute();
 
-        tv = computeTrajectoryStraightLineToPoint(tc, motionController->getCurrentPosition(), RobotPosition(636, 1907, 0));
-        res.insert(res.end(), tv.begin(), tv.end());
+        planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
+        planner.turn_to_angle(M_PI);
 
-        motionController->setTrajectoryToFollow(tv);
-        motionController->waitForTrajectoryFinished();
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.x = 636;
+        planner.go_to_point(targetPosition);
+        planner.execute();
 
         ServoHandler::pumpOff();
         ServoHandler::armPositionUpHorizontal();
         delay(500);
-        ServoHandler::armPositionDown();
+        ServoHandler::armPositionUpWithCrate();
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
-        strategy::go_forward(motionController, -100);
-        strategy::turn_to_angle(motionController, 0);
+        delay(500);
+
+        // Recalage sur bordure verticale : déjà contre la bordure
+        planner.go_forward(30);
+        planner.execute();
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.x = 690;
+        targetPosition.theta = M_PI;
+        delay(500);
+        motionController->resetPosition(targetPosition, true, true, true);
+        planner.go_forward(-60);
+
+        // Recalage sur bordure horizontale
+        planner.turn_to_angle( -M_PI_2);
+        planner.go_forward(-150);
+        planner.execute();
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.y = 1950;
+        targetPosition.theta = -M_PI_2;
+        delay(500);
+        motionController->resetPosition(targetPosition, true, true, true);
+        planner.go_forward(60);
+
+        // Aller chercher la 2e caisse
+        planner.turn_to_angle(0);
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.x = 1130;
+        planner.go_to_point(targetPosition);
+        planner.turn_to_angle(-M_PI / 2);
+        planner.execute();
 
         // Recalage
-        strategy::go_forward(motionController, -130);
+        planner.go_forward(-60);
+        planner.execute();
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.y = 1950;
+        targetPosition.theta = -M_PI_2;
+        delay(500);
+        motionController->resetPosition(targetPosition, true, true, true);
+
+        planner.go_forward(80);
+        planner.execute();
+
+        ServoHandler::pumpOn();
+        ServoHandler::armPositionDown();
+        delay(2000);
+        ServoHandler::armPositionUpWithCrate();
+
+        planner.go_forward(-20);
+        planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
+        planner.turn_to_angle(M_PI);
+        planner.go_to_point(RobotPosition(636, 1907, 0));
+        planner.execute();
+
+        ServoHandler::pumpOff();
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        ServoHandler::armPositionUp();
+        delay(500);
+        ServoHandler::armPositionDown();
+        delay(500);
+        ServoHandler::armPositionUp();
+
+        // Recalage sur bordure verticale : déjà contre la bordure
+        planner.go_forward(30);
+        planner.execute();
+        targetPosition = motionController->getCurrentPosition();
+        targetPosition.x = 690;
+        targetPosition.theta = M_PI;
+        delay(500);
+        motionController->resetPosition(targetPosition, true, true, true);
+        planner.go_forward(-60);
+
+        planner.turn_to_angle(-M_PI_2);
+        planner.execute();
+
+        // Recalage
+        planner.go_forward(-130);
+        planner.execute();
         targetPosition = motionController->getCurrentPosition();
         targetPosition.x = 615;
         targetPosition.theta = 0;
         delay(500);
-        motionController->setCurrentPosition(targetPosition);
+        motionController->resetPosition(targetPosition, true, true, true);
+
+        return;
 
         // Virer les caisses noires
         strategy::go_forward(motionController, 10);
@@ -133,8 +180,8 @@ namespace strategy
         strategy::go_forward(motionController, 50);
 
         ServoHandler::armPositionMid();
-        strategy::turn_around(motionController, -M_PI_2);
-        strategy::turn_around(motionController, M_PI_4);
+        strategy::turn_around(motionController, M_PI_2);
+        strategy::turn_around(motionController, -M_PI_4);
         delay(500);
         ServoHandler::armPositionUp();
         delay(500);
@@ -145,18 +192,18 @@ namespace strategy
         targetPosition.y = 615;
         targetPosition.theta = M_PI;
         delay(500);
-        motionController->setCurrentPosition(targetPosition);
+        motionController->resetPosition(targetPosition, true, true, true);
 
         strategy::go_forward(motionController, 115);
         //strategy::turn_around(motionController, -M_PI / 8);
 
         ServoHandler::pumpOn();
         ServoHandler::armPositionDown();
-        delay(3000);
+        delay(2000);
         ServoHandler::armPositionUp();
 
         strategy::go_forward(motionController, -100);
-        strategy::turn_around(motionController, M_PI_2);
+        strategy::turn_to_angle(motionController, M_PI);
 
         strategy::go_forward(motionController, 50);
 
@@ -191,13 +238,13 @@ namespace strategy
         motionController->waitForTrajectoryFinished();
     }
 
-    void turn_to_angle(MotionController *motionController, float angle)
+    void turn_to_angle(MotionController *motionController, float end_angle)
     {
         Serial.println("TurnAround");
         TrajectoryConfig tc = motionController->getTrajectoryConfig();
         traj.clear();
         RobotPosition curPos(motionController->getCurrentPosition());
-        std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, angle));
+        std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, end_angle));
         traj.push_back(pt);
         motionController->setTrajectoryToFollow(traj);
         motionController->waitForTrajectoryFinished();
@@ -309,4 +356,63 @@ namespace strategy
 
     //     ServoHandler::servoDown();
     // }
+}
+
+
+StrategyPlanner::StrategyPlanner()
+{
+    motionController = Robot::getInstance()->motionController;
+    tc = motionController->getTrajectoryConfig();
+}
+
+void StrategyPlanner::add_to_trajectory(TrajectoryVector tv)
+{
+    for (auto it = std::begin(tv); it != std::end(tv); it++) {
+        trajectory_.push_back(*it);
+    }
+}
+
+RobotPosition StrategyPlanner::get_last_position()
+{
+    RobotPosition curPos(motionController->getCurrentPosition());
+    if (!trajectory_.empty())
+    {
+        curPos = trajectory_.getEndPoint().position;
+    }
+    return curPos;
+}
+
+void StrategyPlanner::go_forward(float distance)
+{
+    RobotPosition curPos = get_last_position();
+    TrajectoryVector tv(computeTrajectoryStraightLine(tc, curPos, distance));
+    add_to_trajectory(tv);
+}
+
+void StrategyPlanner::turn_around(float angle)
+{
+    RobotPosition curPos = get_last_position();
+    std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, curPos.theta + angle));
+    trajectory_.push_back(pt);
+}
+
+void StrategyPlanner::turn_to_angle(float angle)
+{
+    RobotPosition curPos = get_last_position();
+    std::shared_ptr<Trajectory> pt(new PointTurn(tc, curPos, angle));
+    trajectory_.push_back(pt);
+}
+
+void StrategyPlanner::execute()
+{
+    motionController->setTrajectoryToFollow(trajectory_);
+    motionController->waitForTrajectoryFinished();
+    clear();
+}
+
+void StrategyPlanner::go_to_point(RobotPosition targetPoint)
+{
+    RobotPosition curPos = get_last_position();
+    TrajectoryVector tv(computeTrajectoryStraightLineToPoint(tc, curPos, targetPoint));
+    add_to_trajectory(tv);
 }

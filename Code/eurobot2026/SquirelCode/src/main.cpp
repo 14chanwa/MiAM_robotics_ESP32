@@ -146,7 +146,7 @@ void setup()
   DEBUG_PRINTLN("Low Level Loop");
   Robot::startLowLevelLoop();
 
-  // TelemetryHandler::begin();
+  TelemetryHandler::begin();
   MessageHandler::startReportBroadcast();
 
 #ifdef DEBUG_MODE_MATCH

@@ -4,11 +4,13 @@
 
 #define SERVO_3_POSITION_FOLD 650
 #define SERVO_3_POSITION_UP 650
+#define SERVO_3_POSITION_UP_WITH_CRATE 600
 #define SERVO_3_POSITION_DOWN 830
 #define SERVO_3_POSITION_MID (SERVO_3_POSITION_UP + SERVO_3_POSITION_DOWN) / 2
 
 #define SERVO_4_POSITION_FOLD 755
 #define SERVO_4_POSITION_UP 580
+#define SERVO_4_POSITION_UP_WITH_CRATE 467
 #define SERVO_4_POSITION_DOWN 467
 #define SERVO_4_POSITION_MID (SERVO_4_POSITION_UP + SERVO_4_POSITION_DOWN) / 2
 
@@ -30,6 +32,15 @@ namespace ServoHandler
         RobotServos::set_servo_position(4, SERVO_4_POSITION_UP);
         delay(10);
     }
+
+    void armPositionUpWithCrate()
+    {
+        RobotServos::set_servo_position(3, SERVO_3_POSITION_UP_WITH_CRATE);
+        delay(10);
+        RobotServos::set_servo_position(4, SERVO_4_POSITION_UP_WITH_CRATE);
+        delay(10);
+    }
+
 
     void armPositionMid()
     {

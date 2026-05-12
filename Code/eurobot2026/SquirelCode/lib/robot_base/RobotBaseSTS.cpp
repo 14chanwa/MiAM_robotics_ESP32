@@ -21,7 +21,7 @@
 // #define WHEEL_SPACING_MM 32.5f
 // #else 
 #define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM (104.0f / 2.0f)
+#define WHEEL_SPACING_MM (106.0f / 2.0f)
 // #endif
 
 // #if PAMI_ID == 5
@@ -49,9 +49,12 @@
 #define MOTOR_ST0P_THRESHOLD_RAD_S 0.02f
 
 // Wheel PID parameters
-#define VELOCITY_KP 0.1f
+// #define VELOCITY_KP 0.1f
+// #define VELOCITY_KD 0.0f
+// #define VELOCITY_KI 0.1f
+#define VELOCITY_KP 0.0f
 #define VELOCITY_KD 0.0f
-#define VELOCITY_KI 0.1f
+#define VELOCITY_KI 0.0f
 
 int target_rad_s_to_steps_s(float speed_rad_s)
 {
@@ -159,8 +162,8 @@ float RobotWheelSTS::getWheelSpeed()
 
 RobotBaseSTS::RobotBaseSTS()
 {
-    rightWheel_ = new RobotWheelSTS(1, "right_", false);
-    leftWheel_ = new RobotWheelSTS(2, "left_", true);
+    rightWheel_ = new RobotWheelSTS(2, "right_", true);
+    leftWheel_ = new RobotWheelSTS(1, "left_", false);
 }
 
 void RobotBaseSTS::setup()

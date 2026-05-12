@@ -6,15 +6,25 @@
 // #define DEBUG_MOTIONCONTROLLER_CPP
 
 // Motion controller PID parameters
-#define LINEAR_KP 1.0f
-#define LINEAR_KD 0.01f
+// #define LINEAR_KP 1.0f
+// #define LINEAR_KD 0.01f
+// #define LINEAR_KI 0.0f
+
+// #define TRANSVERSE_KP 0.01f
+
+// #define ROTATION_KP 0.5f
+// #define ROTATION_KD 0.1f
+// #define ROTATION_KI 0.00f
+
+#define LINEAR_KP 0.0f
+#define LINEAR_KD 0.0f
 #define LINEAR_KI 0.0f
 
-#define TRANSVERSE_KP 0.05f
+#define TRANSVERSE_KP 0.0f
 
-#define ROTATION_KP 0.8f
-#define ROTATION_KD 0.05f
-#define ROTATION_KI 0.02f
+#define ROTATION_KP 0.0f
+#define ROTATION_KD 0.0f
+#define ROTATION_KI 0.0f
 
 #define AVOIDANCE_SLOWDOWN_THRESHOLD 0.35f
 #define MIN_TIME_BETWEEN_AVOIDANCE_MS 2000
