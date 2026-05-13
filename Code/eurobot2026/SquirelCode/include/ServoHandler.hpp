@@ -17,6 +17,9 @@ namespace ServoHandler
     void armPositionFold();
     void pumpOn();
     void pumpOff();
+
+    void armPositionFunnyUp();
+    void armPositionFunnyDown();
 }
 
 #endif

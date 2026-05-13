@@ -37,6 +37,10 @@ public:
 
 namespace strategy
 {
+    bool getHasObjectInSuction();
+    void loadObjectInArm();
+    void freeObjectFromArm();
+
     void go_forward(MotionController* motionController, float distance);
 
     void turn_around(MotionController* motionController, float angle);

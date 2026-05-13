@@ -78,6 +78,12 @@ void performLowLevel(void* parameters)
         robot->measurements.currentRobotState = robot->get_current_robot_state();
         robot->measurements.currentMatchTime = robot->matchStarted() ? robot->match_current_time_s : 0.0f;
 
+        // ignore vlx if object in suction
+        if (strategy::getHasObjectInSuction())
+        {
+            robot->measurements.vlx_range_detection_mm = 3000;
+        }
+
         // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
         if (robot->motionController->isPlayingRightSide_)
         {
@@ -156,11 +162,11 @@ void performLowLevel(void* parameters)
             }
             if (funny_action_state)
             {
-                //ServoHandler::servoDown();
+                ServoHandler::armPositionFunnyUp();
             }
             else
             {
-                //ServoHandler::servoUp();
+                ServoHandler::armPositionFunnyDown();
             }
         }
         else

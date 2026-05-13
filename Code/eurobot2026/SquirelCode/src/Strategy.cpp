@@ -12,6 +12,13 @@ TrajectoryVector traj;
 
 namespace strategy
 {
+    bool hasObjectInSuction_ = false;
+    
+    bool getHasObjectInSuction() { return hasObjectInSuction_; };
+    void loadObjectInArm() { hasObjectInSuction_ = true; }
+    void freeObjectFromArm() { hasObjectInSuction_ = false; }
+
+
     void perform_strategy()
     {
         StrategyPlanner planner;
@@ -44,6 +51,8 @@ namespace strategy
 
         // motionController->setTrajectoryToFollow(tv);
         // motionController->waitForTrajectoryFinished();
+        
+        strategy::freeObjectFromArm();
 
         // Fetch first caisse
         planner.go_forward(390);
@@ -69,6 +78,7 @@ namespace strategy
         ServoHandler::armPositionDown();
         delay(2000);
         ServoHandler::armPositionUpWithCrate();
+        strategy::loadObjectInArm();
 
         planner.go_forward(-20);
         planner.execute();
@@ -88,6 +98,7 @@ namespace strategy
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
         delay(500);
+        strategy::freeObjectFromArm();
 
         // Recalage sur bordure verticale : déjà contre la bordure
         planner.go_forward(30);
@@ -134,6 +145,7 @@ namespace strategy
         ServoHandler::armPositionDown();
         delay(2000);
         ServoHandler::armPositionUpWithCrate();
+        strategy::loadObjectInArm();
 
         planner.go_forward(-20);
         planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
@@ -149,6 +161,7 @@ namespace strategy
         ServoHandler::armPositionDown();
         delay(500);
         ServoHandler::armPositionUp();
+        strategy::freeObjectFromArm();
 
         // Recalage sur bordure verticale : déjà contre la bordure
         planner.go_forward(30);
