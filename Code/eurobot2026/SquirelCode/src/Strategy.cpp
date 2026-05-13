@@ -1,7 +1,9 @@
 #include <Strategy.hpp>
 #include <ServoHandler.hpp>
 #include <Robot.hpp>
+#include <RobotServos.hpp>
 #include <cmath>
+#include <I2CHandler.hpp>
 
 /////////////////////////////////////////////////////////////////////
 // Strategy
@@ -10,10 +12,71 @@
 TrajectoryVector traj;
 #define PAMI_6_START 680.0, 1900.0, 0.0
 
+
+#define SERVO_STEP_PER_TURN 4096
+#define WHEEL_RADIUS_MM 30.0f
+#define WHEEL_SPACING_MM (106.0f / 2.0f)
+
+#define VLX_STOP_MM 150
+
+int mm_to_tick(float mm)
+{
+    return mm * SERVO_STEP_PER_TURN / (2 * M_PI * WHEEL_RADIUS_MM);
+}
+
+int rad_to_tick(float rad)
+{
+    return rad * mm_to_tick(WHEEL_SPACING_MM);
+}
+
+byte servo_id_left = 1;
+byte servo_id_right = 2;
+
+void move_servo(int tick_left, int tick_right)
+{
+    RobotServos::set_servo_position(servo_id_left, tick_left);
+    RobotServos::set_servo_position(servo_id_right, tick_right);
+    long time = millis();
+    while (millis() - time < 900 * abs(tick_left) / 1000 + 1500)
+    {
+        uint16_t meas = I2CHandler::get_smoothed_vl53l0x();
+        if (
+            (!strategy::getHasObjectInSuction()) &&
+            (meas < VLX_STOP_MM)
+        )
+        {
+            RobotServos::stop(servo_id_left);
+            RobotServos::stop(servo_id_right);
+            while(true)
+            {
+                // freeze
+                taskYIELD();
+                delay(200);
+            }
+        }
+        delay(200);
+
+    }
+}
+
+void translate(float mm)
+{
+    move_servo(mm_to_tick(mm), -mm_to_tick(mm));
+}
+
+void rotate(float rad)
+{
+    if (Robot::getInstance()->motionController->isPlayingRightSide_)
+    {
+        rad = -rad;
+    }
+    move_servo(-rad_to_tick(rad), -rad_to_tick(rad));
+}
+
 namespace strategy
 {
     bool hasObjectInSuction_ = false;
-    
+
     bool getHasObjectInSuction() { return hasObjectInSuction_; };
     void loadObjectInArm() { hasObjectInSuction_ = true; }
     void freeObjectFromArm() { hasObjectInSuction_ = false; }
@@ -54,10 +117,90 @@ namespace strategy
         
         strategy::freeObjectFromArm();
 
+
+
+        RobotServos::init_servo_id_step(servo_id_left);
+        RobotServos::init_servo_id_step(servo_id_right);
+
+
         // Fetch first caisse
-        planner.go_forward(390);
-        planner.turn_around(-M_PI_2);
-        planner.execute();
+        // planner.go_forward(390);
+        // planner.turn_around(-M_PI_2);
+        // planner.execute();
+        // RobotServos::set_servo_position(servo_id_left, -8000);
+        // RobotServos::set_servo_position(servo_id_right, 8000);
+
+        //delay(10000);
+
+        //move_servo(8000, -8000);
+        translate(390);
+        rotate(-M_PI_2);
+
+        // Recalage
+        translate(-80);
+        translate(70);
+
+
+        ServoHandler::pumpOn();
+        ServoHandler::armPositionMid();
+        delay(500);
+        ServoHandler::armPositionDown();
+        delay(2000);
+        ServoHandler::armPositionUpWithCrate();
+        strategy::loadObjectInArm();
+
+        translate(-30);
+        rotate(-M_PI_2);
+        translate(420);
+
+
+        ServoHandler::pumpOff();
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        strategy::freeObjectFromArm();
+
+        translate(-60);
+        rotate(M_PI);
+
+        // Recalage
+        translate(-100);
+
+        // 2d crate
+
+        translate(440);
+        rotate(-M_PI_2);
+
+        // Recalage
+        translate(-100);
+        translate(70);
+
+
+        ServoHandler::pumpOn();
+        ServoHandler::armPositionMid();
+        delay(500);
+        ServoHandler::armPositionDown();
+        delay(2000);
+        ServoHandler::armPositionUpWithCrate();
+        strategy::loadObjectInArm();
+
+        rotate(-M_PI_2);
+        translate(470);
+
+
+        ServoHandler::pumpOff();
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        strategy::freeObjectFromArm();
+
+        return;
 
         // Recalage
         planner.go_forward(-60);

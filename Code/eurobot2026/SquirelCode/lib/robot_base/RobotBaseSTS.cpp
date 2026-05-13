@@ -82,7 +82,7 @@ RobotWheelSTS::RobotWheelSTS(
         VELOCITY_KP, VELOCITY_KD, VELOCITY_KI, 2.0
     );
     // Init servo
-    RobotServos::init_servo_id_velocity(servo_id_);
+    //RobotServos::init_servo_id_velocity(servo_id_);
 }
 
 void RobotWheelSTS::updateMotorControl(bool motorEnabled)
@@ -118,7 +118,7 @@ void RobotWheelSTS::updateMotorControl(bool motorEnabled)
         {
             targetToSend = -targetToSend;
         }
-        RobotServos::set_servo_velocity(servo_id_, targetToSend);
+        //RobotServos::set_servo_velocity(servo_id_, targetToSend);
     }
     timeLowLevel_ = currentTime_;
 }
