@@ -32,18 +32,21 @@ class RobotWheelSTS : public AbstractRobotWheel
 
         int baseTarget_;
         int newTarget_;
+
+        float lastEncoderReading_ = 0.0;
+        unsigned long oldTimeEncoderSpeed_ = 0.0;
 };
 
 class RobotBaseSTS : public AbstractRobotBase
 {
     protected:
         RobotBaseSTS();
-    
+
     public:
         void setup();
         DrivetrainMeasurements getMeasurements();
         RobotParameters getParameters();
-    
+
         static AbstractRobotBase* getInstance();
 
         RobotWheelSTS* leftWheel_;

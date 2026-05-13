@@ -7,7 +7,7 @@
 // Motor & encoder specs
 /////////////////////////////////////////////
 
-#define SERVO_STEP_PER_TURN 4000
+#define SERVO_STEP_PER_TURN 4096
 #define SERVO_MAX_STEPS_S 10000
 
 #define MOTOR_RATED_RPM 60.0f
@@ -19,14 +19,14 @@
 // #if PAMI_ID == 5
 // #define WHEEL_RADIUS_MM 13.5f
 // #define WHEEL_SPACING_MM 32.5f
-// #else 
+// #else
 #define WHEEL_RADIUS_MM 30.0f
 #define WHEEL_SPACING_MM (106.0f / 2.0f)
 // #endif
 
 // #if PAMI_ID == 5
 //     #define WHEEL_SPACING_MM 42.5f
-// #else 
+// #else
 //     //41.0f
 // #endif
 
@@ -59,8 +59,8 @@
 int target_rad_s_to_steps_s(float speed_rad_s)
 {
     return
-        speed_rad_s 
-            / (2.0 * M_PI) 
+        speed_rad_s
+            / (2.0 * M_PI)
             * SERVO_STEP_PER_TURN;
     }
 
@@ -105,7 +105,7 @@ void RobotWheelSTS::updateMotorControl(bool motorEnabled)
         {
             error_ = currentSpeed_ - targetSpeed_; // in rad/s
             correction_ = motorPID->computeValue(error_, dt_ms_);
-            
+
             // convert from rad/s to 0-255
             baseTarget_ = target_rad_s_to_steps_s(targetSpeed_);
             newTarget_ = target_rad_s_to_steps_s(targetSpeed_ + correction_);
@@ -128,11 +128,11 @@ void RobotWheelSTS::printToSerial()
     AbstractRobotWheel::printPrefix("currentSpeed");
     Serial.println(currentSpeed_);
     AbstractRobotWheel::printPrefix("targetSpeed");
-    Serial.println(targetSpeed_);  
+    Serial.println(targetSpeed_);
     AbstractRobotWheel::printPrefix("error");
-    Serial.println(error_);       
+    Serial.println(error_);
     AbstractRobotWheel::printPrefix("correction");
-    Serial.println(correction_);        
+    Serial.println(correction_);
     AbstractRobotWheel::printPrefix("basePWMTarget");
     Serial.println(baseTarget_);
     AbstractRobotWheel::printPrefix("newPWMTarget");
@@ -143,13 +143,27 @@ void RobotWheelSTS::printToSerial()
 
 void RobotWheelSTS::updateEncoderSpeed()
 {
-    int currentSpeed = RobotServos::get_current_speed(servo_id_);
+    unsigned long currentTimeEncoderSpeed_ = micros();
+
+    float currentPosition = servo_step_s_to_rad_s(RobotServos::get_current_position(servo_id_));
+
+    float increment = currentPosition - lastEncoderReading_;
+    if (increment > M_PI)
+        increment = increment - 2 * M_PI;
+    if (increment < -M_PI)
+        increment = increment + 2 * M_PI;
+    lastEncoderReading_ = currentPosition;
+
     // inverted ?
     if (inverted_)
     {
-        currentSpeed = -currentSpeed;
+        currentSpeed_ = -currentSpeed_;
     }
-    currentSpeed_ = servo_step_s_to_rad_s(currentSpeed);
+
+    float const dt = (currentTimeEncoderSpeed_ - oldTimeEncoderSpeed_) / 1000000.0f;
+    oldTimeEncoderSpeed_ = currentTimeEncoderSpeed_;
+
+    currentSpeed_ = increment / dt;
 }
 
 float RobotWheelSTS::getWheelSpeed()
