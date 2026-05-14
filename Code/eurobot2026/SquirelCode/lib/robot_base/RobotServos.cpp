@@ -52,13 +52,19 @@ void RobotServos::init_servo_id_step(byte servo_id)
         delay(100);
         servos.writeTwoBytesRegister(servo_id, STSRegisters::MAXIMUM_ANGLE, 0);
         delay(100);
-        servos.setTargetVelocity(servo_id, 1000);
+        servos.setTargetVelocity(servo_id, 1400);
         delay(100);
-        servos.setTargetAcceleration(servo_id, 10);
+        servos.setTargetAcceleration(servo_id, 11);
         delay(100);
         xSemaphoreGive(servoSemaphore);
     }
 }
+
+bool RobotServos::is_moving(byte servo_id)
+{
+    return servos.isMoving(servo_id);
+}
+
 void RobotServos::set_servo_velocity(byte servo_id, int target_velocity)
 {
     if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
@@ -98,6 +104,8 @@ void RobotServos::stop(byte servo_id)
 {
     if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
         servos.writeRegister(servo_id, STSRegisters::TORQUE_SWITCH, 0);
+        delay(5);
+        servos.setMode(servo_id, STSMode::POSITION);
         xSemaphoreGive(servoSemaphore);
     }
 }

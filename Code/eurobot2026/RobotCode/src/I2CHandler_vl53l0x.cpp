@@ -46,11 +46,11 @@ namespace I2CHandler
 
 #if PAMI_ID == 5
 
-        // Init bottom vlx
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        digitalWrite(RIGHT_VLX_ENABLE, HIGH);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        bottom_sensor.init(LEFT_VLX_ADDRESS);
+        // // Init bottom vlx
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // digitalWrite(RIGHT_VLX_ENABLE, HIGH);
+        // vTaskDelay(50 / portTICK_PERIOD_MS);
+        // bottom_sensor.init(LEFT_VLX_ADDRESS);
 
         // Init middle vlx
         vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -94,11 +94,11 @@ namespace I2CHandler
 
     uint16_t get_bottom_smoothed()
     {
-#if PAMI_ID == 5
-        return bottom_sensor.get_smoothed();
-#else
+// #if PAMI_ID == 5
+//         return bottom_sensor.get_smoothed();
+// #else
         return 1000;
-#endif
+//#endif
     }
 
     int16_t get_smoothed_vlx_side(Side side)
@@ -147,9 +147,9 @@ namespace I2CHandler
         middle_sensor.update();
         left_sensor.update();
 
-#if PAMI_ID == 5
-        bottom_sensor.update();
-#endif
+// #if PAMI_ID == 5
+//         bottom_sensor.update();
+// #endif
     };
 
 }

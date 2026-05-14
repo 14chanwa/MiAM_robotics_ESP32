@@ -14,6 +14,12 @@
 #define SERVO_4_POSITION_DOWN 467
 #define SERVO_4_POSITION_MID (SERVO_4_POSITION_UP + SERVO_4_POSITION_DOWN) / 2
 
+#define SERVO_3_POSITION_FUNNYACTION_UP 800
+#define SERVO_3_POSITION_FUNNYACTION_DOWN 830
+
+#define SERVO_4_POSITION_FUNNYACTION_UP 467
+#define SERVO_4_POSITION_FUNNYACTION_DOWN 467
+
 #define PUMP_GPIO 18
 
 namespace ServoHandler
@@ -77,17 +83,17 @@ namespace ServoHandler
 
     void armPositionFunnyUp()
     {
-        RobotServos::set_servo_position(3, SERVO_3_POSITION_UP_WITH_CRATE);
+        RobotServos::set_servo_position(3, SERVO_3_POSITION_FUNNYACTION_UP);
         delay(10);
-        RobotServos::set_servo_position(4, SERVO_4_POSITION_FOLD);
+        RobotServos::set_servo_position(4, SERVO_4_POSITION_FUNNYACTION_UP);
         delay(10);
     }
 
     void armPositionFunnyDown()
     {
-        RobotServos::set_servo_position(3, SERVO_3_POSITION_FOLD);
+        RobotServos::set_servo_position(3, SERVO_3_POSITION_FUNNYACTION_DOWN);
         delay(10);
-        RobotServos::set_servo_position(4, SERVO_4_POSITION_FOLD);
+        RobotServos::set_servo_position(4, SERVO_4_POSITION_FUNNYACTION_DOWN);
         delay(10);
     }
     

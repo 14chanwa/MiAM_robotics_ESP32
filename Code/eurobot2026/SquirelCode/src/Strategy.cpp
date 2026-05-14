@@ -15,7 +15,7 @@ TrajectoryVector traj;
 
 #define SERVO_STEP_PER_TURN 4096
 #define WHEEL_RADIUS_MM 30.0f
-#define WHEEL_SPACING_MM (106.0f / 2.0f)
+#define WHEEL_SPACING_MM (104.0f / 2.0f)
 
 #define VLX_STOP_MM 150
 
@@ -32,12 +32,27 @@ int rad_to_tick(float rad)
 byte servo_id_left = 1;
 byte servo_id_right = 2;
 
-void move_servo(int tick_left, int tick_right)
+void move_servo(int tick_left, int tick_right, bool translation)
 {
     RobotServos::set_servo_position(servo_id_left, tick_left);
     RobotServos::set_servo_position(servo_id_right, tick_right);
     long time = millis();
-    while (millis() - time < 900 * abs(tick_left) / 1000 + 1500)
+    long waiting_time = 0;
+    // if (translation)
+    // {
+    //     waiting_time = 1000 * abs(tick_left) / 1000.0; + 1800;
+    // }
+    // else
+    // {
+        //waiting_time = 800 * abs(tick_left) / 1000.0 + 1800;
+    //}
+    // Minimum waiting time
+    waiting_time = 1000;
+    while ((millis() - time < waiting_time) ||
+        abs(RobotServos::get_current_speed(servo_id_left)) > 10 ||
+        abs(RobotServos::get_current_speed(servo_id_right)) > 10
+    )
+    //while (RobotServos::is_moving(servo_id_left) || RobotServos::is_moving(servo_id_right))
     {
         uint16_t meas = I2CHandler::get_smoothed_vl53l0x();
         if (
@@ -61,7 +76,7 @@ void move_servo(int tick_left, int tick_right)
 
 void translate(float mm)
 {
-    move_servo(mm_to_tick(mm), -mm_to_tick(mm));
+    move_servo(mm_to_tick(mm), -mm_to_tick(mm), true);
 }
 
 void rotate(float rad)
@@ -70,7 +85,7 @@ void rotate(float rad)
     {
         rad = -rad;
     }
-    move_servo(-rad_to_tick(rad), -rad_to_tick(rad));
+    move_servo(-rad_to_tick(rad), -rad_to_tick(rad), false);
 }
 
 namespace strategy
@@ -199,6 +214,22 @@ namespace strategy
         ServoHandler::armPositionUpHorizontal();
         delay(500);
         strategy::freeObjectFromArm();
+
+        translate(-60);
+        rotate(M_PI);
+
+        // Recalage
+        translate(-100);
+
+        // Go in front of zone
+        translate(520);
+        rotate(-M_PI_2);
+
+        // Recalage
+        translate(-130);     
+        
+        // Go in front of zone
+        translate(300);
 
         return;
 
