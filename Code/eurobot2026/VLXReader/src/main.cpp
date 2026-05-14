@@ -157,7 +157,7 @@ NearestPointData update_leds_from_data(VL53L5CX_ResultsData measurement_data, CR
                 {
                     // compute angle 
                     float angle_deg = 0;
-                    angle_deg = -60 + x * 17;
+                    angle_deg = -22.5 + x * 6.4;
                     // if (sensor_id == 0)
                     // {
                     //   switch(x)
