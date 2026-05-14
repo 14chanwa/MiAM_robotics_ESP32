@@ -6,9 +6,13 @@
 class ADCReading
 {
 public:
-    uint32_t AN_Pot1_Buffer[FILTER_LEN] = {0};
+    ADCReading();
+    ADCReading(int filter_len);
+    uint32_t* AN_Pot1_Buffer;
     int AN_Pot1_i = 0;
     uint32_t readADC_Avg(int ADC_Raw);
     uint32_t readADC_Min(int ADC_Raw);
+    uint32_t readADC_Max(int ADC_Raw);
     bool MA_inited = false;
+    int filter_len_ = 0;
 };
