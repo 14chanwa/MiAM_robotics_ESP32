@@ -165,7 +165,7 @@ void VL0XSensor::update()
         if (is_init_ && lox_.isRangeComplete())
         {
             current_ = lox_.readRange();
-            smoothed_ = adc_.readADC_Avg(current_);
+            smoothed_ = adc_.readADC_Max(current_);
         }
 
         // Release i2c
@@ -225,7 +225,8 @@ void VL1XSensor::update()
                 current_reading = 8000;
             }
             current_ = (uint16_t)current_reading;
-            smoothed_ = adc_.readADC_Min(current_);
+            // Get the max instead of the min : filter outliers
+            smoothed_ = adc_.readADC_Max(current_);
         }
 
         // Release i2c

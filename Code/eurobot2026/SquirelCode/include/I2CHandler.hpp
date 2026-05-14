@@ -62,7 +62,7 @@ public:
     bool is_init() { return is_init_; }
 protected:
     bool is_init_ = false;
-    ADCReading adc_;
+    ADCReading adc_ = ADCReading(10);
     uint16_t current_ = 8000;
     uint16_t smoothed_ = 8000;
 };

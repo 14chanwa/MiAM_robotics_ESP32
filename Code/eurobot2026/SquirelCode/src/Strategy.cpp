@@ -130,7 +130,6 @@ namespace strategy
         // motionController->setTrajectoryToFollow(tv);
         // motionController->waitForTrajectoryFinished();
         
-        strategy::freeObjectFromArm();
 
 
 
@@ -148,7 +147,11 @@ namespace strategy
         //delay(10000);
 
         //move_servo(8000, -8000);
+
         translate(390);
+        // disable avoidance
+        strategy::loadObjectInArm();
+
         rotate(-M_PI_2);
 
         // Recalage
@@ -162,7 +165,6 @@ namespace strategy
         ServoHandler::armPositionDown();
         delay(2000);
         ServoHandler::armPositionUpWithCrate();
-        strategy::loadObjectInArm();
 
         translate(-30);
         rotate(-M_PI_2);
@@ -176,7 +178,7 @@ namespace strategy
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
         delay(500);
-        strategy::freeObjectFromArm();
+        ServoHandler::armPositionUp();
 
         translate(-60);
         rotate(M_PI);
@@ -186,7 +188,12 @@ namespace strategy
 
         // 2d crate
 
+        // activate avoidance
+        strategy::freeObjectFromArm();
         translate(440);
+        // disable avoidance
+        strategy::loadObjectInArm();
+
         rotate(-M_PI_2);
 
         // Recalage
@@ -200,7 +207,6 @@ namespace strategy
         ServoHandler::armPositionDown();
         delay(2000);
         ServoHandler::armPositionUpWithCrate();
-        strategy::loadObjectInArm();
 
         rotate(-M_PI_2);
         translate(470);
@@ -213,7 +219,7 @@ namespace strategy
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
         delay(500);
-        strategy::freeObjectFromArm();
+        ServoHandler::armPositionUp();
 
         translate(-60);
         rotate(M_PI);
@@ -222,7 +228,14 @@ namespace strategy
         translate(-100);
 
         // Go in front of zone
+
+        // activate avoidance
+        strategy::freeObjectFromArm();
         translate(520);
+        // disable avoidance
+        strategy::loadObjectInArm();
+
+
         rotate(-M_PI_2);
 
         // Recalage
