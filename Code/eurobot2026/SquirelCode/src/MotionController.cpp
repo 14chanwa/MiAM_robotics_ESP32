@@ -35,14 +35,15 @@
 
 using namespace miam::trajectory;
 
-MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters) : 
+MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial//, RobotParameters parameters
+    ) : 
                                         currentPosition_(),
                                         newTrajectories_(),
                                         currentTrajectories_(),
                                         wasTrajectoryFollowingSuccessful_(true),
                                         curvilinearAbscissa_(0.0),
-                                        xMutex_Serial_(xMutex_Serial),
-                                        parameters_(parameters)//,
+                                        xMutex_Serial_(xMutex_Serial)//,
+                                        //parameters_(parameters)//,
                                         // slowApproach_(false)
 {
     kinematics_ = DrivetrainKinematics(parameters_.wheelRadius,
@@ -57,9 +58,9 @@ MotionController::MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParame
     initialPosition.theta = 0;
     setCurrentPosition(initialPosition);
 
-    // Set PIDs.
-    PIDLinear_ = miam::PID(LINEAR_KP, LINEAR_KD, LINEAR_KI, 0.2);
-    PIDAngular_ = miam::PID(ROTATION_KP, ROTATION_KD, ROTATION_KI, 0.15);
+    // // Set PIDs.
+    // PIDLinear_ = miam::PID(LINEAR_KP, LINEAR_KD, LINEAR_KI, 0.2);
+    // PIDAngular_ = miam::PID(ROTATION_KP, ROTATION_KD, ROTATION_KI, 0.15);
 
     // Init controller state
     motionControllerState_ = CONTROLLER_WAIT_FOR_TRAJECTORY;
@@ -91,8 +92,8 @@ float MotionController::getCurvilinearAbscissa()
 void MotionController::resetPosition(miam::RobotPosition const &resetPosition, bool const &resetX, bool const &resetY, bool const &resetTheta)
 {
     setCurrentPosition(resetPosition);
-    PIDAngular_.resetIntegral();
-    PIDLinear_.resetIntegral();
+    // PIDAngular_.resetIntegral();
+    // PIDLinear_.resetIntegral();
 }
 
 bool MotionController::setTrajectoryToFollow(TrajectoryVector const &trajectories)
@@ -122,121 +123,121 @@ bool MotionController::wasTrajectoryFollowingSuccessful()
     return wasTrajectoryFollowingSuccessful_;
 }
 
-DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurements const &measurements,
-                                                           float const &dt,
-                                                           bool const &hasMatchStarted,
-                                                           bool const &enableAvoidance)
-{
-    // Log input
-    currentTime_ += dt;
-    WheelSpeed wheelIncrementRad(measurements.motorSpeed);
-    wheelIncrementRad.left *= dt;
-    wheelIncrementRad.right *= dt;
+// DrivetrainTarget MotionController::computeDrivetrainMotion(DrivetrainMeasurements const &measurements,
+//                                                            float const &dt,
+//                                                            bool const &hasMatchStarted,
+//                                                            bool const &enableAvoidance)
+// {
+//     // Log input
+//     currentTime_ += dt;
+//     WheelSpeed wheelIncrementRad(measurements.motorSpeed);
+//     wheelIncrementRad.left *= dt;
+//     wheelIncrementRad.right *= dt;
 
-    // Odometry
-    kinematics_.integratePosition(wheelIncrementRad, currentPosition_);
+//     // Odometry
+//     kinematics_.integratePosition(wheelIncrementRad, currentPosition_);
 
-    // BaseSpeed baseSpeed = kinematics_.forwardKinematics(measurements.motorSpeed, true);
+//     // BaseSpeed baseSpeed = kinematics_.forwardKinematics(measurements.motorSpeed, true);
 
-    DrivetrainTarget target;
+//     DrivetrainTarget target;
 
 
-    // // If the PAMI is performing a slow approach, ignore slowdown coefficient
-    // /// Enables or disables slow approach :
-    // /// * speed is very slow
-    // /// * vlx is not taken into account
-    // /// * move is stopped when contact is made with BOTH switches
-    // if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
-    // {
-    //     if (
-    //         //measurements.left_switch_level == 1 && 
-    //         measurements.right_switch_level == 1
-    //     )
-    //     {
-    //         slowDownCoeff_ = 0.0;
-    //         clampedSlowDownCoeff_ = 0.0;
-    //     }
-    //     else
-    //     {
-    //         slowDownCoeff_ = 1.0;
-    //         clampedSlowDownCoeff_ = 1.0;
-    //     }
-    // }
-    // else
-    // {
+//     // // If the PAMI is performing a slow approach, ignore slowdown coefficient
+//     // /// Enables or disables slow approach :
+//     // /// * speed is very slow
+//     // /// * vlx is not taken into account
+//     // /// * move is stopped when contact is made with BOTH switches
+//     // if (measurements.currentRobotState == RobotState::MATCH_STARTED_FINAL_APPROACH)
+//     // {
+//     //     if (
+//     //         //measurements.left_switch_level == 1 && 
+//     //         measurements.right_switch_level == 1
+//     //     )
+//     //     {
+//     //         slowDownCoeff_ = 0.0;
+//     //         clampedSlowDownCoeff_ = 0.0;
+//     //     }
+//     //     else
+//     //     {
+//     //         slowDownCoeff_ = 1.0;
+//     //         clampedSlowDownCoeff_ = 1.0;
+//     //     }
+//     // }
+//     // else
+//     // {
 
-        bool proximitySwitchTriggered = 
-            // do not trigger short range avoidance for the 3 1st seconds
-            (measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
-            measurements.right_switch_level;
-        /// * move is stopped when contact is made with at least ONE OF the switches
-        /// and not going backwards
-        if (
-            proximitySwitchTriggered &&
-            (currentTrajectories_.empty() || currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity > 0.0f)
-        )
-        {
-            slowDownCoeff_ = 0.0;
-            clampedSlowDownCoeff_ = 0.0;
-        }
-        else
-        {
-            // Compute slowdown
-            slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
-            clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
-        }
+//         bool proximitySwitchTriggered = 
+//             // do not trigger short range avoidance for the 3 1st seconds
+//             (measurements.vlx_range_detection_mm < VLX_STOP_RANGE) ||
+//             measurements.right_switch_level;
+//         /// * move is stopped when contact is made with at least ONE OF the switches
+//         /// and not going backwards
+//         if (
+//             proximitySwitchTriggered &&
+//             (currentTrajectories_.empty() || currentTrajectories_.front()->getCurrentPoint(curvilinearAbscissa_).linearVelocity > 0.0f)
+//         )
+//         {
+//             slowDownCoeff_ = 0.0;
+//             clampedSlowDownCoeff_ = 0.0;
+//         }
+//         else
+//         {
+//             // Compute slowdown
+//             slowDownCoeff_ = computeObstacleAvoidanceSlowdown(measurements.vlx_range_detection_mm, hasMatchStarted);
+//             clampedSlowDownCoeff_ = std::min(slowDownCoeff_, clampedSlowDownCoeff_ + 0.05f);
+//         }
 
-        // position of the obstacle
-        RobotPosition obstaclePosition(getCurrentPosition());
-        float obstacle_distance = measurements.vlx_range_detection_mm;
-        // if switches were triggered, suppose the obstacle is 5cm in front
-        if (proximitySwitchTriggered)
-        {
-            obstacle_distance = std::min(obstacle_distance, 50.0f);
-        }
-        obstaclePosition.x += obstacle_distance * std::cos(obstaclePosition.theta);
-        obstaclePosition.y += obstacle_distance * std::sin(obstaclePosition.theta);
+//         // position of the obstacle
+//         RobotPosition obstaclePosition(getCurrentPosition());
+//         float obstacle_distance = measurements.vlx_range_detection_mm;
+//         // if switches were triggered, suppose the obstacle is 5cm in front
+//         if (proximitySwitchTriggered)
+//         {
+//             obstacle_distance = std::min(obstacle_distance, 50.0f);
+//         }
+//         obstaclePosition.x += obstacle_distance * std::cos(obstaclePosition.theta);
+//         obstaclePosition.y += obstacle_distance * std::sin(obstaclePosition.theta);
 
-        // // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
-        // // also add a delay so as not to constantly replanify
-        // // take into accound trajectory labelled not avoidance
-        // // and also no avoidance if in final zone
+//         // // if clampedSlowDownCoeff is low or switches activated and not avoidance, try avoiding
+//         // // also add a delay so as not to constantly replanify
+//         // // take into accound trajectory labelled not avoidance
+//         // // and also no avoidance if in final zone
 
-        // if (
-        //     // avoidance conditions are satisfied
-        //     (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered) &&
-        //     // basic movement conditions are satisfied (based on PAMI state)
-        //     hasMatchStarted && enableAvoidance && 
-        //     // there is a trajectory to be followed
-        //     !currentTrajectories_.empty() && 
-        //     // // do not perform multiple avoidance
-        //     // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
-        //     // do not perform avoidance if last one was too recent
-        //     millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
-        //     // check if the trajectory should not be avoided
-        //     currentTrajectories_.front()->isAvoidanceEnabled() &&
-        //     // // the obstacle is not in avoidance exclusion
-        //     // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
-        //     // pami has not yet reached destination
-        //     !strategy::position_in_end_zone(getCurrentPosition()) &&
-        //     // match will not end soon
-        //     100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
-        //     // do not avoid before 87.0s for all pamis
-        //     (measurements.currentMatchTime >= 87.0f) &&
-        //     // do not avoid before 90.0s for PAMI 1
-        //     (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
-        // )
-        // {
-        //     computeAvoidanceTrajectory(measurements);
-        // }
-    //}
+//         // if (
+//         //     // avoidance conditions are satisfied
+//         //     (clampedSlowDownCoeff_ < AVOIDANCE_SLOWDOWN_THRESHOLD || proximitySwitchTriggered) &&
+//         //     // basic movement conditions are satisfied (based on PAMI state)
+//         //     hasMatchStarted && enableAvoidance && 
+//         //     // there is a trajectory to be followed
+//         //     !currentTrajectories_.empty() && 
+//         //     // // do not perform multiple avoidance
+//         //     // !currentTrajectories_.front()->isAvoidanceTrajectory_ &&
+//         //     // do not perform avoidance if last one was too recent
+//         //     millis() - timeSinceLastAvoidance_ > MIN_TIME_BETWEEN_AVOIDANCE_MS &&
+//         //     // check if the trajectory should not be avoided
+//         //     currentTrajectories_.front()->isAvoidanceEnabled() &&
+//         //     // // the obstacle is not in avoidance exclusion
+//         //     // !strategy::position_in_avoidance_exclusion(obstaclePosition) &&
+//         //     // pami has not yet reached destination
+//         //     !strategy::position_in_end_zone(getCurrentPosition()) &&
+//         //     // match will not end soon
+//         //     100.0f - measurements.currentMatchTime >= AVOIDANCE_LIMIT_REMAINING_TIME_S &&
+//         //     // do not avoid before 87.0s for all pamis
+//         //     (measurements.currentMatchTime >= 87.0f) &&
+//         //     // do not avoid before 90.0s for PAMI 1
+//         //     (PAMI_ID != 1 || measurements.currentMatchTime >= 90.0f)
+//         // )
+//         // {
+//         //     computeAvoidanceTrajectory(measurements);
+//         // }
+//     //}
 
-    changeMotionControllerState();
+//     changeMotionControllerState();
 
-    target = resolveMotionControllerState(measurements, dt, hasMatchStarted);
+//     target = resolveMotionControllerState(measurements, dt, hasMatchStarted);
 
-    return target;
-}
+//     return target;
+// }
 
 
 void MotionController::changeMotionControllerState()
@@ -453,41 +454,41 @@ void MotionController::changeMotionControllerState()
     }
 }
 
-DrivetrainTarget MotionController::resolveMotionControllerState(
-    DrivetrainMeasurements const &measurements,
-    float const &dt,
-    bool const &hasMatchStarted
-)
-{
-    DrivetrainTarget target;
-    target.motorSpeed[side::RIGHT] = 0.0;
-    target.motorSpeed[side::LEFT] = 0.0;
+// DrivetrainTarget MotionController::resolveMotionControllerState(
+//     DrivetrainMeasurements const &measurements,
+//     float const &dt,
+//     bool const &hasMatchStarted
+// )
+// {
+//     DrivetrainTarget target;
+//     target.motorSpeed[side::RIGHT] = 0.0;
+//     target.motorSpeed[side::LEFT] = 0.0;
 
-    targetSpeed_.linear = 0.0;
-    targetSpeed_.angular = 0.0;
+//     targetSpeed_.linear = 0.0;
+//     targetSpeed_.angular = 0.0;
 
-    if (!hasMatchStarted)
-    {
-        PIDLinear_.resetIntegral(0.0);
-        PIDAngular_.resetIntegral(0.0);
-    }
-    else if (motionControllerState_ == CONTROLLER_TRAJECTORY_TRACKING)
-    {
-        // Load first trajectory, look if we are done following it.
-        Trajectory *traj = currentTrajectories_.at(0).get();
-        curvilinearAbscissa_ += clampedSlowDownCoeff_ * dt;
+//     if (!hasMatchStarted)
+//     {
+//         PIDLinear_.resetIntegral(0.0);
+//         PIDAngular_.resetIntegral(0.0);
+//     }
+//     else if (motionControllerState_ == CONTROLLER_TRAJECTORY_TRACKING)
+//     {
+//         // Load first trajectory, look if we are done following it.
+//         Trajectory *traj = currentTrajectories_.at(0).get();
+//         curvilinearAbscissa_ += clampedSlowDownCoeff_ * dt;
 
-        // Servo robot on current trajectory.
-        trajectoryDone_ = computeMotorTarget(traj, curvilinearAbscissa_, dt, clampedSlowDownCoeff_, measurements, target);
-        // if (trajectoryDone && currentTrajectories_.size() == 1)
-        // {
-        //     textlog << "[MotionController] Trajectory tracking performed successfully" << std::endl;
-        //     currentTrajectories_.erase(currentTrajectories_.begin());
-        // }
-    }
+//         // Servo robot on current trajectory.
+//         trajectoryDone_ = computeMotorTarget(traj, curvilinearAbscissa_, dt, clampedSlowDownCoeff_, measurements, target);
+//         // if (trajectoryDone && currentTrajectories_.size() == 1)
+//         // {
+//         //     textlog << "[MotionController] Trajectory tracking performed successfully" << std::endl;
+//         //     currentTrajectories_.erase(currentTrajectories_.begin());
+//         // }
+//     }
 
-    return target;
-}
+//     return target;
+// }
 
 RobotPosition MotionController::getCurrentPosition()
 {
@@ -547,107 +548,107 @@ void MotionController::clearTrajectories()
 //     return minDistanceFromObstacle;
 // }
 
-bool MotionController::computeMotorTarget(Trajectory *traj,
-                                          float const &timeInTrajectory,
-                                          float const &dt,
-                                          float const &slowDownRatio,
-                                          DrivetrainMeasurements const &measurements,
-                                          DrivetrainTarget &target)
-{
-    // Get current trajectory state.
-    targetPoint = traj->getCurrentPoint(curvilinearAbscissa_);
+// bool MotionController::computeMotorTarget(Trajectory *traj,
+//                                           float const &timeInTrajectory,
+//                                           float const &dt,
+//                                           float const &slowDownRatio,
+//                                           DrivetrainMeasurements const &measurements,
+//                                           DrivetrainTarget &target)
+// {
+//     // Get current trajectory state.
+//     targetPoint = traj->getCurrentPoint(curvilinearAbscissa_);
 
-    // Update trajectory velocity based on lidar coeff.
-    targetPoint.linearVelocity *= slowDownRatio;
-    targetPoint.angularVelocity *= slowDownRatio;
+//     // Update trajectory velocity based on lidar coeff.
+//     targetPoint.linearVelocity *= slowDownRatio;
+//     targetPoint.angularVelocity *= slowDownRatio;
 
-    // Compute targets for rotation and translation motors.
-    BaseSpeed targetSpeed;
+//     // Compute targets for rotation and translation motors.
+//     BaseSpeed targetSpeed;
 
-    // Feedforward.
-    targetSpeed.linear = targetPoint.linearVelocity;
-    targetSpeed.angular = targetPoint.angularVelocity;
+//     // Feedforward.
+//     targetSpeed.linear = targetPoint.linearVelocity;
+//     targetSpeed.angular = targetPoint.angularVelocity;
 
-    // Compute error.
-    RobotPosition currentPosition = currentPosition_;
-    RobotPosition error = currentPosition - targetPoint.position;
+//     // Compute error.
+//     RobotPosition currentPosition = currentPosition_;
+//     RobotPosition error = currentPosition - targetPoint.position;
 
-    // Rotate by -theta to express the error in the tangent frame.
-    RobotPosition rotatedError = error.rotate(-targetPoint.position.theta);
+//     // Rotate by -theta to express the error in the tangent frame.
+//     RobotPosition rotatedError = error.rotate(-targetPoint.position.theta);
 
-    float trackingLongitudinalError = rotatedError.x;
-    float trackingTransverseError = rotatedError.y;
+//     float trackingLongitudinalError = rotatedError.x;
+//     float trackingTransverseError = rotatedError.y;
 
-    // Change sign if going backward.
-    if (targetPoint.linearVelocity < 0)
-        trackingTransverseError = -trackingTransverseError;
+//     // Change sign if going backward.
+//     if (targetPoint.linearVelocity < 0)
+//         trackingTransverseError = -trackingTransverseError;
 
-    // std::cout << "start trackingAngleError" << std::endl;
-    // std::cout << "currentPosition " << currentPosition << std::endl;
-    // std::cout << "targetPoint " << targetPoint << std::endl;
-    float trackingAngleError = miam::trajectory::moduloTwoPi(currentPosition.theta - targetPoint.position.theta);
-    // std::cout << "end trackingAngleError" << std::endl;
+//     // std::cout << "start trackingAngleError" << std::endl;
+//     // std::cout << "currentPosition " << currentPosition << std::endl;
+//     // std::cout << "targetPoint " << targetPoint << std::endl;
+//     float trackingAngleError = miam::trajectory::moduloTwoPi(currentPosition.theta - targetPoint.position.theta);
+//     // std::cout << "end trackingAngleError" << std::endl;
 
-    // If we are beyond trajectory end, look to see if we are close enough to the target point to stop.
-    if (traj->getDuration() <= curvilinearAbscissa_)
-    {
-        if (trackingLongitudinalError < 2 && trackingAngleError < 0.01 && measurements.motorSpeed[side::RIGHT] < 0.5 && measurements.motorSpeed[side::RIGHT] < 0.5)
-        {
-            // Just stop the robot.
-            target.motorSpeed[0] = 0.0;
-            target.motorSpeed[1] = 0.0;
-            return true;
-        }
-    }
+//     // If we are beyond trajectory end, look to see if we are close enough to the target point to stop.
+//     if (traj->getDuration() <= curvilinearAbscissa_)
+//     {
+//         if (trackingLongitudinalError < 2 && trackingAngleError < 0.01 && measurements.motorSpeed[side::RIGHT] < 0.5 && measurements.motorSpeed[side::RIGHT] < 0.5)
+//         {
+//             // Just stop the robot.
+//             target.motorSpeed[0] = 0.0;
+//             target.motorSpeed[1] = 0.0;
+//             return true;
+//         }
+//     }
 
-    // Compute correction terms.
+//     // Compute correction terms.
 
-    // If trajectory has an angular velocity but no linear velocity, it's a point turn:
-    // disable corresponding position servoing.
-    if (!(std::abs(targetPoint.angularVelocity) > 0.1 && std::abs(targetPoint.linearVelocity) < 0.1))
-        targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError, dt);
+//     // If trajectory has an angular velocity but no linear velocity, it's a point turn:
+//     // disable corresponding position servoing.
+//     if (!(std::abs(targetPoint.angularVelocity) > 0.1 && std::abs(targetPoint.linearVelocity) < 0.1))
+//         targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError, dt);
 
-    // Modify angular PID target based on transverse error, if we are going fast enough.
-    float angularPIDError = trackingAngleError;
-    float transverseCorrection = 0.0;
-    if (std::abs(targetPoint.linearVelocity) > 0.1 * parameters_.maxWheelSpeed)
-        transverseCorrection = TRANSVERSE_KP * targetPoint.linearVelocity / parameters_.maxWheelSpeed * trackingTransverseError;
-    if (targetPoint.linearVelocity < 0)
-        transverseCorrection = -transverseCorrection;
-    angularPIDError += transverseCorrection;
+//     // Modify angular PID target based on transverse error, if we are going fast enough.
+//     float angularPIDError = trackingAngleError;
+//     float transverseCorrection = 0.0;
+//     if (std::abs(targetPoint.linearVelocity) > 0.1 * parameters_.maxWheelSpeed)
+//         transverseCorrection = TRANSVERSE_KP * targetPoint.linearVelocity / parameters_.maxWheelSpeed * trackingTransverseError;
+//     if (targetPoint.linearVelocity < 0)
+//         transverseCorrection = -transverseCorrection;
+//     angularPIDError += transverseCorrection;
 
-    targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
+//     targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
 
-    // Invert velocity if playing on side::RIGHT side.
-    if (isPlayingRightSide_)
-        targetSpeed.angular = -targetSpeed.angular;
+//     // Invert velocity if playing on side::RIGHT side.
+//     if (isPlayingRightSide_)
+//         targetSpeed.angular = -targetSpeed.angular;
 
-//     // Invert velocity if using pami TANK (id 5)
-// #if PAMI_ID == 5
-//     targetSpeed.angular = -targetSpeed.angular;
-// #endif
+// //     // Invert velocity if using pami TANK (id 5)
+// // #if PAMI_ID == 5
+// //     targetSpeed.angular = -targetSpeed.angular;
+// // #endif
 
-    // save target
-    targetSpeed_ = targetSpeed;
+//     // save target
+//     targetSpeed_ = targetSpeed;
 
-    // Convert from base velocity to motor wheel velocity.
-    WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
-    // Convert to motor unit.
-    target.motorSpeed[side::RIGHT] = wheelSpeed.right;
-    target.motorSpeed[side::LEFT] = wheelSpeed.left;
+//     // Convert from base velocity to motor wheel velocity.
+//     WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
+//     // Convert to motor unit.
+//     target.motorSpeed[side::RIGHT] = wheelSpeed.right;
+//     target.motorSpeed[side::LEFT] = wheelSpeed.left;
 
-    // Clamp to maximum speed
-    float const maxAngularVelocity = parameters_.maxWheelSpeed / parameters_.wheelRadius;
-    for (int i = 0; i < 2; i++)
-    {
-        if (target.motorSpeed[i] > maxAngularVelocity)
-            target.motorSpeed[i] = maxAngularVelocity;
-        if (target.motorSpeed[i] < -maxAngularVelocity)
-            target.motorSpeed[i] = -maxAngularVelocity;
-    }
+//     // Clamp to maximum speed
+//     float const maxAngularVelocity = parameters_.maxWheelSpeed / parameters_.wheelRadius;
+//     for (int i = 0; i < 2; i++)
+//     {
+//         if (target.motorSpeed[i] > maxAngularVelocity)
+//             target.motorSpeed[i] = maxAngularVelocity;
+//         if (target.motorSpeed[i] < -maxAngularVelocity)
+//             target.motorSpeed[i] = -maxAngularVelocity;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 // void MotionController::setSlowApproach(bool enabled)
 // {

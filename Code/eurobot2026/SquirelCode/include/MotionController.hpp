@@ -14,7 +14,7 @@
 #include <Utilities.h>
 #include <PID.h>
 #include "RobotParameters.hpp"
-#include "AbstractRobotBase.hpp"
+// #include "AbstractRobotBase.hpp"
 
 using namespace miam;
 using namespace miam::trajectory;
@@ -32,7 +32,7 @@ class MotionController
 {
 
     public:
-        MotionController(SemaphoreHandle_t* xMutex_Serial, RobotParameters parameters);
+        MotionController(SemaphoreHandle_t* xMutex_Serial); //, RobotParameters parameters);
 
         /// \brief Initialize the system - this also starts the logger.
         /// \param[in] RobotPosition Starting position
@@ -81,17 +81,17 @@ class MotionController
         TrajectoryConfig getTrajectoryConfig();
 
 
-        /// \brief Compute next motor target.
-        ///
-        /// \param[in] measurements Latest robot measurements
-        /// \param[in] dt Elapsed time since last call.
-        /// \return Target motor velocity
-        DrivetrainTarget computeDrivetrainMotion(DrivetrainMeasurements const& measurements,
-                                                    float const& dt,
-                                                    bool const& hasMatchStarted,
-                                                    bool const& enableAvoidance);
+        // /// \brief Compute next motor target.
+        // ///
+        // /// \param[in] measurements Latest robot measurements
+        // /// \param[in] dt Elapsed time since last call.
+        // /// \return Target motor velocity
+        // DrivetrainTarget computeDrivetrainMotion(DrivetrainMeasurements const& measurements,
+        //                                             float const& dt,
+        //                                             bool const& hasMatchStarted,
+        //                                             bool const& enableAvoidance);
 
-        void computeAvoidanceTrajectory(DrivetrainMeasurements const& measurements);
+        // void computeAvoidanceTrajectory(DrivetrainMeasurements const& measurements);
 
         bool isPlayingRightSide_ = false;
 
@@ -134,29 +134,29 @@ class MotionController
         DrivetrainKinematics kinematics_;
         RobotParameters parameters_;
 
-        // Tracking PIDs
-        miam::PID PIDLinear_; ///< Longitudinal PID.
-        miam::PID PIDAngular_; ///< Angular PID.
+        // // Tracking PIDs
+        // miam::PID PIDLinear_; ///< Longitudinal PID.
+        // miam::PID PIDAngular_; ///< Angular PID.
 
-        /// \brief Follow a trajectory.
-        /// \details This function computes motor velocity to reach a specific trajectory point, and sends
-        ///          it to the motors.
-        /// \param[in] traj Current trajectory to follow.
-        /// \param[in] timeInTrajectory Current time since the start of the trajectory.
-        /// \param[in] dt Time since last servoing call, for PID controller.
-        /// \param[out] target Motor target
-        /// \return True if trajectory following should continue, false if trajectory following is completed.
-        bool computeMotorTarget(Trajectory *traj,
-                                float const& timeInTrajectory,
-                                float const& dt,
-                                float const& slowDownRatio,
-                                DrivetrainMeasurements const &measurements,
-                                DrivetrainTarget &target);
+        // /// \brief Follow a trajectory.
+        // /// \details This function computes motor velocity to reach a specific trajectory point, and sends
+        // ///          it to the motors.
+        // /// \param[in] traj Current trajectory to follow.
+        // /// \param[in] timeInTrajectory Current time since the start of the trajectory.
+        // /// \param[in] dt Time since last servoing call, for PID controller.
+        // /// \param[out] target Motor target
+        // /// \return True if trajectory following should continue, false if trajectory following is completed.
+        // bool computeMotorTarget(Trajectory *traj,
+        //                         float const& timeInTrajectory,
+        //                         float const& dt,
+        //                         float const& slowDownRatio,
+        //                         DrivetrainMeasurements const &measurements,
+        //                         DrivetrainTarget &target);
 
-        // /// \brief Updates the LiDAR and sets the avoidance strategy
-        // /// \param [in] detectedRobots Obstacles detected by the lidar.
-        // /// \return coefficient for trajectory time increase
-        float computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const& hasMatchStarted);
+        // // /// \brief Updates the LiDAR and sets the avoidance strategy
+        // // /// \param [in] detectedRobots Obstacles detected by the lidar.
+        // // /// \return coefficient for trajectory time increase
+        // float computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const& hasMatchStarted);
 
         // RobotPosition lidarPointToRobotPosition(LidarPoint const &point);
         // bool isLidarPointWithinTable(LidarPoint const& point);
@@ -172,9 +172,9 @@ class MotionController
         // Motion controller state
         MotionControllerState motionControllerState_;
         void changeMotionControllerState();
-        DrivetrainTarget resolveMotionControllerState(DrivetrainMeasurements const &measurements,
-                                                        float const &dt,
-                                                        bool const &hasMatchStarted);
+        // DrivetrainTarget resolveMotionControllerState(DrivetrainMeasurements const &measurements,
+        //                                                 float const &dt,
+        //                                                 bool const &hasMatchStarted);
       
 
         // bool slowApproach_ = false;

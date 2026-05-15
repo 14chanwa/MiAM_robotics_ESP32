@@ -76,7 +76,7 @@
 #include <Robot.hpp>
 
 #include <Strategy.hpp>
-#include <AnalogReadings.hpp>
+//#include <AnalogReadings.hpp>
 #include <ServoHandler.hpp>
 #include <I2CHandler.hpp>
 #include <WiFiHandler.hpp>
@@ -133,15 +133,20 @@ void setup()
   I2CHandler::init();
   DEBUG_PRINTLN("I2CHandler::init OK");
 
-  // analog readings: monitor battery and infrared captors
-  AnalogReadings::init();
-  DEBUG_PRINTLN("AnalogReadings::init() OK");
+  // // analog readings: monitor battery and infrared captors
+  // AnalogReadings::init();
+  // DEBUG_PRINTLN("AnalogReadings::init() OK");
+
 
   // init the ServoHandler
   ServoHandler::init();
   DEBUG_PRINTLN("ServoHandler::init() OK");
   ServoHandler::armPositionFold();
   ServoHandler::pumpOff();
+
+  //strategy::perform_strategy();
+
+  //return;
 
   DEBUG_PRINTLN("Low Level Loop");
   Robot::startLowLevelLoop();

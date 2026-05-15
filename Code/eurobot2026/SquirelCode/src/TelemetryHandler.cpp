@@ -3,9 +3,9 @@
 #include <Arduino.h>
 #include <parameters.hpp>
 
-#include <AnalogReadings.hpp>
+//#include <AnalogReadings.hpp>
 #include <I2CHandler.hpp>
-#include <RobotBaseSTS.hpp>
+// #include <RobotBaseSTS.hpp>
 
 #ifdef SEND_TELEPLOT_UDP
 
@@ -34,10 +34,10 @@ void logTelemetry(void* parameters)
       teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
       teleplot.update("targetSpeed.linear", robot->motionController->targetSpeed_.linear);
       teleplot.update("targetSpeed.angular", robot->motionController->targetSpeed_.angular);
-      teleplot.update("currentMotorSpeed.0", robot->measurements.motorSpeed[0]);
-      teleplot.update("currentMotorSpeed.1", robot->measurements.motorSpeed[1]);
-      teleplot.update("targetMotorSpeed.0", robot->target.motorSpeed[0]);
-      teleplot.update("targetMotorSpeed.1", robot->target.motorSpeed[1]);
+      // teleplot.update("currentMotorSpeed.0", robot->measurements.motorSpeed[0]);
+      // teleplot.update("currentMotorSpeed.1", robot->measurements.motorSpeed[1]);
+      // teleplot.update("targetMotorSpeed.0", robot->target.motorSpeed[0]);
+      // teleplot.update("targetMotorSpeed.1", robot->target.motorSpeed[1]);
       teleplot.update2D("currentPosition", robot->motionController->getCurrentPosition().x, robot->motionController->getCurrentPosition().y);
       teleplot.update2D("targetPosition", robot->motionController->targetPoint.position.x, robot->motionController->targetPoint.position.y);
       // teleplot.update("targetPosition.theta", robot->motionController->targetPoint.position.theta);
@@ -52,7 +52,7 @@ void logTelemetry(void* parameters)
       // // teleplot.update("tcrt2", AnalogReadings::get_current_tcrt2_reading(), "", 0);
       // // teleplot.update("touchSensor", get_current_touch_sensor_reading(), "", 0);
       // teleplot.update("leftSwitchPin", AnalogReadings::get_left_switch_value(), "", 0);
-      teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
+      //teleplot.update("rightSwitchPin", AnalogReadings::get_right_switch_value(), "", 0);
       // teleplot.update("currentRobotState", (int)robot->get_current_robot_state(), "", 0);
 
 

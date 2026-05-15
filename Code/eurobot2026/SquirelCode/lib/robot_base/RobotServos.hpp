@@ -15,7 +15,6 @@ namespace RobotServos
     int get_current_position(byte servo_id);
 
     void stop(byte servo_id);
-    bool is_moving(byte servo_id);
 }
 
 #endif

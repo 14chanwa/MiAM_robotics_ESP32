@@ -38,8 +38,8 @@ public:
 namespace strategy
 {
     bool getHasObjectInSuction();
-    void loadObjectInArm();
-    void freeObjectFromArm();
+    void disableAvoidance();
+    void enableAvoidance();
 
     void go_forward(MotionController* motionController, float distance);
 

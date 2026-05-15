@@ -32,10 +32,20 @@ int rad_to_tick(float rad)
 byte servo_id_left = 1;
 byte servo_id_right = 2;
 
+void init_servos()
+{
+    RobotServos::init_servo_id_step(servo_id_left);
+    delay(100);
+    RobotServos::init_servo_id_step(servo_id_right);
+    delay(100);
+}
+
 void move_servo(int tick_left, int tick_right, bool translation)
 {
     RobotServos::set_servo_position(servo_id_left, tick_left);
+    delay(10);
     RobotServos::set_servo_position(servo_id_right, tick_right);
+    delay(10);
     long time = millis();
     long waiting_time = 0;
     // if (translation)
@@ -48,20 +58,27 @@ void move_servo(int tick_left, int tick_right, bool translation)
     //}
     // Minimum waiting time
     waiting_time = 1000;
-    while ((millis() - time < waiting_time) ||
-        abs(RobotServos::get_current_speed(servo_id_left)) > 10 ||
-        abs(RobotServos::get_current_speed(servo_id_right)) > 10
+    while (
+        (
+            (millis() - time < waiting_time) ||
+            abs(RobotServos::get_current_speed(servo_id_left)) > 10 ||
+            abs(RobotServos::get_current_speed(servo_id_right)) > 10
+        )
     )
     //while (RobotServos::is_moving(servo_id_left) || RobotServos::is_moving(servo_id_right))
     {
         uint16_t meas = I2CHandler::get_smoothed_vl53l0x();
         if (
-            (!strategy::getHasObjectInSuction()) &&
-            (meas < VLX_STOP_MM)
+            (
+                (!strategy::getHasObjectInSuction()) &&
+                (meas < VLX_STOP_MM)
+            ) ||
+            (Robot::getInstance()->match_current_time_s >= 100.0f)
         )
         {
             RobotServos::stop(servo_id_left);
             RobotServos::stop(servo_id_right);
+            ServoHandler::pumpOff();
             while(true)
             {
                 // freeze
@@ -93,32 +110,31 @@ namespace strategy
     bool hasObjectInSuction_ = false;
 
     bool getHasObjectInSuction() { return hasObjectInSuction_; };
-    void loadObjectInArm() { hasObjectInSuction_ = true; }
-    void freeObjectFromArm() { hasObjectInSuction_ = false; }
+    void disableAvoidance() { hasObjectInSuction_ = true; }
+    void enableAvoidance() { hasObjectInSuction_ = false; }
 
 
     void perform_strategy()
     {
-        StrategyPlanner planner;
+        // StrategyPlanner planner;
 
-        Robot* robot = Robot::getInstance();
-        MotionController* motionController = robot->motionController;
+        // Robot* robot = Robot::getInstance();
+        // MotionController* motionController = robot->motionController;
 
-        RobotPosition startPosition;
-        RobotPosition targetPosition;
+        // RobotPosition startPosition;
+        // RobotPosition targetPosition;
 
-        TrajectoryVector res;
+        // TrajectoryVector res;
 
-        TrajectoryVector tv;
-        std::vector<RobotPosition > positions;
+        // TrajectoryVector tv;
+        // std::vector<RobotPosition > positions;
 
 
-        startPosition = RobotPosition(PAMI_6_START);
-        ServoHandler::armPositionUp();
+        // startPosition = RobotPosition(PAMI_6_START);
 
-        motionController->resetPosition(startPosition, true, true, true);
+        // motionController->resetPosition(startPosition, true, true, true);
         
-        positions.clear();
+        // positions.clear();
         // positions.push_back(startPosition);
         // positions.push_back(RobotPosition(895, 1926, 0));
         // positions.push_back(RobotPosition(992, 1850, 0));
@@ -129,12 +145,9 @@ namespace strategy
 
         // motionController->setTrajectoryToFollow(tv);
         // motionController->waitForTrajectoryFinished();
-        
 
 
-
-        RobotServos::init_servo_id_step(servo_id_left);
-        RobotServos::init_servo_id_step(servo_id_right);
+        init_servos();
 
 
         // Fetch first caisse
@@ -150,14 +163,16 @@ namespace strategy
 
         translate(390);
         // disable avoidance
-        strategy::loadObjectInArm();
+        strategy::disableAvoidance();
 
         rotate(-M_PI_2);
 
         // Recalage
         translate(-80);
-        translate(70);
 
+
+        ServoHandler::armPositionUp();
+        translate(70);
 
         ServoHandler::pumpOn();
         ServoHandler::armPositionMid();
@@ -178,10 +193,19 @@ namespace strategy
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
         delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
         ServoHandler::armPositionUp();
 
         translate(-60);
         rotate(M_PI);
+        ServoHandler::armPositionFold();
 
         // Recalage
         translate(-100);
@@ -189,17 +213,19 @@ namespace strategy
         // 2d crate
 
         // activate avoidance
-        strategy::freeObjectFromArm();
+        strategy::enableAvoidance();
         translate(440);
         // disable avoidance
-        strategy::loadObjectInArm();
+        strategy::disableAvoidance();
 
         rotate(-M_PI_2);
 
         // Recalage
         translate(-100);
-        translate(70);
 
+
+        ServoHandler::armPositionUp();
+        translate(70);
 
         ServoHandler::pumpOn();
         ServoHandler::armPositionMid();
@@ -208,6 +234,7 @@ namespace strategy
         delay(2000);
         ServoHandler::armPositionUpWithCrate();
 
+        translate(-10);
         rotate(-M_PI_2);
         translate(470);
 
@@ -219,10 +246,20 @@ namespace strategy
         delay(1000);
         ServoHandler::armPositionUpHorizontal();
         delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
+        ServoHandler::armPositionUpWithCrate();
+        delay(1000);
+        ServoHandler::armPositionUpHorizontal();
+        delay(500);
         ServoHandler::armPositionUp();
 
         translate(-60);
         rotate(M_PI);
+
+        ServoHandler::armPositionFold();
 
         // Recalage
         translate(-100);
@@ -230,191 +267,204 @@ namespace strategy
         // Go in front of zone
 
         // activate avoidance
-        strategy::freeObjectFromArm();
+        strategy::enableAvoidance();
         translate(520);
         // disable avoidance
-        strategy::loadObjectInArm();
+        strategy::disableAvoidance();
 
+        ServoHandler::armPositionUp();
+        rotate(-M_PI_4);
+        translate(190);
+        delay(500);
+        translate(-190);
+        ServoHandler::armPositionFold();
+        //rotate(M_PI_4);
 
-        rotate(-M_PI_2);
+        rotate(-M_PI_4);
 
         // Recalage
         translate(-130);     
+
+        // wait until ~80s
+        while(Robot::getInstance()->match_current_time_s < 85.0f)
+        {
+            delay(100);
+        }
         
         // Go in front of zone
         translate(300);
 
         return;
 
-        // Recalage
-        planner.go_forward(-60);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.y = 1950;
-        targetPosition.theta = -M_PI_2;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
+        // // Recalage
+        // planner.go_forward(-60);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.y = 1950;
+        // targetPosition.theta = -M_PI_2;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
 
-        // Fetch first caisse
-        planner.go_forward(70);
-        planner.execute();
+        // // Fetch first caisse
+        // planner.go_forward(70);
+        // planner.execute();
 
-        ServoHandler::pumpOn();
-        ServoHandler::armPositionMid();
-        delay(500);
-        ServoHandler::armPositionDown();
-        delay(2000);
-        ServoHandler::armPositionUpWithCrate();
-        strategy::loadObjectInArm();
+        // ServoHandler::pumpOn();
+        // ServoHandler::armPositionMid();
+        // delay(500);
+        // ServoHandler::armPositionDown();
+        // delay(2000);
+        // ServoHandler::armPositionUpWithCrate();
+        // strategy::disableAvoidance();
 
-        planner.go_forward(-20);
-        planner.execute();
+        // planner.go_forward(-20);
+        // planner.execute();
 
-        planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
-        planner.turn_to_angle(M_PI);
+        // planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
+        // planner.turn_to_angle(M_PI);
 
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 636;
-        planner.go_to_point(targetPosition);
-        planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.x = 636;
+        // planner.go_to_point(targetPosition);
+        // planner.execute();
 
-        ServoHandler::pumpOff();
-        ServoHandler::armPositionUpHorizontal();
-        delay(500);
-        ServoHandler::armPositionUpWithCrate();
-        delay(1000);
-        ServoHandler::armPositionUpHorizontal();
-        delay(500);
-        strategy::freeObjectFromArm();
+        // ServoHandler::pumpOff();
+        // ServoHandler::armPositionUpHorizontal();
+        // delay(500);
+        // ServoHandler::armPositionUpWithCrate();
+        // delay(1000);
+        // ServoHandler::armPositionUpHorizontal();
+        // delay(500);
+        // strategy::enableAvoidance();
 
-        // Recalage sur bordure verticale : déjà contre la bordure
-        planner.go_forward(30);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 690;
-        targetPosition.theta = M_PI;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
-        planner.go_forward(-60);
+        // // Recalage sur bordure verticale : déjà contre la bordure
+        // planner.go_forward(30);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.x = 690;
+        // targetPosition.theta = M_PI;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
+        // planner.go_forward(-60);
 
-        // Recalage sur bordure horizontale
-        planner.turn_to_angle( -M_PI_2);
-        planner.go_forward(-150);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.y = 1950;
-        targetPosition.theta = -M_PI_2;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
-        planner.go_forward(60);
+        // // Recalage sur bordure horizontale
+        // planner.turn_to_angle( -M_PI_2);
+        // planner.go_forward(-150);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.y = 1950;
+        // targetPosition.theta = -M_PI_2;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
+        // planner.go_forward(60);
 
-        // Aller chercher la 2e caisse
-        planner.turn_to_angle(0);
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 1130;
-        planner.go_to_point(targetPosition);
-        planner.turn_to_angle(-M_PI / 2);
-        planner.execute();
+        // // Aller chercher la 2e caisse
+        // planner.turn_to_angle(0);
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.x = 1130;
+        // planner.go_to_point(targetPosition);
+        // planner.turn_to_angle(-M_PI / 2);
+        // planner.execute();
 
-        // Recalage
-        planner.go_forward(-60);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.y = 1950;
-        targetPosition.theta = -M_PI_2;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
+        // // Recalage
+        // planner.go_forward(-60);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.y = 1950;
+        // targetPosition.theta = -M_PI_2;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
 
-        planner.go_forward(80);
-        planner.execute();
+        // planner.go_forward(80);
+        // planner.execute();
 
-        ServoHandler::pumpOn();
-        ServoHandler::armPositionDown();
-        delay(2000);
-        ServoHandler::armPositionUpWithCrate();
-        strategy::loadObjectInArm();
+        // ServoHandler::pumpOn();
+        // ServoHandler::armPositionDown();
+        // delay(2000);
+        // ServoHandler::armPositionUpWithCrate();
+        // strategy::disableAvoidance();
 
-        planner.go_forward(-20);
-        planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
-        planner.turn_to_angle(M_PI);
-        planner.go_to_point(RobotPosition(636, 1907, 0));
-        planner.execute();
+        // planner.go_forward(-20);
+        // planner.turn_around(-M_PI / 2.1); // Make it turn counter clockwise
+        // planner.turn_to_angle(M_PI);
+        // planner.go_to_point(RobotPosition(636, 1907, 0));
+        // planner.execute();
 
-        ServoHandler::pumpOff();
-        ServoHandler::armPositionUpHorizontal();
-        delay(500);
-        ServoHandler::armPositionUp();
-        delay(500);
-        ServoHandler::armPositionDown();
-        delay(500);
-        ServoHandler::armPositionUp();
-        strategy::freeObjectFromArm();
+        // ServoHandler::pumpOff();
+        // ServoHandler::armPositionUpHorizontal();
+        // delay(500);
+        // ServoHandler::armPositionUp();
+        // delay(500);
+        // ServoHandler::armPositionDown();
+        // delay(500);
+        // ServoHandler::armPositionUp();
+        // strategy::enableAvoidance();
 
-        // Recalage sur bordure verticale : déjà contre la bordure
-        planner.go_forward(30);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 690;
-        targetPosition.theta = M_PI;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
-        planner.go_forward(-60);
+        // // Recalage sur bordure verticale : déjà contre la bordure
+        // planner.go_forward(30);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.x = 690;
+        // targetPosition.theta = M_PI;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
+        // planner.go_forward(-60);
 
-        planner.turn_to_angle(-M_PI_2);
-        planner.execute();
+        // planner.turn_to_angle(-M_PI_2);
+        // planner.execute();
 
-        // Recalage
-        planner.go_forward(-130);
-        planner.execute();
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.x = 615;
-        targetPosition.theta = 0;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
+        // // Recalage
+        // planner.go_forward(-130);
+        // planner.execute();
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.x = 615;
+        // targetPosition.theta = 0;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
 
-        return;
+        // return;
 
-        // Virer les caisses noires
-        strategy::go_forward(motionController, 10);
-        strategy::turn_to_angle(motionController, -3* M_PI / 2);
-        strategy::go_forward(motionController, 50);
+        // // Virer les caisses noires
+        // strategy::go_forward(motionController, 10);
+        // strategy::turn_to_angle(motionController, -3* M_PI / 2);
+        // strategy::go_forward(motionController, 50);
 
-        ServoHandler::armPositionMid();
-        strategy::turn_around(motionController, M_PI_2);
-        strategy::turn_around(motionController, -M_PI_4);
-        delay(500);
-        ServoHandler::armPositionUp();
-        delay(500);
+        // ServoHandler::armPositionMid();
+        // strategy::turn_around(motionController, M_PI_2);
+        // strategy::turn_around(motionController, -M_PI_4);
+        // delay(500);
+        // ServoHandler::armPositionUp();
+        // delay(500);
 
-        // Recalage
-        strategy::go_forward(motionController, -150);
-        targetPosition = motionController->getCurrentPosition();
-        targetPosition.y = 615;
-        targetPosition.theta = M_PI;
-        delay(500);
-        motionController->resetPosition(targetPosition, true, true, true);
+        // // Recalage
+        // strategy::go_forward(motionController, -150);
+        // targetPosition = motionController->getCurrentPosition();
+        // targetPosition.y = 615;
+        // targetPosition.theta = M_PI;
+        // delay(500);
+        // motionController->resetPosition(targetPosition, true, true, true);
 
-        strategy::go_forward(motionController, 115);
-        //strategy::turn_around(motionController, -M_PI / 8);
+        // strategy::go_forward(motionController, 115);
+        // //strategy::turn_around(motionController, -M_PI / 8);
 
-        ServoHandler::pumpOn();
-        ServoHandler::armPositionDown();
-        delay(2000);
-        ServoHandler::armPositionUp();
+        // ServoHandler::pumpOn();
+        // ServoHandler::armPositionDown();
+        // delay(2000);
+        // ServoHandler::armPositionUp();
 
-        strategy::go_forward(motionController, -100);
-        strategy::turn_to_angle(motionController, M_PI);
+        // strategy::go_forward(motionController, -100);
+        // strategy::turn_to_angle(motionController, M_PI);
 
-        strategy::go_forward(motionController, 50);
+        // strategy::go_forward(motionController, 50);
 
-        ServoHandler::pumpOff();
-        ServoHandler::armPositionUpHorizontal();
-        delay(500);
-        ServoHandler::armPositionDown();
-        delay(1000);
-        ServoHandler::armPositionUpHorizontal();
-        strategy::go_forward(motionController, -100);
-        strategy::turn_to_angle(motionController, 0);
+        // ServoHandler::pumpOff();
+        // ServoHandler::armPositionUpHorizontal();
+        // delay(500);
+        // ServoHandler::armPositionDown();
+        // delay(1000);
+        // ServoHandler::armPositionUpHorizontal();
+        // strategy::go_forward(motionController, -100);
+        // strategy::turn_to_angle(motionController, 0);
     }
 
     void go_forward(MotionController *motionController, float distance)

@@ -2,7 +2,7 @@
 #define _ROBOT_HPP
 
 #include <MotionController.hpp>
-#include <AbstractRobotBase.hpp>
+// #include <AbstractRobotBase.hpp>
 #include <RobotState.hpp>
 
 #include <Preferences.h>
@@ -32,8 +32,8 @@ public:
     // Variables
     ///////////////////////////////////////////////////
 
-    // RobotBase
-    AbstractRobotBase* robotBase;
+    // // RobotBase
+    // AbstractRobotBase* robotBase;
 
     // Preferences
     Preferences preferences;
@@ -56,8 +56,8 @@ public:
     float dt_lowLevel_ms = 0.0;
     float dt_period_ms = 0.0;
 
-    DrivetrainMeasurements measurements;
-    DrivetrainTarget target;
+    // DrivetrainMeasurements measurements;
+    // DrivetrainTarget target;
 
     // Semaphores
     SemaphoreHandle_t xMutex_Serial = NULL;

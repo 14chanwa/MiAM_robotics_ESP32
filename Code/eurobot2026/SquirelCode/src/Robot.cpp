@@ -2,9 +2,8 @@
 #include <parameters.hpp>
 
 #include <RobotServos.hpp>
-#include <RobotBaseSTS.hpp>
+//#include <RobotBaseSTS.hpp>
 
-#include <AnalogReadings.hpp>
 #include <ServoHandler.hpp>
 #include <I2CHandler.hpp>
 
@@ -65,32 +64,32 @@ void performLowLevel(void* parameters)
         // update match state
         robot->update_robot_state();
         
-        // DEBUG_PRINTLN("Update sensors");
-        robot->robotBase->updateSensors();
-        // DEBUG_PRINTLN("Get measurements");
-        robot->measurements = robot->robotBase->getMeasurements();
-        robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
-        robot->measurements.left_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::LEFT);
-        robot->measurements.middle_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::MIDDLE);
-        robot->measurements.right_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::RIGHT);
-        robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
-        robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
-        robot->measurements.currentRobotState = robot->get_current_robot_state();
-        robot->measurements.currentMatchTime = robot->matchStarted() ? robot->match_current_time_s : 0.0f;
+        // // DEBUG_PRINTLN("Update sensors");
+        // // robot->robotBase->updateSensors();
+        // // DEBUG_PRINTLN("Get measurements");
+        // // robot->measurements = robot->robotBase->getMeasurements();
+        // robot->measurements.vlx_range_detection_mm = I2CHandler::get_smoothed_vl53l0x();
+        // robot->measurements.left_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::LEFT);
+        // robot->measurements.middle_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::MIDDLE);
+        // robot->measurements.right_vlx = I2CHandler::get_smoothed_vlx_side(I2CHandler::Side::RIGHT);
+        // robot->measurements.left_switch_level = AnalogReadings::get_left_switch_value();
+        // robot->measurements.right_switch_level = AnalogReadings::get_right_switch_value();
+        // robot->measurements.currentRobotState = robot->get_current_robot_state();
+        // robot->measurements.currentMatchTime = robot->matchStarted() ? robot->match_current_time_s : 0.0f;
 
-        // ignore vlx if object in suction
-        if (strategy::getHasObjectInSuction())
-        {
-            robot->measurements.vlx_range_detection_mm = 3000;
-        }
+        // // ignore vlx if object in suction
+        // if (strategy::getHasObjectInSuction())
+        // {
+        //     robot->measurements.vlx_range_detection_mm = 3000;
+        // }
 
-        // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
-        if (robot->motionController->isPlayingRightSide_)
-        {
-            float temp = robot->measurements.motorSpeed[side::RIGHT];
-            robot->measurements.motorSpeed[side::RIGHT] = robot->measurements.motorSpeed[side::LEFT];
-            robot->measurements.motorSpeed[side::LEFT] = temp;
-        }
+        // // If playing side::RIGHT side: invert side::RIGHT/side::LEFT encoders.
+        // if (robot->motionController->isPlayingRightSide_)
+        // {
+        //     float temp = robot->measurements.motorSpeed[side::RIGHT];
+        //     robot->measurements.motorSpeed[side::RIGHT] = robot->measurements.motorSpeed[side::LEFT];
+        //     robot->measurements.motorSpeed[side::LEFT] = temp;
+        // }
 
         bool robotEnabled = (robot->currentRobotState_ == RobotState::MATCH_STARTED_ACTION ||
                 robot->currentRobotState_ == RobotState::MATCH_STARTED_FINAL_APPROACH ||
@@ -129,23 +128,23 @@ void performLowLevel(void* parameters)
 //         }
 // #endif
 
-        // DEBUG_PRINTLN("Compute drivetrain motion");
-        // Motion occurs only if match started
-        robot->target = robot->motionController->computeDrivetrainMotion(
-            robot->measurements, 
-            robot->dt_period_ms / 1000.0, 
-            // Robot will stop if not enabled
-            robotEnabled,
-            // Avoidance is disabled if final approach
-            (robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH) && (robot->currentRobotState_ != RobotState::MOVING_SETUP_TRAJECTORY) 
-        );
+        // // DEBUG_PRINTLN("Compute drivetrain motion");
+        // // Motion occurs only if match started
+        // robot->target = robot->motionController->computeDrivetrainMotion(
+        //     robot->measurements, 
+        //     robot->dt_period_ms / 1000.0, 
+        //     // Robot will stop if not enabled
+        //     robotEnabled,
+        //     // Avoidance is disabled if final approach
+        //     (robot->currentRobotState_ != RobotState::MATCH_STARTED_FINAL_APPROACH) && (robot->currentRobotState_ != RobotState::MOVING_SETUP_TRAJECTORY) 
+        // );
 
-        // DEBUG_PRINTLN("Set base speed");
-        robot->robotBase->setBaseSpeed(robot->target);
+        // // DEBUG_PRINTLN("Set base speed");
+        // robot->robotBase->setBaseSpeed(robot->target);
 
-        // update motor control
-        // DEBUG_PRINTLN("Update motor control");
-        robot->robotBase->updateControl(robotEnabled);
+        // // update motor control
+        // // DEBUG_PRINTLN("Update motor control");
+        // robot->robotBase->updateControl(robotEnabled);
 
         // handle servo: servo is down iff
         // * MATCH_STARTED_FINAL_APPROACH and currentTime >= 99s
@@ -175,8 +174,8 @@ void performLowLevel(void* parameters)
             //ServoHandler::armPositionFold();
         }
 
-        // update sensors
-        AnalogReadings::update();
+        // // update sensors
+        // AnalogReadings::update();
 
         // DEBUG_PRINTLN("Register time");
         timeEndLoop = micros();
@@ -199,12 +198,12 @@ Robot::Robot()
     robotBase = RobotBaseStepper::getInstance();
     #endif
     #endif
-    robotBase = RobotBaseSTS::getInstance();
+    //robotBase = RobotBaseSTS::getInstance();
     DEBUG_PRINTLN("RobotBaseSTS::getInstance() OK");
 
     // init robot base
-    DEBUG_PRINTLN("Create robot base");
-    robotBase->setup();
+    //DEBUG_PRINTLN("Create robot base");
+    //robotBase->setup();
 
     // Init preferences
     preferences.begin("miam-pami", false); 
@@ -216,7 +215,7 @@ Robot::Robot()
     }
 
     // Init motionController
-    motionController = new MotionController(&xMutex_Serial, robotBase->getParameters());
+    motionController = new MotionController(&xMutex_Serial); //, robotBase->getParameters());
     motionController->init(RobotPosition(0.0, 0.0, 0.0));
 
     length_of_saved_traj_float = -1; //preferences.getInt("traj_len_float", -1);
@@ -252,8 +251,8 @@ Robot::Robot()
     // }
     // else
     // {
-        DEBUG_PRINTLN("Load default trajectory");
-        saved_trajectory_vector = strategy::get_default_trajectory(motionController);
+        // DEBUG_PRINTLN("Load default trajectory");
+        // saved_trajectory_vector = strategy::get_default_trajectory(motionController);
         // // Transform into SampledTrajectory
         // float duration = saved_trajectory_vector.getDuration();
         // std::vector<TrajectoryPoint> points;
@@ -586,7 +585,7 @@ FullPamiReportMessage Robot::get_pami_report()
             matchStarted, 
             match_current_time_s, 
             motionController->isPlayingRightSide_ ? PlayingSide::YELLOW_SIDE : PlayingSide::BLUE_SIDE, 
-            AnalogReadings::get_current_battery_reading(),
+            42.0,//AnalogReadings::get_current_battery_reading(),
             motionController->getCurrentPosition(),
             PAMI_ID
         )

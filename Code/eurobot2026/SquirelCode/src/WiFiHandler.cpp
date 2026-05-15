@@ -75,13 +75,14 @@ namespace WiFiHandler
         #ifdef ENABLE_OTA_UPDATE
         ArduinoOTA.begin();
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             task_handle_ota,
             "task_handle_ota",
             10000,
             NULL,
             30,
-            NULL
+            NULL,
+            0
         );
         #endif
 
