@@ -160,17 +160,20 @@ namespace strategy
 
         strategy::disableAvoidance();
         translate(120);
-        rotate(-M_PI_2);
+        rotate(M_PI_2);
         
         // Recalage
-        translate(-80);
+        //translate(-80);
         ServoHandler::armPositionUpWithCrate();
 
         // Go in front of zone
-        translate(310);
+        translate(-280);
+        translate(100);
+
+        rotate(M_PI);
 
         // Recalage
-        translate(-330);
+        translate(-240);
         ServoHandler::armPositionFold();
 
         translate(40);
