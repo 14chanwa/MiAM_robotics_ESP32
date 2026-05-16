@@ -12,14 +12,14 @@
 #define PAMI_1_START 45.0, 1615.0, -M_PI_2
 #define PAMI_2_START 45.0, 1680.0, 0.0
 #define PAMI_3_START 45.0, 1745.0, 0.0
-#define PAMI_4_START 45.0, 1825.0, 0.0
+#define PAMI_4_START 45.0, 1900.0, 0.0
 #define PAMI_5_START 35.0, 1905.0, 0.0
 
-#define PAMI_1_GOAL 100, 850, 0
-#define PAMI_2_GOAL 620, 170, 0
+#define PAMI_1_GOAL 100, 840, 0
+#define PAMI_2_GOAL 660, 128, 0
 #define PAMI_3_GOAL 730, 860, 0
-#define PAMI_4_GOAL 1683, 1384, 0
-#define PAMI_5_GOAL 1460, 832, 0
+#define PAMI_4_GOAL 1500, 800, 0
+#define PAMI_5_GOAL 1256, 1530, 0
 
 #define PAMI_1_WAIT 0
 #define PAMI_2_WAIT 0.0
@@ -166,11 +166,8 @@ namespace strategy
         RobotPosition tmp = startPosition;
         tmp.x += 200;
         positions.push_back(tmp);
-        tmp.x = 680;
-        tmp.y = 1260;
-        positions.push_back(tmp);
-        tmp.x = 1590;
-        tmp.y = 1260;
+        tmp.x = 644;
+        tmp.y = 1280;
         positions.push_back(tmp);
         positions.push_back(targetPosition);
         
@@ -192,13 +189,19 @@ namespace strategy
         targetPosition = RobotPosition(PAMI_5_GOAL);
 
         RobotPosition tmp = startPosition;
-        tmp.x += 200;
+        tmp.x += 100;
+        positions.push_back(tmp);
+        tmp.x = 500;
+        tmp.y = 1460;
         positions.push_back(tmp);
         tmp.x = 600;
-        tmp.y = 1450;
+        tmp.y = 1440;
         positions.push_back(tmp);
-        positions.push_back(targetPosition);
+        //positions.push_back(targetPosition);
         tv = computeTrajectoryRoundedCorner(tc, positions, 150.0);
+        res.insert(res.end(), tv.begin(), tv.end());
+        tmp = res.getEndPoint().position;
+        tv = computeTrajectoryStraightLine(tc, tmp, 600);
         res.insert(res.end(), tv.begin(), tv.end());
 
     #endif

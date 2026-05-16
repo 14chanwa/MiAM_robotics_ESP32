@@ -32,9 +32,9 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
 
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
-#if (PAMI_ID == 5)
-        // No avoidance for this PAMI
-        coeff = SLOWDOWN_KEEP_GOING;
+#if (PAMI_ID == 1 || PAMI_ID == 5 || PAMI_ID == 4)
+        // No vlx avoidance for this PAMI
+        coeff = 1.0; //SLOWDOWN_KEEP_GOING;
 #else
         coeff = 0.0f;
 #endif

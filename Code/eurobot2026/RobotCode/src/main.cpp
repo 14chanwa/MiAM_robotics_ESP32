@@ -93,7 +93,7 @@ void setup()
   for (;;)
   {
     Serial.println("Moving...");
-    strategy::go_forward(robot->motionController, 1500);
+    strategy::go_forward(robot->motionController, 300);
     robot->currentRobotState_ = RobotState::MOVING_SETUP_TRAJECTORY;
     robot->motionController->waitForTrajectoryFinished();
     // strategy::go_to_zone_3(motionController);

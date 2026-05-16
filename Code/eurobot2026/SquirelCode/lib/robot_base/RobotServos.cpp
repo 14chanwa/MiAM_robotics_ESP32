@@ -52,15 +52,15 @@ void RobotServos::init_servo_id_step(byte servo_id)
 {
     if (xSemaphoreTake(servoSemaphore, portMAX_DELAY)) {
         // Set the servo to position mode.
-        delay(100);
+        delay(10);
         servos.setMode(servo_id, STSMode::STEP);
-        delay(100);
+        delay(10);
         servos.writeTwoBytesRegister(servo_id, STSRegisters::MAXIMUM_ANGLE, 0);
-        delay(100);
-        servos.setTargetVelocity(servo_id, 2000);
-        delay(100);
+        delay(10);
+        servos.setTargetVelocity(servo_id, 2500);
+        delay(10);
         servos.setTargetAcceleration(servo_id, 100);
-        delay(100);
+        delay(10);
         xSemaphoreGive(servoSemaphore);
     }
 }

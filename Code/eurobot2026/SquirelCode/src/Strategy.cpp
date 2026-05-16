@@ -35,17 +35,13 @@ byte servo_id_right = 2;
 void init_servos()
 {
     RobotServos::init_servo_id_step(servo_id_left);
-    delay(100);
     RobotServos::init_servo_id_step(servo_id_right);
-    delay(100);
 }
 
 void move_servo(int tick_left, int tick_right, bool translation)
 {
     RobotServos::set_servo_position(servo_id_left, tick_left);
-    delay(10);
     RobotServos::set_servo_position(servo_id_right, tick_right);
-    delay(10);
     long time = millis();
     long waiting_time = 0;
     // if (translation)
@@ -161,17 +157,38 @@ namespace strategy
 
         //move_servo(8000, -8000);
 
+
+        strategy::disableAvoidance();
+        translate(120);
+        rotate(-M_PI_2);
+        
+        // Recalage
+        translate(-80);
+        ServoHandler::armPositionUpWithCrate();
+
+        // Go in front of zone
+        translate(310);
+
+        // Recalage
+        translate(-330);
+        ServoHandler::armPositionFold();
+
+        translate(40);
+        rotate(M_PI/2);
+
+        translate(-180);
+
+
         translate(390);
         // disable avoidance
         strategy::disableAvoidance();
 
+        ServoHandler::armPositionUp();
         rotate(-M_PI_2);
 
         // Recalage
         translate(-80);
 
-
-        ServoHandler::armPositionUp();
         translate(70);
 
         ServoHandler::pumpOn();
@@ -218,13 +235,12 @@ namespace strategy
         // disable avoidance
         strategy::disableAvoidance();
 
+        ServoHandler::armPositionUp();
         rotate(-M_PI_2);
 
         // Recalage
         translate(-100);
 
-
-        ServoHandler::armPositionUp();
         translate(70);
 
         ServoHandler::pumpOn();
@@ -272,21 +288,21 @@ namespace strategy
         // disable avoidance
         strategy::disableAvoidance();
 
-        ServoHandler::armPositionUp();
-        rotate(-M_PI_4);
-        translate(190);
-        delay(500);
-        translate(-190);
-        ServoHandler::armPositionFold();
-        //rotate(M_PI_4);
+        // ServoHandler::armPositionUp();
+        // rotate(-M_PI_4);
+        // translate(190);
+        // delay(500);
+        // translate(-190);
+        // ServoHandler::armPositionFold();
+        // //rotate(M_PI_4);
 
-        rotate(-M_PI_4);
+        rotate(-M_PI_2);
 
         // Recalage
         translate(-130);     
 
         // wait until ~80s
-        while(Robot::getInstance()->match_current_time_s < 85.0f)
+        while(Robot::getInstance()->match_current_time_s < 90.0f)
         {
             delay(100);
         }
