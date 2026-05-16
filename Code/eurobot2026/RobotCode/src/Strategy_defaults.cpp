@@ -19,7 +19,7 @@
 #define PAMI_2_GOAL 620, 170, 0
 #define PAMI_3_GOAL 730, 860, 0
 #define PAMI_4_GOAL 1683, 1384, 0
-#define PAMI_5_GOAL 1180, 1444, 0
+#define PAMI_5_GOAL 1460, 832, 0
 
 #define PAMI_1_WAIT 0
 #define PAMI_2_WAIT 0.0
@@ -166,7 +166,7 @@ namespace strategy
         RobotPosition tmp = startPosition;
         tmp.x += 200;
         positions.push_back(tmp);
-        tmp.x = 750;
+        tmp.x = 680;
         tmp.y = 1260;
         positions.push_back(tmp);
         tmp.x = 1590;
@@ -245,10 +245,16 @@ namespace strategy
 //         res.insert(res.end(), sl.begin(), sl.end());
 // #endif
 
-//         for (auto traj : res)
-//         {
-//                 traj->setAvoidanceEnabled(false);
-//         }
+        // Go forward
+        float distance = 20;
+        // Movement should be very slow
+        tc.maxWheelVelocity = SLOW_APPROACH_WHEEL_VELOCITY;
+        TrajectoryVector sl = computeTrajectoryStraightLine(tc, currentPosition, distance);
+        res.insert(res.end(), sl.begin(), sl.end());
+        for (auto traj : res)
+        {
+            traj->setAvoidanceEnabled(false);
+        }
         return res;
     }
 }

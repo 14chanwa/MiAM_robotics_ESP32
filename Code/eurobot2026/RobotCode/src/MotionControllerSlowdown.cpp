@@ -10,7 +10,7 @@
 #define TABLE_MAX_X 3000
 #define TABLE_MAX_Y 2000
 
-#define SLOWDOWN_KEEP_GOING 0.30f
+#define SLOWDOWN_KEEP_GOING 0.9f
 
 float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detection_mm, bool const &hasMatchStarted)
 {
@@ -32,11 +32,12 @@ float MotionController::computeObstacleAvoidanceSlowdown(float vlx_range_detecti
 
     if (vlx_range_detection_mm <= MIN_RANGE)
     {
-// #if (PAMI_ID == 4 || PAMI_ID == 5)
-//         coeff = SLOWDOWN_KEEP_GOING;
-// #else
+#if (PAMI_ID == 5)
+        // No avoidance for this PAMI
+        coeff = SLOWDOWN_KEEP_GOING;
+#else
         coeff = 0.0f;
-// #endif
+#endif
     }
     else if (vlx_range_detection_mm < MAX_RANGE)
     {
