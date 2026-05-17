@@ -54,7 +54,9 @@ void setup()
   // WiFiHandler::initWiFi();
 
   // Init i2c peripherals
+#if PAMI_ID != 5
   I2CHandler::init();
+#endif
 
   // analog readings: monitor battery and infrared captors
   Serial.println("Init analog readings");

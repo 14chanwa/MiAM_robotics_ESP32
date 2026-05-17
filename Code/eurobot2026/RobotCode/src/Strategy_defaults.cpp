@@ -17,8 +17,8 @@
 
 #define PAMI_1_GOAL 100, 840, 0
 #define PAMI_2_GOAL 660, 128, 0
-#define PAMI_3_GOAL 730, 860, 0
-#define PAMI_4_GOAL 1500, 800, 0
+#define PAMI_3_GOAL 760, 840, 0
+#define PAMI_4_GOAL 1450, 860, 0
 #define PAMI_5_GOAL 1256, 1530, 0
 
 #define PAMI_1_WAIT 0
